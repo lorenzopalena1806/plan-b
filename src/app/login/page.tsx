@@ -30,7 +30,7 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg)' }}>
       <div className="card flex-col" style={{ width: '100%', maxWidth: '400px', display: 'flex', gap: '1.5rem', padding: '2rem' }}>
-        <h1 className="text-red" style={{ textAlign: 'center', fontSize: '2rem', letterSpacing: '-1px' }}>PLAN B</h1>
+        <h1 className="text-red" style={{ textAlign: 'center', fontSize: '2rem', letterSpacing: '-1px' }}>POLOSANDIA</h1>
         <h2 style={{ textAlign: 'center', fontSize: '1.25rem' }}>Acceso Administrativo</h2>
         
         {error && <div style={{ color: 'var(--color-red-primary)', background: 'var(--color-red-light)', padding: '0.75rem', borderRadius: 'var(--border-radius-sm)', textAlign: 'center' }}>{error}</div>}

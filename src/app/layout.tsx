@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'PLAN B - Delivery & Takeaway',
-  description: 'Pedí tu comida favorita en PLAN B. Delivery y Takeaway rápido y fácil.',
+  title: 'POLOSANDIA - Sistema Administrativo',
+  description: 'Sistema centralizado de pedidos para restaurantes.',
 };
 
 export default function RootLayout({
