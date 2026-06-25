@@ -12,7 +12,7 @@ export default function CajaPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch('/api/orders');
+      const res = await fetch(`/api/orders?t=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         setOrders(data);
