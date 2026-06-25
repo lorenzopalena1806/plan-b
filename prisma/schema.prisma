@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  
+  users           User[]
+  configs         Config[]
+  categories      Category[]
+  products        Product[]
+  modifierOptions ModifierOption[]
+  orders          Order[]
+}
+
+model User {
+  id           Int         @id @default(autoincrement())
+  username     String      @unique
+  password     String
+  role         String      @default("ADMIN") // SUPERADMIN o ADMIN
+  restaurantId Int?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Config {
+  id             Int        @id @default(autoincrement())
+  whatsappNumber String
+  openTime       String     // HH:MM format
+  closeTime      String     // HH:MM format
+  isOpenOverride Boolean    @default(true) 
+  isSuspended    Boolean    @default(false)
+  restaurantId   Int
+  restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Category {
+  id           Int        @id @default(autoincrement())
+  name         String     
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+}
+
+model Product {
+  id           Int              @id @default(autoincrement())
+  name         String
+  description  String?
+  price        Float
+  imageUrl     String?
+  categoryId   Int?
+  category     Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  isPromo      Boolean          @default(false)
+  modifiers    ModifierOption[]
+  restaurantId Int
+  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model ModifierOption {
+  id           Int        @id @default(autoincrement())
+  name         String
+  price        Float      @default(0)
+  type         String     @default("FREE") // "FREE" o "PAID"
+  products     Product[]
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id             Int         @id @default(autoincrement())
+  customerName   String
+  deliveryMethod String      
+  address        String?
+  status         String      @default("AWAITING_CONFIRMATION") 
+  total          Float
+  createdAt      DateTime    @default(now())
+  items          OrderItem[]
+  customerNotes  String?
+  restaurantId   Int
+  restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model OrderItem {
+  id              Int     @id @default(autoincrement())
+  orderId         Int
+  order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId       Int
+  productName     String  
+  quantity        Int
+  priceAtPurchase Float   
+  notes           String? 
+}
