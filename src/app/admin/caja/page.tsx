@@ -37,10 +37,10 @@ export default function CajaPage() {
       // Optimistic update
       setOrders(orders.map(o => o.id === id ? { ...o, status: 'PENDING' } : o));
       
-      const res = await fetch('/api/orders', {
-        method: 'PATCH',
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'PENDING' })
+        body: JSON.stringify({ status: 'PENDING' })
       });
       
       if (!res.ok) {
@@ -58,10 +58,10 @@ export default function CajaPage() {
     try {
       setOrders(orders.map(o => o.id === id ? { ...o, status: 'REJECTED' } : o));
       
-      const res = await fetch('/api/orders', {
-        method: 'PATCH',
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: 'REJECTED' })
+        body: JSON.stringify({ status: 'REJECTED' })
       });
       
       if (!res.ok) {

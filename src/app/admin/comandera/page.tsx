@@ -34,10 +34,10 @@ export default function ComanderaPage() {
       // Optimistic update
       setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
       
-      const res = await fetch('/api/orders', {
-        method: 'PATCH',
+      const res = await fetch(`/api/orders/${id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+        body: JSON.stringify({ status })
       });
       
       if (!res.ok) {
