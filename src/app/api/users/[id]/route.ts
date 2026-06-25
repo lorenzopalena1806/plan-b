@@ -17,7 +17,7 @@ export async function DELETE(
     const { id } = await params;
     const userId = parseInt(id);
 
-    if (session.user.id === userId) {
+    if (parseInt(session.user.id) === userId) {
       return NextResponse.json({ error: 'No puedes eliminarte a ti mismo' }, { status: 400 });
     }
 
