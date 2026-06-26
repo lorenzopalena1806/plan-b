@@ -22,7 +22,10 @@ export async function GET(
         orderBy: { name: 'asc' }
       }),
       prisma.product.findMany({
-        where: { restaurantId: restaurant.id },
+        where: { 
+          restaurantId: restaurant.id,
+          isActive: true
+        },
         include: { modifiers: true },
         orderBy: { id: 'desc' }
       })

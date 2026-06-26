@@ -221,6 +221,44 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Social Links */}
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+          <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Enlaces y Redes Sociales</h3>
+          <div className="grid" style={{ gap: '1rem' }}>
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Instagram (Opcional)</label>
+              <input 
+                type="url" 
+                placeholder="https://instagram.com/mi.local"
+                value={config?.instagramUrl || ''} 
+                onChange={e => setConfig({...config, instagramUrl: e.target.value})}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+              />
+            </div>
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de WhatsApp Directo (Opcional)</label>
+              <input 
+                type="url" 
+                placeholder="https://wa.me/5491123456789?text=Hola"
+                value={config?.whatsappUrl || ''} 
+                onChange={e => setConfig({...config, whatsappUrl: e.target.value})}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+              />
+              <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Si se deja vacío, se usará automáticamente el número de WhatsApp principal.</p>
+            </div>
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Google Maps (Opcional)</label>
+              <input 
+                type="url" 
+                placeholder="https://maps.google.com/?q=..."
+                value={config?.mapsUrl || ''} 
+                onChange={e => setConfig({...config, mapsUrl: e.target.value})}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Operating Hours */}
         <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
           <div>

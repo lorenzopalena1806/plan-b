@@ -45,6 +45,9 @@ model Config {
   fontFamily     String?    @default("Inter")
   cardLayout     String?    @default("grid")
   bankAlias      String?
+  instagramUrl   String?
+  whatsappUrl    String?
+  mapsUrl        String?
   restaurantId   Int
   restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -66,6 +69,7 @@ model Product {
   categoryId   Int?
   category     Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isPromo      Boolean          @default(false)
+  isActive     Boolean          @default(true)
   modifiers    ModifierOption[]
   restaurantId Int
   restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)

@@ -15,7 +15,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { name, description, price, imageUrl, categoryId, isPromo, modifierIds } = data;
+    const { name, description, price, imageUrl, categoryId, isPromo, isActive, modifierIds } = data;
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: parseInt(id) }
@@ -27,16 +27,17 @@ export async function PUT(
     const updatedProduct = await prisma.product.update({
       where: { id: parseInt(id) },
       data: {
-        name,
-        description,
-        price: parseFloat(price),
-        imageUrl,
-        categoryId: categoryId ? parseInt(categoryId) : null,
-        isPromo: Boolean(isPromo),
-        modifiers: {
+        name: name !== undefined ? name : undefined,
+        description: description !== undefined ? description : undefined,
+        price: price !== undefined ? parseFloat(price) : undefined,
+        imageUrl: imageUrl !== undefined ? imageUrl : undefined,
+        categoryId: categoryId !== undefined ? (categoryId ? (isNaN(parseInt(categoryId)) ? null : parseInt(categoryId)) : null) : undefined,
+        isPromo: isPromo !== undefined ? Boolean(isPromo) : undefined,
+        isActive: isActive !== undefined ? Boolean(isActive) : undefined,
+        modifiers: modifierIds !== undefined ? {
           set: [],
           connect: modifierIds?.map((mId: number) => ({ id: mId })) || []
-        }
+        } : undefined
       },
     });
 

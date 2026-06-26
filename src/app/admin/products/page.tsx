@@ -24,6 +24,7 @@ interface Product {
   categoryId: number | null;
   category?: Category | null;
   isPromo: boolean;
+  isActive: boolean;
   modifiers: ModifierOption[];
 }
 
@@ -46,6 +47,7 @@ export default function ProductsPage() {
   const [categoryId, setCategoryId] = useState('');
   const [selectedModifierIds, setSelectedModifierIds] = useState<number[]>([]);
   const [isPromo, setIsPromo] = useState(false);
+  const [isActive, setIsActive] = useState(true);
 
   useEffect(() => {
     fetchInitialData();
@@ -108,6 +110,7 @@ export default function ProductsPage() {
     setCategoryId(product.categoryId ? product.categoryId.toString() : '');
     setSelectedModifierIds(product.modifiers.map(m => m.id));
     setIsPromo(product.isPromo);
+    setIsActive(product.isActive !== undefined ? product.isActive : true);
     setIsAdding(true);
     // Scroll to form smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -123,6 +126,7 @@ export default function ProductsPage() {
     setCategoryId('');
     setSelectedModifierIds([]);
     setIsPromo(false);
+    setIsActive(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,7 +141,8 @@ export default function ProductsPage() {
         imageUrl: imageUrl || null,
         categoryId: categoryId ? Number(categoryId) : null,
         modifierIds: selectedModifierIds,
-        isPromo
+        isPromo,
+        isActive
       };
 
       const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
@@ -159,6 +164,23 @@ export default function ProductsPage() {
       console.error(error);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleToggleActive = async (product: Product) => {
+    try {
+      const res = await fetch(`/api/products/${product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: !product.isActive })
+      });
+      if (res.ok) {
+        setProducts(products.map(p => p.id === product.id ? { ...p, isActive: !p.isActive } : p));
+      } else {
+        alert('Error al cambiar disponibilidad');
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -204,10 +226,14 @@ export default function ProductsPage() {
                 ))}
               </select>
             </div>
-            <div className="flex items-center" style={{ gap: '1rem', paddingTop: '1.5rem' }}>
+            <div className="flex flex-col" style={{ gap: '0.75rem', paddingTop: '1rem' }}>
               <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
                 <input type="checkbox" checked={isPromo} onChange={e => setIsPromo(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
                 <span>¿Es una Promoción / Combo destacado?</span>
+              </label>
+              <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
+                <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
+                <span>¿Producto Disponible? (Si se desmarca, se ocultará en la carta pública)</span>
               </label>
             </div>
 
@@ -273,7 +299,14 @@ export default function ProductsPage() {
             <div style={{ padding: '1.5rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
               <div className="flex justify-between items-start" style={{ marginBottom: '0.5rem' }}>
                 <div>
-                  <h3 style={{ fontSize: '1.125rem', margin: 0 }} className="text-bold">{product.name}</h3>
+                  <div className="flex items-center" style={{ gap: '0.5rem' }}>
+                    <h3 style={{ fontSize: '1.125rem', margin: 0 }} className="text-bold">{product.name}</h3>
+                    {product.isActive === false ? (
+                      <span className="status-badge" style={{ backgroundColor: '#e5e7eb', color: '#4b5563', fontSize: '0.7rem', padding: '0.1rem 0.4rem', border: '1px solid #d1d5db' }}>Pausado</span>
+                    ) : (
+                      <span className="status-badge" style={{ backgroundColor: '#def7ec', color: '#03543f', fontSize: '0.7rem', padding: '0.1rem 0.4rem', border: '1px solid #bcf0da' }}>Activo</span>
+                    )}
+                  </div>
                   {product.isPromo && <span className="status-badge bg-red-light text-red" style={{ fontSize: '0.75rem', padding: '0.125rem 0.375rem', display: 'inline-block', marginTop: '0.25rem' }}>Promoción</span>}
                 </div>
                 <span className="text-bold text-red" style={{ fontSize: '1.125rem' }}>${product.price.toLocaleString()}</span>
@@ -295,13 +328,27 @@ export default function ProductsPage() {
                 </ul>
               </div>
 
-              <div className="flex" style={{ gap: '0.5rem', marginTop: '1rem' }}>
-                <button className="btn-outline" style={{ flex: 1 }} onClick={() => handleStartEdit(product)}>
-                  Editar
+              <div className="flex" style={{ gap: '0.5rem', marginTop: '1rem', flexDirection: 'column' }}>
+                <button 
+                  className="btn-outline" 
+                  type="button"
+                  style={{ 
+                    borderColor: product.isActive ? '#9ca3af' : '#10b981', 
+                    color: product.isActive ? '#4b5563' : '#10b981',
+                    fontWeight: '600'
+                  }}
+                  onClick={() => handleToggleActive(product)}
+                >
+                  {product.isActive ? '⏸️ Pausar Venta' : '▶️ Activar Venta'}
                 </button>
-                <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => handleDelete(product.id)}>
-                  Eliminar
-                </button>
+                <div className="flex" style={{ gap: '0.5rem' }}>
+                  <button className="btn-outline" style={{ flex: 1 }} onClick={() => handleStartEdit(product)}>
+                    Editar
+                  </button>
+                  <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => handleDelete(product.id)}>
+                    Eliminar
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -44,7 +44,10 @@ export async function POST(request: Request) {
     textColor,
     fontFamily,
     cardLayout,
-    bankAlias
+    bankAlias,
+    instagramUrl,
+    whatsappUrl,
+    mapsUrl
   } = await request.json();
 
   const config = await prisma.config.findFirst({
@@ -63,7 +66,10 @@ export async function POST(request: Request) {
     textColor,
     fontFamily,
     cardLayout,
-    bankAlias
+    bankAlias,
+    instagramUrl,
+    whatsappUrl,
+    mapsUrl
   };
 
   if (config) {
