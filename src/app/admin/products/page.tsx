@@ -228,6 +228,7 @@ export default function ProductsPage() {
                 />
               </div>
             </div>
+          </div>
 
           {/* Modifier selection checklist */}
           <div style={{ marginBottom: '1.5rem' }}>
