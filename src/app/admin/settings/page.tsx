@@ -97,20 +97,7 @@ export default function SettingsPage() {
           </div>
         </label>
 
-        <label className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer', padding: '1rem', background: '#f8d7da', border: '1px solid #f5c6cb', borderRadius: 'var(--border-radius-sm)', color: '#721c24' }}>
-          <input 
-            type="checkbox" 
-            checked={config?.isSuspended || false} 
-            onChange={e => setConfig({...config, isSuspended: e.target.checked})}
-            style={{ width: '1.25rem', height: '1.25rem', accentColor: '#721c24' }}
-          />
-          <div>
-            <div className="text-bold">Suspender Sitio (Falta de Pago / Mantenimiento)</div>
-            <div style={{ fontSize: '0.875rem' }}>
-              Si se marca, el sitio entero dejará de funcionar para los clientes.
-            </div>
-          </div>
-        </label>
+
 
         <button type="submit" className="btn-primary" disabled={isSaving}>
           {isSaving ? 'Guardando...' : 'Guardar Configuración'}

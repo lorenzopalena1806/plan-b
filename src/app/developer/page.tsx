@@ -7,6 +7,7 @@ interface Restaurant {
   name: string;
   slug: string;
   createdAt: string;
+  configs?: { isSuspended: boolean }[];
 }
 
 export default function DeveloperDashboard() {
@@ -55,6 +56,28 @@ export default function DeveloperDashboard() {
       }
     } catch (err) {
       setError('Error de conexión');
+    }
+  };
+
+  const toggleSuspend = async (id: number, currentStatus: boolean) => {
+    try {
+      // Optimistic update
+      setRestaurants(restaurants.map(r => 
+        r.id === id ? { ...r, configs: [{ isSuspended: !currentStatus }] } : r
+      ));
+      
+      const res = await fetch(`/api/restaurants/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isSuspended: !currentStatus }),
+      });
+
+      if (!res.ok) {
+        fetchRestaurants(); // Revert on failure
+      }
+    } catch (err) {
+      console.error(err);
+      fetchRestaurants();
     }
   };
 
@@ -115,6 +138,7 @@ export default function DeveloperDashboard() {
               <th style={{ padding: '1rem' }}>Nombre</th>
               <th style={{ padding: '1rem' }}>Slug (URL)</th>
               <th style={{ padding: '1rem' }}>Fecha</th>
+              <th style={{ padding: '1rem', textAlign: 'right' }}>Estado</th>
             </tr>
           </thead>
           <tbody>
@@ -132,6 +156,26 @@ export default function DeveloperDashboard() {
                   <td style={{ padding: '1rem' }} className="text-red font-mono">/{rest.slug}</td>
                   <td style={{ padding: '1rem' }} className="text-muted">
                     {new Date(rest.createdAt).toLocaleDateString()}
+                  </td>
+                  <td style={{ padding: '1rem', textAlign: 'right' }}>
+                    {(() => {
+                      const isSuspended = rest.configs && rest.configs.length > 0 ? rest.configs[0].isSuspended : false;
+                      return (
+                        <button 
+                          onClick={() => toggleSuspend(rest.id, isSuspended)}
+                          className={isSuspended ? "btn-primary" : "btn-outline"}
+                          style={{ 
+                            padding: '0.5rem 1rem', 
+                            fontSize: '0.85rem',
+                            backgroundColor: isSuspended ? '#721c24' : 'transparent',
+                            borderColor: '#721c24',
+                            color: isSuspended ? 'white' : '#721c24'
+                          }}
+                        >
+                          {isSuspended ? 'Restaurar' : 'Suspender'}
+                        </button>
+                      );
+                    })()}
                   </td>
                 </tr>
               ))
