@@ -10,6 +10,10 @@ export async function GET() {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
+    if (session.user.role === 'STAFF') {
+      return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+    }
+
     // Fetch all COMPLETED orders to construct stats
     const orders = await prisma.order.findMany({
       where: {

@@ -133,7 +133,8 @@ export default function DeveloperUsersPage() {
                 onChange={(e) => setRole(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: '4px', backgroundColor: 'white' }}
               >
-                <option value="ADMIN">Admin de Local</option>
+                <option value="ADMIN">Admin de Local (Dueño)</option>
+                <option value="STAFF">Personal (Sin Acceso a Ingresos)</option>
                 <option value="SUPERADMIN">SuperAdmin</option>
               </select>
             </div>
@@ -188,8 +189,8 @@ export default function DeveloperUsersPage() {
                       borderRadius: '4px', 
                       fontSize: '0.8rem', 
                       fontWeight: 'bold',
-                      backgroundColor: u.role === 'SUPERADMIN' ? '#e9d5ff' : '#dbeafe',
-                      color: u.role === 'SUPERADMIN' ? '#6b21a8' : '#1e40af'
+                      backgroundColor: u.role === 'SUPERADMIN' ? '#e9d5ff' : (u.role === 'STAFF' ? '#f3f4f6' : '#dbeafe'),
+                      color: u.role === 'SUPERADMIN' ? '#6b21a8' : (u.role === 'STAFF' ? '#4b5563' : '#1e40af')
                     }}>
                       {u.role}
                     </span>

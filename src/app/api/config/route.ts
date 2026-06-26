@@ -32,6 +32,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
+  if (session.user.role === 'STAFF') {
+    return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
+  }
+
   const { 
     whatsappNumber, 
     openTime, 
