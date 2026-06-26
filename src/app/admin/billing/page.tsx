@@ -191,7 +191,7 @@ export default function AdminBillingPage() {
               <div>
                 <h4 style={{ textTransform: 'uppercase', fontSize: '0.75rem', color: '#888', marginBottom: '0.25rem', letterSpacing: '0.5px' }}>EMITIDO POR</h4>
                 <p><strong>Polosandia Labs</strong></p>
-                <p style={{ color: '#555', fontSize: '0.85rem', marginTop: '0.15rem' }}>Buenos Aires, Argentina</p>
+                <p style={{ color: '#555', fontSize: '0.85rem', marginTop: '0.15rem' }}>La Calera, Córdoba</p>
               </div>
               <div>
                 <h4 style={{ textTransform: 'uppercase', fontSize: '0.75rem', color: '#888', marginBottom: '0.25rem', letterSpacing: '0.5px' }}>CLIENTE / COMERCIO</h4>

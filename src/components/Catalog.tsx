@@ -89,7 +89,15 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
   });
 
   return (
-    <div className="grid" style={{ gridTemplateColumns: '1fr', gap: '2rem' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }} className="catalog-layout">
+      <style dangerouslySetInnerHTML={{__html: `
+        @media (min-width: 900px) {
+          .catalog-layout {
+            grid-template-columns: 1fr 380px !important;
+            align-items: start;
+          }
+        }
+      `}} />
       <div className="catalog-content">
         
         {/* Search Bar */}
