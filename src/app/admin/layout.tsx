@@ -21,6 +21,7 @@ export default async function AdminLayout({
 
   let restaurantName = 'Mi Local';
   let restaurantSlug = '';
+  let subscriptionEnd: Date | null = null;
   
   if (session.user.restaurantId) {
     const restaurant = await prisma.restaurant.findUnique({
@@ -29,8 +30,12 @@ export default async function AdminLayout({
     if (restaurant) {
       restaurantName = restaurant.name;
       restaurantSlug = restaurant.slug;
+      subscriptionEnd = restaurant.subscriptionEnd;
     }
   }
+
+  const systemConfig = await prisma.systemConfig.findFirst();
+  const supportContact = systemConfig?.supportContact || '';
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -41,6 +46,19 @@ export default async function AdminLayout({
           </Link>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          {subscriptionEnd && (
+            <span style={{ 
+              fontSize: '0.8rem', 
+              backgroundColor: '#f3f4f6', 
+              border: '1px solid var(--color-border)', 
+              padding: '0.25rem 0.5rem', 
+              borderRadius: '4px',
+              color: 'var(--color-text-light)',
+              fontWeight: '500'
+            }}>
+              📅 Vence: {new Date(subscriptionEnd).toLocaleDateString('es-AR')}
+            </span>
+          )}
           {restaurantSlug && (
             <Link 
               href={`/${restaurantSlug}`} 
@@ -61,6 +79,33 @@ export default async function AdminLayout({
       <main style={{ flex: 1, backgroundColor: 'var(--color-bg)' }}>
         {children}
       </main>
+      <footer style={{ 
+        backgroundColor: 'white', 
+        borderTop: '1px solid var(--color-border)', 
+        padding: '1rem', 
+        textAlign: 'center', 
+        fontSize: '0.85rem', 
+        color: 'var(--color-text-light)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '1rem'
+      }}>
+        <span>© Polosandia Sistema Administrativo</span>
+        {supportContact && (
+          <>
+            <span>|</span>
+            <a 
+              href={supportContact} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ color: 'var(--color-red-primary)', textDecoration: 'underline', fontWeight: '600' }}
+            >
+              📞 Soporte Técnico
+            </a>
+          </>
+        )}
+      </footer>
     </div>
   );
 }

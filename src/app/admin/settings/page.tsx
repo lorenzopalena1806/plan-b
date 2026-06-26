@@ -221,6 +221,24 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Shipping Cost */}
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+          <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Costo de Envío</h3>
+          <div>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Costo de Envío Fijo ($)</label>
+            <input 
+              type="number" 
+              min="0"
+              step="any"
+              placeholder="ej: 300"
+              value={config?.shippingFee || 0} 
+              onChange={e => setConfig({...config, shippingFee: parseFloat(e.target.value) || 0})}
+              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+            />
+            <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Este monto se sumará de forma automática al total de la compra cuando el cliente elija la opción de Envío a Domicilio.</p>
+          </div>
+        </div>
+
         {/* Social Links */}
         <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
           <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Enlaces y Redes Sociales</h3>

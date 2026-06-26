@@ -51,7 +51,8 @@ export async function POST(request: Request) {
     bankAlias,
     instagramUrl,
     whatsappUrl,
-    mapsUrl
+    mapsUrl,
+    shippingFee
   } = await request.json();
 
   const config = await prisma.config.findFirst({
@@ -73,7 +74,8 @@ export async function POST(request: Request) {
     bankAlias,
     instagramUrl,
     whatsappUrl,
-    mapsUrl
+    mapsUrl,
+    shippingFee: parseFloat(shippingFee) || 0
   };
 
   if (config) {

@@ -15,24 +15,36 @@ export async function PUT(
 
   try {
     const { id } = await params;
-    const { isSuspended } = await request.json();
+    const { isSuspended, subscriptionEnd } = await request.json();
+    const restId = parseInt(id);
 
-    // Actualizar el Config de este restaurante
-    const config = await prisma.config.findFirst({
-      where: { restaurantId: parseInt(id) }
-    });
+    if (isSuspended !== undefined) {
+      const config = await prisma.config.findFirst({
+        where: { restaurantId: restId }
+      });
 
-    if (!config) {
-      return NextResponse.json({ error: 'Configuración no encontrada para este local' }, { status: 404 });
+      if (config) {
+        await prisma.config.update({
+          where: { id: config.id },
+          data: { isSuspended },
+        });
+      }
     }
 
-    const updatedConfig = await prisma.config.update({
-      where: { id: config.id },
-      data: { isSuspended },
+    if (subscriptionEnd !== undefined) {
+      await prisma.restaurant.update({
+        where: { id: restId },
+        data: { subscriptionEnd: subscriptionEnd ? new Date(subscriptionEnd) : null }
+      });
+    }
+
+    const updatedRestaurant = await prisma.restaurant.findUnique({
+      where: { id: restId },
+      include: { configs: true }
     });
 
-    return NextResponse.json(updatedConfig);
+    return NextResponse.json(updatedRestaurant);
   } catch (error) {
-    return NextResponse.json({ error: 'Error al actualizar el estado de suspensión' }, { status: 500 });
+    return NextResponse.json({ error: 'Error al actualizar el local' }, { status: 500 });
   }
 }

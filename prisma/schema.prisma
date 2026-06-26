@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Restaurant {
-  id        Int       @id @default(autoincrement())
-  name      String
-  slug      String    @unique
-  createdAt DateTime  @default(now())
+  id              Int       @id @default(autoincrement())
+  name            String
+  slug            String    @unique
+  subscriptionEnd DateTime?
+  createdAt       DateTime  @default(now())
   
   users           User[]
   configs         Config[]
@@ -49,6 +50,7 @@ model Config {
   instagramUrl   String?
   whatsappUrl    String?
   mapsUrl        String?
+  shippingFee    Float      @default(0)
   restaurantId   Int
   restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -112,4 +114,9 @@ model OrderItem {
   quantity        Int
   priceAtPurchase Float   
   notes           String? 
+}
+
+model SystemConfig {
+  id             Int     @id @default(autoincrement())
+  supportContact String? @default("")
 }

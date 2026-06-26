@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import Catalog from '@/components/Catalog';
+import ShareButton from '@/components/ShareButton';
 import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
@@ -162,6 +163,9 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             )}
           </div>
         )}
+        <div style={{ marginTop: '1.25rem' }}>
+          <ShareButton />
+        </div>
       </header>
 
       {!isOpen && (
@@ -178,6 +182,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
           slug={slug} 
           cardLayout={config.cardLayout || 'grid'} 
           bankAlias={config.bankAlias || ''} 
+          shippingFee={config.shippingFee || 0}
         />
       </div>
     </div>

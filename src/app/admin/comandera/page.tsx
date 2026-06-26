@@ -1,13 +1,38 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Order, OrderItem } from '@prisma/client';
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
+function playNewOrderSound() {
+  try {
+    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const playNote = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gainNode.gain.setValueAtTime(0.15, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+    const now = audioCtx.currentTime;
+    playNote(523.25, now, 0.35); // C5
+    playNote(659.25, now + 0.12, 0.45); // E5
+    playNote(783.99, now + 0.24, 0.55); // G5
+  } catch (e) {
+    console.error('Web Audio API error:', e);
+  }
+}
+
 export default function ComanderaPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const knownOrderIdsRef = useRef<Set<number>>(new Set());
 
   const fetchOrders = async () => {
     try {
@@ -28,6 +53,19 @@ export default function ComanderaPage() {
     const interval = setInterval(fetchOrders, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (orders.length > 0) {
+      const ids = orders.map(o => o.id);
+      if (knownOrderIdsRef.current.size > 0) {
+        const hasNewOrder = orders.some(o => o.status === 'PENDING' && !knownOrderIdsRef.current.has(o.id));
+        if (hasNewOrder) {
+          playNewOrderSound();
+        }
+      }
+      knownOrderIdsRef.current = new Set(ids);
+    }
+  }, [orders]);
 
   const updateOrderStatus = async (id: number, status: string) => {
     try {

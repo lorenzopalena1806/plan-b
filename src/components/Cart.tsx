@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import { useCartStore } from '@/store/cartStore';
 
-export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: { whatsappNumber: string, isOpen: boolean, slug: string, bankAlias?: string }) {
+export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shippingFee = 0 }: { whatsappNumber: string, isOpen: boolean, slug: string, bankAlias?: string, shippingFee?: number }) {
   const { deliveryMethod, customerName, address, customerNotes, setDeliveryMethod, setCustomerName, setAddress, setCustomerNotes, removeItem, clearCart, getItems, getTotal } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
   const [cashAmount, setCashAmount] = useState('');
 
   const items = getItems(slug);
-  const total = getTotal(slug);
+  const subtotal = getTotal(slug);
+  const finalTotal = subtotal + (deliveryMethod === 'DELIVERY' ? shippingFee : 0);
 
   const handleCheckout = async () => {
     if (!isOpen) {
@@ -41,7 +42,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: {
         if (cashAmount.trim()) {
           const cashVal = parseFloat(cashAmount);
           if (!isNaN(cashVal)) {
-            paymentDetails = `Paga con $${cashVal.toLocaleString()}${cashVal > total ? `. Vuelto: $${(cashVal - total).toLocaleString()}` : ''}`;
+            paymentDetails = `Paga con $${cashVal.toLocaleString()}${cashVal > finalTotal ? `. Vuelto: $${(cashVal - finalTotal).toLocaleString()}` : ''}`;
           } else {
             paymentDetails = 'Monto exacto';
           }
@@ -61,7 +62,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: {
           deliveryMethod,
           address: deliveryMethod === 'DELIVERY' ? address : null,
           items,
-          total,
+          total: finalTotal,
           customerNotes: customerNotes.trim() || null,
           paymentMethod,
           paymentDetails
@@ -76,7 +77,10 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: {
       let msg = `*NUEVO PEDIDO #${order.id}*\n`;
       msg += `*Cliente:* ${customerName}\n`;
       msg += `*Entrega:* ${deliveryMethod === 'TAKEAWAY' ? 'Retiro en local' : 'Delivery'}\n`;
-      if (deliveryMethod === 'DELIVERY') msg += `*Dirección:* ${address}\n`;
+      if (deliveryMethod === 'DELIVERY') {
+        msg += `*Dirección:* ${address}\n`;
+        if (shippingFee > 0) msg += `*Envío:* $${shippingFee.toLocaleString()}\n`;
+      }
       
       msg += `*Pago:* ${paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'}\n`;
       if (paymentDetails) msg += `  > ${paymentDetails}\n`;
@@ -93,7 +97,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: {
         msg += `\n*Notas/Aclaraciones:* ${customerNotes.trim()}\n`;
       }
       
-      msg += `\n*TOTAL A PAGAR: $${total.toLocaleString()}*`;
+      msg += `\n*TOTAL A PAGAR: $${finalTotal.toLocaleString()}*`;
 
       // 3. Limpiar carrito y redirigir
       clearCart(slug);
@@ -134,9 +138,21 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: {
       </div>
 
       <div style={{ borderTop: '2px solid var(--color-red-light)', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+        {deliveryMethod === 'DELIVERY' && shippingFee > 0 && (
+          <>
+            <div className="flex justify-between text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+              <span>Subtotal:</span>
+              <span>${subtotal.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+              <span>Envío a Domicilio:</span>
+              <span>+${shippingFee.toLocaleString()}</span>
+            </div>
+          </>
+        )}
         <div className="flex justify-between text-bold" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
           <span>Total:</span>
-          <span>${total.toLocaleString()}</span>
+          <span>${finalTotal.toLocaleString()}</span>
         </div>
       </div>
 

@@ -10,11 +10,12 @@ type ProductWithRelations = Product & {
   modifiers: ModifierOption[];
 };
 
-export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '' }: { products: ProductWithRelations[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string }) {
+export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { addItem } = useCartStore();
 
@@ -68,12 +69,22 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
     closeModal();
   };
 
-  // Filter products based on active category
+  // Filter products based on active category and search term
   const filteredProducts = products.filter(p => {
+    const matchesSearch = 
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (p.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+
+    if (!matchesSearch) return false;
+
+    // If searching, show all matching products across all categories
+    if (searchTerm.trim() !== '') {
+      return true;
+    }
+
     if (activeCategory === 'Promos') {
       return p.isPromo;
     }
-    // Filter regular items by category, making sure they are not flagged as promos (or include if they belong there)
     return p.category?.name === activeCategory;
   });
 
@@ -81,8 +92,56 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
     <div className="grid" style={{ gridTemplateColumns: '1fr', gap: '2rem' }}>
       <div className="catalog-content">
         
+        {/* Search Bar */}
+        <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
+          <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#a0aec0', display: 'flex', alignItems: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </span>
+          <input
+            type="text"
+            placeholder="Buscar hamburguesa, pizza, bebida..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem 0.75rem 2.75rem',
+              border: '1px solid var(--color-border)',
+              borderRadius: '30px',
+              fontSize: '1rem',
+              backgroundColor: 'white',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+              outlineColor: 'var(--color-red-primary)',
+              transition: 'all 0.2s ease',
+            }}
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm('')}
+              style={{
+                position: 'absolute',
+                right: '1rem',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: '#a0aec0',
+                cursor: 'pointer',
+                fontSize: '1.2rem',
+                padding: '0.2rem',
+                display: 'flex',
+                alignItems: 'center'
+              }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
         {/* Category sticky tab navigation */}
-        {categoriesList.length > 0 && (
+        {searchTerm.trim() === '' && categoriesList.length > 0 && (
           <nav className="category-nav">
             {categoriesList.map(catName => (
               <button
@@ -100,7 +159,7 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
         {activeCategory && (
           <div style={{ marginBottom: '3rem' }}>
             <h2 style={{ marginBottom: '1.5rem', borderBottom: '2px solid var(--color-red-light)', paddingBottom: '0.5rem', display: 'inline-block' }}>
-              {activeCategory === 'Promos' ? 'Promociones Destacadas' : activeCategory}
+              {searchTerm.trim() !== '' ? `Búsqueda: "${searchTerm}"` : (activeCategory === 'Promos' ? 'Promociones Destacadas' : activeCategory)}
             </h2>
             
             <div className="grid" style={{ 
@@ -167,12 +226,37 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
         )}
       </div>
 
-      <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} />
+      <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} shippingFee={shippingFee} />
 
       {/* Product Modal */}
       {selectedProduct && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content flex flex-col" onClick={e => e.stopPropagation()} style={{ padding: '1.5rem' }}>
+          <div className="modal-content flex flex-col" onClick={e => e.stopPropagation()} style={{ padding: '1.5rem', position: 'relative' }}>
+            <button 
+              onClick={closeModal}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                color: 'var(--color-text)',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s',
+                zIndex: 10
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.1)'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+            >
+              ✕
+            </button>
             {selectedProduct.imageUrl && (
               <img 
                 src={selectedProduct.imageUrl} 
