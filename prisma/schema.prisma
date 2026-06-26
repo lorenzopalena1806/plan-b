@@ -20,6 +20,9 @@ model Restaurant {
   products        Product[]
   modifierOptions ModifierOption[]
   orders          Order[]
+  businessHours   BusinessHour[]
+  coupons         Coupon[]
+  receipts        Receipt[]
 }
 
 model User {
@@ -101,6 +104,8 @@ model Order {
   customerNotes  String?
   paymentMethod  String?
   paymentDetails String?
+  couponCode     String?
+  discountApplied Float      @default(0)
   restaurantId   Int
   restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -119,4 +124,43 @@ model OrderItem {
 model SystemConfig {
   id             Int     @id @default(autoincrement())
   supportContact String? @default("")
+}
+
+model BusinessHour {
+  id           Int        @id @default(autoincrement())
+  dayOfWeek    Int        // 0 = Domingo, 1 = Lunes, etc.
+  isOpen       Boolean    @default(true)
+  shift1Open   String?    // e.g. "12:00"
+  shift1Close  String?    // e.g. "15:00"
+  shift2Open   String?    // e.g. "20:00"
+  shift2Close  String?    // e.g. "00:00"
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, dayOfWeek])
+}
+
+model Coupon {
+  id           Int        @id @default(autoincrement())
+  code         String     // e.g. "PLANB10"
+  discountType String     // "PERCENTAGE" o "FIXED"
+  discountValue Float
+  minPurchase  Float      @default(0)
+  isActive     Boolean    @default(true)
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@unique([restaurantId, code])
+}
+
+model Receipt {
+  id           Int        @id @default(autoincrement())
+  receiptNumber String    @unique // e.g. "REC-0001"
+  amount       Float
+  issuedAt     DateTime   @default(now())
+  periodStart  DateTime
+  periodEnd    DateTime
+  description  String?
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

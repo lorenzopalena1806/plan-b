@@ -277,6 +277,20 @@ export default function ComanderaPage() {
                     })}
                   </div>
                   
+                  {/* Coupon and Total Summary */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.25rem', padding: '0.75rem', backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: 'var(--border-radius-sm)', fontSize: '0.875rem' }}>
+                    {order.couponCode && (
+                      <div className="flex justify-between text-green" style={{ color: 'var(--color-green)' }}>
+                        <span>Cupón: <strong>{order.couponCode}</strong></span>
+                        <span>-${order.discountApplied.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-bold" style={{ fontSize: '1rem', borderTop: order.couponCode ? '1px dashed var(--color-border)' : 'none', paddingTop: order.couponCode ? '0.25rem' : '0' }}>
+                      <span>Total:</span>
+                      <span>${order.total.toLocaleString()}</span>
+                    </div>
+                  </div>
+
                   <div className="flex justify-between mt-auto">
                     {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085' }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}
                     {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724' }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}

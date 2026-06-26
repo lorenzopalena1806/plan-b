@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 
 export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shippingFee = 0 }: { whatsappNumber: string, isOpen: boolean, slug: string, bankAlias?: string, shippingFee?: number }) {
@@ -9,9 +9,71 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
   const [cashAmount, setCashAmount] = useState('');
 
+  // Coupon state
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
+  const [couponError, setCouponError] = useState('');
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+
   const items = getItems(slug);
   const subtotal = getTotal(slug);
-  const finalTotal = subtotal + (deliveryMethod === 'DELIVERY' ? shippingFee : 0);
+
+  // Auto-remove coupon if subtotal drops below minimum purchase requirement
+  useEffect(() => {
+    if (appliedCoupon && subtotal < appliedCoupon.minPurchase) {
+      setAppliedCoupon(null);
+      setCouponError(`Cupón removido: el monto mínimo es de $${appliedCoupon.minPurchase.toLocaleString()}`);
+    }
+  }, [subtotal, appliedCoupon]);
+
+  // Calculate discount
+  let discountApplied = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountType === 'PERCENTAGE') {
+      discountApplied = subtotal * (appliedCoupon.discountValue / 100);
+    } else {
+      discountApplied = appliedCoupon.discountValue;
+    }
+    // Limit discount to not exceed subtotal
+    if (discountApplied > subtotal) {
+      discountApplied = subtotal;
+    }
+  }
+
+  const finalTotal = subtotal + (deliveryMethod === 'DELIVERY' ? shippingFee : 0) - discountApplied;
+
+  const handleApplyCoupon = async () => {
+    if (!couponCodeInput.trim()) return;
+    setCouponError('');
+    setIsValidatingCoupon(true);
+    try {
+      const code = couponCodeInput.toUpperCase().trim();
+      const res = await fetch(`/api/public/${slug}/coupons/${code}`);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Cupón inválido');
+      }
+      const coupon = await res.json();
+      
+      if (subtotal < coupon.minPurchase) {
+        throw new Error(`El pedido mínimo para este cupón es de $${coupon.minPurchase.toLocaleString()}`);
+      }
+      
+      setAppliedCoupon(coupon);
+      setCouponError('');
+    } catch (err: any) {
+      setAppliedCoupon(null);
+      setCouponError(err.message || 'Error al validar cupón');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCodeInput('');
+    setCouponError('');
+  };
 
   const handleCheckout = async () => {
     if (!isOpen) {
@@ -65,7 +127,9 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           total: finalTotal,
           customerNotes: customerNotes.trim() || null,
           paymentMethod,
-          paymentDetails
+          paymentDetails,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
+          discountApplied
         })
       });
 
@@ -92,6 +156,10 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           msg += `  > ${mod.type === 'FREE' ? 'SIN' : 'EXTRA'} ${mod.name}\n`;
         });
       });
+
+      if (appliedCoupon) {
+        msg += `\n*Cupón Aplicado:* ${appliedCoupon.code} (-$${discountApplied.toLocaleString()})\n`;
+      }
 
       if (customerNotes.trim()) {
         msg += `\n*Notas/Aclaraciones:* ${customerNotes.trim()}\n`;
@@ -137,7 +205,50 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
         ))}
       </div>
 
-      <div style={{ borderTop: '2px solid var(--color-red-light)', paddingTop: '1rem', marginBottom: '1.5rem' }}>
+      {/* Sección de Cupón de Descuento */}
+      <div style={{ padding: '1rem 0', borderTop: '1px solid var(--color-border)', borderBottom: '1px solid var(--color-border)', marginBottom: '1rem' }}>
+        <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Cupón de Descuento</label>
+        {appliedCoupon ? (
+          <div className="flex justify-between items-center" style={{ background: 'var(--color-green-light)', border: '1px dashed var(--color-green)', padding: '0.5rem 0.75rem', borderRadius: 'var(--border-radius-md)', fontSize: '0.875rem' }}>
+            <div>
+              <span style={{ fontWeight: 'bold', color: 'var(--color-green)' }}>{appliedCoupon.code}</span>
+              <span className="text-muted" style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>
+                {appliedCoupon.discountType === 'PERCENTAGE' ? `${appliedCoupon.discountValue}% OFF` : `-$${appliedCoupon.discountValue.toLocaleString()}`}
+              </span>
+            </div>
+            <button 
+              onClick={handleRemoveCoupon} 
+              className="text-red" 
+              style={{ fontSize: '0.75rem', fontWeight: 'bold', textDecoration: 'underline' }}
+            >
+              Remover
+            </button>
+          </div>
+        ) : (
+          <div className="flex" style={{ gap: '0.5rem' }}>
+            <input 
+              type="text" 
+              placeholder="Código de cupón" 
+              value={couponCodeInput} 
+              onChange={e => setCouponCodeInput(e.target.value)}
+              style={{ flex: 1, padding: '0.5rem 0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', textTransform: 'uppercase', outlineColor: 'var(--color-red-primary)', fontSize: '0.875rem' }}
+            />
+            <button 
+              onClick={handleApplyCoupon}
+              disabled={isValidatingCoupon || !couponCodeInput.trim()}
+              className="btn-outline" 
+              style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', fontWeight: 'bold' }}
+            >
+              {isValidatingCoupon ? '...' : 'Aplicar'}
+            </button>
+          </div>
+        )}
+        {couponError && (
+          <p style={{ color: 'var(--color-red-primary)', fontSize: '0.75rem', marginTop: '0.25rem', fontWeight: 'bold' }}>{couponError}</p>
+        )}
+      </div>
+
+      <div style={{ paddingTop: '0.5rem', marginBottom: '1.5rem' }}>
         {deliveryMethod === 'DELIVERY' && shippingFee > 0 && (
           <>
             <div className="flex justify-between text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
@@ -149,6 +260,12 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
               <span>+${shippingFee.toLocaleString()}</span>
             </div>
           </>
+        )}
+        {discountApplied > 0 && (
+          <div className="flex justify-between text-bold" style={{ fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--color-green)' }}>
+            <span>Descuento ({appliedCoupon?.code}):</span>
+            <span>-${discountApplied.toLocaleString()}</span>
+          </div>
         )}
         <div className="flex justify-between text-bold" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
           <span>Total:</span>

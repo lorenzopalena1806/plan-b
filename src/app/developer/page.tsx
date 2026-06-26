@@ -21,9 +21,20 @@ export default function DeveloperDashboard() {
   const [loading, setLoading] = useState(true);
   const [pendingDates, setPendingDates] = useState<Record<number, string>>({});
 
+  // Receipts State
+  const [receipts, setReceipts] = useState<any[]>([]);
+  const [isSavingReceipt, setIsSavingReceipt] = useState(false);
+  const [receiptNumber, setReceiptNumber] = useState('');
+  const [receiptAmount, setReceiptAmount] = useState('');
+  const [receiptPeriodStart, setReceiptPeriodStart] = useState('');
+  const [receiptPeriodEnd, setReceiptPeriodEnd] = useState('');
+  const [receiptDesc, setReceiptDesc] = useState('');
+  const [receiptRestId, setReceiptRestId] = useState('');
+
   useEffect(() => {
     fetchRestaurants();
     fetchSupportConfig();
+    fetchReceipts();
   }, []);
 
   const fetchRestaurants = async () => {
@@ -49,6 +60,18 @@ export default function DeveloperDashboard() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const fetchReceipts = async () => {
+    try {
+      const res = await fetch('/api/developer/receipts');
+      if (res.ok) {
+        const data = await res.json();
+        setReceipts(data);
+      }
+    } catch (err) {
+      console.error('Error fetching receipts:', err);
     }
   };
 
@@ -100,7 +123,6 @@ export default function DeveloperDashboard() {
 
   const handleUpdateSubscription = async (id: number, dateStr: string) => {
     try {
-      // Safe optimistic update using ISO-compliant string formatting directly
       const localIso = dateStr ? `${dateStr}T00:00:00.000Z` : null;
       setRestaurants(restaurants.map(r => 
         r.id === id ? { ...r, subscriptionEnd: localIso } : r
@@ -113,7 +135,6 @@ export default function DeveloperDashboard() {
       });
 
       if (res.ok) {
-        // Clear pending date state upon success
         setPendingDates(prev => {
           const next = { ...prev };
           delete next[id];
@@ -178,6 +199,65 @@ export default function DeveloperDashboard() {
     }
   };
 
+  const handleCreateReceipt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!receiptNumber.trim() || !receiptAmount || !receiptPeriodStart || !receiptPeriodEnd || !receiptRestId) {
+      alert('Por favor complete todos los campos obligatorios.');
+      return;
+    }
+
+    setIsSavingReceipt(true);
+    try {
+      const res = await fetch('/api/developer/receipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          receiptNumber: receiptNumber.trim(),
+          amount: parseFloat(receiptAmount),
+          periodStart: receiptPeriodStart,
+          periodEnd: receiptPeriodEnd,
+          description: receiptDesc.trim() || null,
+          restaurantId: parseInt(receiptRestId)
+        })
+      });
+
+      if (res.ok) {
+        setReceiptNumber('');
+        setReceiptAmount('');
+        setReceiptPeriodStart('');
+        setReceiptPeriodEnd('');
+        setReceiptDesc('');
+        setReceiptRestId('');
+        fetchReceipts();
+        alert('Recibo emitido con éxito.');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Error al emitir el recibo.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al emitir recibo.');
+    } finally {
+      setIsSavingReceipt(false);
+    }
+  };
+
+  const handleDeleteReceipt = async (id: number) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este recibo?')) return;
+    try {
+      const res = await fetch(`/api/developer/receipts/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setReceipts(receipts.filter(r => r.id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Error al eliminar el recibo.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al eliminar recibo.');
+    }
+  };
+
   if (loading) return <div style={{ padding: '2rem' }}>Cargando...</div>;
 
   return (
@@ -193,6 +273,7 @@ export default function DeveloperDashboard() {
         </button>
       </header>
 
+      {/* Grid 1: Create Restaurant and Support Settings */}
       <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem', alignItems: 'start' }}>
         
         {/* Create Restaurant Form */}
@@ -262,6 +343,146 @@ export default function DeveloperDashboard() {
 
       </div>
 
+      {/* Grid 2: Emit Receipt and Emitted Receipts History */}
+      <div className="grid" style={{ gridTemplateColumns: '1fr 2fr', gap: '2rem', marginBottom: '2rem', alignItems: 'start' }}>
+        
+        {/* Emit Receipt Form */}
+        <div className="card">
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Emitir Recibo de Pago</h3>
+          <form onSubmit={handleCreateReceipt} className="grid" style={{ gap: '0.75rem' }}>
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Local / Restaurante</label>
+              <select
+                value={receiptRestId}
+                onChange={e => setReceiptRestId(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: '4px', height: '38px' }}
+                required
+              >
+                <option value="">Seleccionar local...</option>
+                {restaurants.map(r => (
+                  <option key={r.id} value={r.id}>{r.name} (/{r.slug})</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Nro de Recibo</label>
+                <input
+                  type="text"
+                  placeholder="Ej: REC-0001"
+                  value={receiptNumber}
+                  onChange={e => setReceiptNumber(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Monto ($)</label>
+                <input
+                  type="number"
+                  placeholder="Ej: 5000"
+                  min="0"
+                  step="any"
+                  value={receiptAmount}
+                  onChange={e => setReceiptAmount(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Inicio Período</label>
+                <input
+                  type="date"
+                  value={receiptPeriodStart}
+                  onChange={e => setReceiptPeriodStart(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: '4px', fontFamily: 'inherit' }}
+                  required
+                />
+              </div>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Fin Período</label>
+                <input
+                  type="date"
+                  value={receiptPeriodEnd}
+                  onChange={e => setReceiptPeriodEnd(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: '4px', fontFamily: 'inherit' }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.85rem' }}>Nota / Comentario (Opcional)</label>
+              <textarea
+                placeholder="Ej: Suscripción mensual"
+                value={receiptDesc}
+                onChange={e => setReceiptDesc(e.target.value)}
+                rows={2}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: '4px', fontFamily: 'inherit', resize: 'none' }}
+              />
+            </div>
+
+            <button type="submit" className="btn-primary" style={{ marginTop: '0.25rem' }} disabled={isSavingReceipt}>
+              {isSavingReceipt ? 'Emitiendo...' : 'Emitir Recibo'}
+            </button>
+          </form>
+        </div>
+
+        {/* Emitted Receipts Table */}
+        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+          <h3 style={{ padding: '1rem', borderBottom: '1px solid var(--color-border)', fontSize: '1.1rem' }}>Historial de Recibos Emitidos</h3>
+          <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ backgroundColor: 'var(--color-border)', position: 'sticky', top: 0, zIndex: 1 }}>
+                  <th style={{ padding: '0.75rem' }}>Nro</th>
+                  <th style={{ padding: '0.75rem' }}>Local</th>
+                  <th style={{ padding: '0.75rem' }}>Monto</th>
+                  <th style={{ padding: '0.75rem' }}>Período</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'right' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receipts.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} style={{ padding: '1.5rem', textAlign: 'center' }} className="text-muted">
+                      No se han emitido recibos de pago.
+                    </td>
+                  </tr>
+                ) : (
+                  receipts.map(rec => (
+                    <tr key={rec.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                      <td style={{ padding: '0.75rem', fontWeight: 'bold' }} className="font-mono text-red">{rec.receiptNumber}</td>
+                      <td style={{ padding: '0.75rem' }}>{rec.restaurant?.name || `ID #${rec.restaurantId}`}</td>
+                      <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>${rec.amount.toLocaleString()}</td>
+                      <td style={{ padding: '0.75rem', fontSize: '0.8rem' }} className="text-muted">
+                        {new Date(rec.periodStart).toLocaleDateString('es-AR')} - {new Date(rec.periodEnd).toLocaleDateString('es-AR')}
+                      </td>
+                      <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                        <button
+                          onClick={() => handleDeleteReceipt(rec.id)}
+                          className="text-red"
+                          style={{ fontWeight: 'bold', textDecoration: 'underline' }}
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Restaurants List Table */}
+      <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Listado de Locales y Suscripciones</h3>
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
