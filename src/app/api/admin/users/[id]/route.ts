@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 
 export async function DELETE(
   request: Request,
@@ -10,10 +10,12 @@ export async function DELETE(
   try {
     const session = await getServerSession(authOptions);
     if (!session || !session.user.restaurantId) {
+      console.warn('DELETE /api/admin/users/[id] - Unauthorized. Session:', session);
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
     if (session.user.role === 'STAFF') {
+      console.warn(`DELETE /api/admin/users/[id] - Staff user ID ${session.user.id} tried to delete`);
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 
@@ -34,8 +36,11 @@ export async function DELETE(
     });
 
     if (!targetUser || targetUser.restaurantId !== session.user.restaurantId) {
+      console.warn(`DELETE /api/admin/users/[id] - User ID ${targetUserId} not found or not in restaurant ${session.user.restaurantId}`);
       return NextResponse.json({ error: 'Usuario no encontrado o no pertenece a tu local' }, { status: 404 });
     }
+
+    console.log(`DELETE /api/admin/users/[id] - Deleting user ID ${targetUserId} by Admin ID ${session.user.id}`);
 
     await prisma.user.delete({
       where: { id: targetUserId }
