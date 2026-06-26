@@ -36,6 +36,31 @@ export default function ComanderaPage() {
     }
   };
 
+  const playChime = (audioCtx: AudioContext) => {
+    const playNote = (frequency: number, startTime: number, duration: number) => {
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      
+      // Smooth gain ramp to avoid speaker clicks
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05); // slightly louder
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    };
+
+    const now = audioCtx.currentTime;
+    playNote(523.25, now, 0.40); // C5
+    playNote(659.25, now + 0.12, 0.40); // E5
+    playNote(783.99, now + 0.24, 0.60); // G5
+  };
+
   const triggerChime = () => {
     if (typeof window === 'undefined') return;
     try {
@@ -49,27 +74,16 @@ export default function ComanderaPage() {
       if (!audioCtx) return;
 
       if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+        audioCtx.resume().then(() => {
+          playChime(audioCtx);
+          setSoundEnabled(true);
+        }).catch(err => {
+          console.error('Error resuming AudioContext:', err);
+        });
+      } else {
+        playChime(audioCtx);
+        setSoundEnabled(true);
       }
-
-      const playNote = (frequency: number, startTime: number, duration: number) => {
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
-        oscillator.frequency.value = frequency;
-        gainNode.gain.setValueAtTime(0.15, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        oscillator.start(startTime);
-        oscillator.stop(startTime + duration);
-      };
-
-      const now = audioCtx.currentTime;
-      playNote(523.25, now, 0.35); // C5
-      playNote(659.25, now + 0.12, 0.45); // E5
-      playNote(783.99, now + 0.24, 0.55); // G5
-      setSoundEnabled(true);
     } catch (e) {
       console.error('Web Audio API chime error:', e);
     }
@@ -98,14 +112,20 @@ export default function ComanderaPage() {
       initAudio();
       window.removeEventListener('click', unlock);
       window.removeEventListener('keydown', unlock);
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('mousedown', unlock);
     };
     window.addEventListener('click', unlock);
     window.addEventListener('keydown', unlock);
+    window.addEventListener('touchstart', unlock);
+    window.addEventListener('mousedown', unlock);
 
     return () => {
       clearInterval(interval);
       window.removeEventListener('click', unlock);
       window.removeEventListener('keydown', unlock);
+      window.removeEventListener('touchstart', unlock);
+      window.removeEventListener('mousedown', unlock);
     };
   }, []);
 
