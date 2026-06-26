@@ -238,22 +238,30 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
                 position: 'absolute',
                 top: '1rem',
                 right: '1rem',
-                backgroundColor: 'rgba(0,0,0,0.05)',
-                color: 'var(--color-text)',
-                width: '32px',
-                height: '32px',
+                backgroundColor: 'white',
+                color: '#1a1a1a',
+                width: '36px',
+                height: '36px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '1rem',
+                fontSize: '1.1rem',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                transition: 'background-color 0.2s',
+                border: '1px solid rgba(0, 0, 0, 0.15)',
+                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
+                transition: 'all 0.2s ease',
                 zIndex: 10
               }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.1)'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.08)';
+                e.currentTarget.style.backgroundColor = '#f3f4f6';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.backgroundColor = 'white';
+              }}
             >
               ✕
             </button>

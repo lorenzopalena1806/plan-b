@@ -99,22 +99,26 @@ export default function DeveloperDashboard() {
 
   const handleUpdateSubscription = async (id: number, dateStr: string) => {
     try {
-      // Optimistic update
+      // Safe optimistic update using ISO-compliant string formatting directly
+      const localIso = dateStr ? `${dateStr}T00:00:00.000Z` : null;
       setRestaurants(restaurants.map(r => 
-        r.id === id ? { ...r, subscriptionEnd: dateStr ? new Date(dateStr).toISOString() : null } : r
+        r.id === id ? { ...r, subscriptionEnd: localIso } : r
       ));
       
       const res = await fetch(`/api/restaurants/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscriptionEnd: dateStr ? new Date(dateStr + 'T23:59:59').toISOString() : null }),
+        body: JSON.stringify({ subscriptionEnd: dateStr ? `${dateStr}T23:59:59.000Z` : null }),
       });
 
       if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        alert(`Error al actualizar suscripción: ${res.status} ${errData.error || ''}`);
         fetchRestaurants();
       }
     } catch (err) {
       console.error(err);
+      alert('Error de conexión al actualizar la suscripción');
       fetchRestaurants();
     }
   };
@@ -131,10 +135,12 @@ export default function DeveloperDashboard() {
       if (res.ok) {
         alert('Contacto de soporte actualizado correctamente');
       } else {
-        alert('Error al actualizar soporte');
+        const errData = await res.json().catch(() => ({}));
+        alert(`Error al actualizar soporte: ${res.status} ${errData.error || ''}`);
       }
     } catch (err) {
       console.error(err);
+      alert('Error de conexión al guardar el contacto');
     } finally {
       setIsSavingSupport(false);
     }
@@ -142,7 +148,7 @@ export default function DeveloperDashboard() {
 
   const handleDownloadBackup = async () => {
     try {
-      const res = await fetch('/api/admin/backup');
+      const res = await fetch('/api/developer/backup');
       if (res.ok) {
         const data = await res.json();
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -155,7 +161,8 @@ export default function DeveloperDashboard() {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       } else {
-        alert('Error al descargar el backup');
+        const errData = await res.json().catch(() => ({}));
+        alert(`Error al descargar el backup: ${res.status} ${errData.error || ''}`);
       }
     } catch (err) {
       console.error(err);
@@ -227,11 +234,11 @@ export default function DeveloperDashboard() {
             <div>
               <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Soporte Técnico (WhatsApp o Web)</label>
               <input
-                type="url"
+                type="text"
                 value={supportContact}
                 onChange={(e) => setSupportContact(e.target.value)}
                 style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
-                placeholder="Ej: https://wa.me/5491123456789 o https://soporte.com"
+                placeholder="Ej: https://wa.me/5491123456789 o wa.me/5491123456789"
                 required
               />
               <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>

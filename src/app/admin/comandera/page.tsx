@@ -5,34 +5,62 @@ import { Order, OrderItem } from '@prisma/client';
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
-function playNewOrderSound() {
-  try {
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const playNote = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.value = frequency;
-      gainNode.gain.setValueAtTime(0.15, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration);
-    };
-    const now = audioCtx.currentTime;
-    playNote(523.25, now, 0.35); // C5
-    playNote(659.25, now + 0.12, 0.45); // E5
-    playNote(783.99, now + 0.24, 0.55); // G5
-  } catch (e) {
-    console.error('Web Audio API error:', e);
-  }
-}
-
 export default function ComanderaPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false);
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const initAudio = () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().then(() => {
+          setSoundEnabled(true);
+        });
+      } else if (audioCtxRef.current.state === 'running') {
+        setSoundEnabled(true);
+      }
+    } catch (e) {
+      console.error('AudioContext initialization error:', e);
+    }
+  };
+
+  const triggerChime = () => {
+    try {
+      if (!audioCtxRef.current) {
+        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      const audioCtx = audioCtxRef.current;
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const playNote = (frequency: number, startTime: number, duration: number) => {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.type = 'sine';
+        oscillator.frequency.value = frequency;
+        gainNode.gain.setValueAtTime(0.15, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+      };
+
+      const now = audioCtx.currentTime;
+      playNote(523.25, now, 0.35); // C5
+      playNote(659.25, now + 0.12, 0.45); // E5
+      playNote(783.99, now + 0.24, 0.55); // G5
+      setSoundEnabled(true);
+    } catch (e) {
+      console.error('Web Audio API chime error:', e);
+    }
+  };
 
   const fetchOrders = async () => {
     try {
@@ -51,7 +79,21 @@ export default function ComanderaPage() {
   useEffect(() => {
     fetchOrders();
     const interval = setInterval(fetchOrders, 30000); // Poll every 30 seconds
-    return () => clearInterval(interval);
+    
+    // Auto-unlock AudioContext on first page interaction
+    const unlock = () => {
+      initAudio();
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
+    window.addEventListener('click', unlock);
+    window.addEventListener('keydown', unlock);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('click', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
   }, []);
 
   useEffect(() => {
@@ -60,7 +102,7 @@ export default function ComanderaPage() {
       if (knownOrderIdsRef.current.size > 0) {
         const hasNewOrder = orders.some(o => o.status === 'PENDING' && !knownOrderIdsRef.current.has(o.id));
         if (hasNewOrder) {
-          playNewOrderSound();
+          triggerChime();
         }
       }
       knownOrderIdsRef.current = new Set(ids);
@@ -102,6 +144,21 @@ export default function ComanderaPage() {
         <h1 className="text-red">Comandera</h1>
         <div className="flex" style={{ gap: '1rem', alignItems: 'center' }}>
           <span className="text-muted text-bold animate-pulse">● Live (30s)</span>
+          <button 
+            className="btn-outline" 
+            onClick={triggerChime}
+            style={{
+              borderColor: soundEnabled ? 'var(--color-green)' : 'var(--color-red-primary)',
+              color: soundEnabled ? 'var(--color-green)' : 'var(--color-red-primary)',
+              backgroundColor: soundEnabled ? 'var(--color-green-light)' : 'var(--color-red-light)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.25rem',
+              fontWeight: '600'
+            }}
+          >
+            {soundEnabled ? '🔊 Sonido Habilitado (Probar)' : '🔇 Habilitar Sonido'}
+          </button>
           <button className="btn-outline" onClick={fetchOrders}>Refrescar</button>
         </div>
       </header>
