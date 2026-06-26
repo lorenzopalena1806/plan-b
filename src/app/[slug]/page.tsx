@@ -32,7 +32,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
   }
 
   const now = new Date();
-  const currentTimeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  const currentTimeStr = now.toLocaleTimeString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires', hour: '2-digit', minute: '2-digit', hour12: false });
   
   if (config.isSuspended) {
     return (
