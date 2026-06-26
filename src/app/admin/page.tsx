@@ -46,6 +46,7 @@ export default async function AdminDashboard() {
             <>
               <Link href="/admin/categories" className="btn-outline">Categorías</Link>
               <Link href="/admin/modifiers" className="btn-outline">Modificadores</Link>
+              <Link href="/admin/users" className="btn-outline">Personal</Link>
               <Link href="/admin/sales" className="btn-outline">Historial de Ventas</Link>
               <Link href="/admin/settings" className="btn-outline">Configuración</Link>
             </>
