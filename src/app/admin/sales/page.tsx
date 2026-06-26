@@ -19,6 +19,8 @@ interface Order {
   total: number;
   createdAt: string;
   customerNotes: string | null;
+  paymentMethod?: string | null;
+  paymentDetails?: string | null;
   items: OrderItem[];
 }
 
@@ -167,9 +169,17 @@ export default function SalesPage() {
                       </td>
                       <td style={{ padding: '0.75rem 0.5rem' }}>
                         <div className="text-bold">{order.customerName}</div>
-                        <span style={{ fontSize: '0.75rem' }} className={order.deliveryMethod === 'DELIVERY' ? 'text-red' : 'text-green'}>
-                          {order.deliveryMethod === 'DELIVERY' ? `🏍️ ${order.address || 'Delivery'}` : '🛍️ Retiro'}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
+                          <span style={{ fontSize: '0.75rem' }} className={order.deliveryMethod === 'DELIVERY' ? 'text-red' : 'text-green'}>
+                            {order.deliveryMethod === 'DELIVERY' ? `🏍️ ${order.address || 'Delivery'}` : '🛍️ Retiro'}
+                          </span>
+                          {order.paymentMethod && (
+                            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
+                              {order.paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'} 
+                              {order.paymentDetails && ` (${order.paymentDetails})`}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td style={{ padding: '0.75rem 0.5rem' }}>
                         {order.items.map(item => (

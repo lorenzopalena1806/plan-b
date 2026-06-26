@@ -16,7 +16,7 @@ export async function POST(
     }
 
     const data = await request.json();
-    const { customerName, deliveryMethod, address, items, total, customerNotes } = data;
+    const { customerName, deliveryMethod, address, items, total, customerNotes, paymentMethod, paymentDetails } = data;
 
     const newOrder = await prisma.order.create({
       data: {
@@ -25,6 +25,8 @@ export async function POST(
         address,
         total: parseFloat(total),
         customerNotes,
+        paymentMethod,
+        paymentDetails,
         restaurantId: restaurant.id,
         items: {
           create: items.map((item: any) => ({

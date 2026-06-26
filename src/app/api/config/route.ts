@@ -32,21 +32,52 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  const { whatsappNumber, openTime, closeTime, isOpenOverride, logoUrl, themeColor } = await request.json();
+  const { 
+    whatsappNumber, 
+    openTime, 
+    closeTime, 
+    isOpenOverride, 
+    logoUrl, 
+    themeColor,
+    bgColor,
+    cardColor,
+    textColor,
+    fontFamily,
+    cardLayout,
+    bankAlias
+  } = await request.json();
 
   const config = await prisma.config.findFirst({
     where: { restaurantId: session.user.restaurantId }
   });
 
+  const configData = {
+    whatsappNumber,
+    openTime,
+    closeTime,
+    isOpenOverride,
+    logoUrl,
+    themeColor,
+    bgColor,
+    cardColor,
+    textColor,
+    fontFamily,
+    cardLayout,
+    bankAlias
+  };
+
   if (config) {
     const updated = await prisma.config.update({
       where: { id: config.id },
-      data: { whatsappNumber, openTime, closeTime, isOpenOverride, logoUrl, themeColor },
+      data: configData,
     });
     return NextResponse.json(updated);
   } else {
     const created = await prisma.config.create({
-      data: { whatsappNumber, openTime, closeTime, isOpenOverride, logoUrl, themeColor, restaurantId: session.user.restaurantId },
+      data: { 
+        ...configData, 
+        restaurantId: session.user.restaurantId 
+      },
     });
     return NextResponse.json(created);
   }

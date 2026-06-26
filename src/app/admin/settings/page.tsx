@@ -39,6 +39,35 @@ export default function SettingsPage() {
     }
   };
 
+  const applyPreset = (preset: 'light' | 'dark' | 'sepia') => {
+    if (!config) return;
+    if (preset === 'light') {
+      setConfig({
+        ...config,
+        themeColor: '#e11d48',
+        bgColor: '#ffffff',
+        cardColor: '#ffffff',
+        textColor: '#1a1a1a'
+      });
+    } else if (preset === 'dark') {
+      setConfig({
+        ...config,
+        themeColor: '#e11d48',
+        bgColor: '#121212',
+        cardColor: '#1e1e1e',
+        textColor: '#ffffff'
+      });
+    } else if (preset === 'sepia') {
+      setConfig({
+        ...config,
+        themeColor: '#c2410c',
+        bgColor: '#faf7f0',
+        cardColor: '#f4efe6',
+        textColor: '#431407'
+      });
+    }
+  };
+
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando...</div>;
 
   return (
@@ -60,37 +89,139 @@ export default function SettingsPage() {
           />
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
-          <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>URL del Logo (Opcional)</label>
-            {config?.logoUrl && (
-              <img src={config.logoUrl} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', marginBottom: '1rem', display: 'block', borderRadius: 'var(--border-radius-sm)' }} />
-            )}
-            <input 
-              type="url" 
-              placeholder="https://ejemplo.com/mi-logo.png"
-              value={config?.logoUrl || ''}
-              onChange={e => setConfig({...config, logoUrl: e.target.value})}
-              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-            />
-            <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Pega el enlace de internet de tu imagen (ej: Imgur, Facebook, etc).</p>
-          </div>
-
-          <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Color Principal de tu Marca</label>
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        {/* Brand identity: logo, font, card layout */}
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
+          <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Identidad Visual</h3>
+          
+          <div className="grid" style={{ gridTemplateColumns: '1fr', gap: '1.5rem' }}>
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>URL del Logo (Opcional)</label>
+              {config?.logoUrl && (
+                <img src={config.logoUrl} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', marginBottom: '1rem', display: 'block', borderRadius: 'var(--border-radius-sm)' }} />
+              )}
               <input 
-                type="color" 
-                value={config?.themeColor || '#e11d48'} 
-                onChange={e => setConfig({...config, themeColor: e.target.value})}
-                style={{ width: '60px', height: '50px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                type="url" 
+                placeholder="https://ejemplo.com/mi-logo.png"
+                value={config?.logoUrl || ''}
+                onChange={e => setConfig({...config, logoUrl: e.target.value})}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
               />
-              <span className="text-muted font-mono">{config?.themeColor || '#e11d48'}</span>
+              <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Pega el enlace de internet de tu imagen.</p>
             </div>
-            <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Este color se usará en los botones y textos del menú público.</p>
+
+            <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Tipografía (Google Font)</label>
+                <select
+                  value={config?.fontFamily || 'Inter'}
+                  onChange={e => setConfig({...config, fontFamily: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', height: '46px' }}
+                >
+                  <option value="Inter">Inter (Moderna)</option>
+                  <option value="Poppins">Poppins (Redondeada / Amigable)</option>
+                  <option value="Montserrat">Montserrat (Geométrica / Limpia)</option>
+                  <option value="Playfair Display">Playfair Display (Elegante)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Diseño de Catálogo</label>
+                <select
+                  value={config?.cardLayout || 'grid'}
+                  onChange={e => setConfig({...config, cardLayout: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', height: '46px' }}
+                >
+                  <option value="grid">Cuadrícula (2 columnas)</option>
+                  <option value="list">Lista Compacta (1 columna)</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
+        {/* Colors and Theme Customization */}
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+          <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
+            <h3 className="text-bold" style={{ fontSize: '1.1rem' }}>Paleta de Colores</h3>
+            <div className="flex" style={{ gap: '0.5rem' }}>
+              <button type="button" className="btn-outline" onClick={() => applyPreset('light')} style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>☀️ Claro</button>
+              <button type="button" className="btn-outline" onClick={() => applyPreset('dark')} style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>🌙 Oscuro</button>
+              <button type="button" className="btn-outline" onClick={() => applyPreset('sepia')} style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}>☕ Sepia</button>
+            </div>
+          </div>
+
+          <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem' }}>Botones y Acentos</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input 
+                  type="color" 
+                  value={config?.themeColor || '#e11d48'} 
+                  onChange={e => setConfig({...config, themeColor: e.target.value})}
+                  style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                />
+                <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.themeColor || '#e11d48'}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem' }}>Fondo del Sitio</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input 
+                  type="color" 
+                  value={config?.bgColor || '#ffffff'} 
+                  onChange={e => setConfig({...config, bgColor: e.target.value})}
+                  style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                />
+                <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.bgColor || '#ffffff'}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem' }}>Fondo de Tarjetas y Modales</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input 
+                  type="color" 
+                  value={config?.cardColor || '#ffffff'} 
+                  onChange={e => setConfig({...config, cardColor: e.target.value})}
+                  style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                />
+                <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.cardColor || '#ffffff'}</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem' }}>Color del Texto</label>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <input 
+                  type="color" 
+                  value={config?.textColor || '#1a1a1a'} 
+                  onChange={e => setConfig({...config, textColor: e.target.value})}
+                  style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                />
+                <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.textColor || '#1a1a1a'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Payment Methods Info */}
+        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+          <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Métodos de Pago</h3>
+          <div>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Alias para Transferencias (CBU/CVU/MercadoPago)</label>
+            <input 
+              type="text" 
+              placeholder="ej: mi.local.mp"
+              value={config?.bankAlias || ''} 
+              onChange={e => setConfig({...config, bankAlias: e.target.value})}
+              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+            />
+            <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Si completas este campo, los clientes podrán elegir pagar con Transferencia y se les mostrará este alias al finalizar.</p>
+          </div>
+        </div>
+
+        {/* Operating Hours */}
         <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
           <div>
             <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Horario de Apertura</label>
@@ -114,7 +245,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <label className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer', padding: '1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}>
+        <label className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer', padding: '1rem', background: 'var(--color-border)', opacity: 0.8, border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}>
           <input 
             type="checkbox" 
             checked={config?.isOpenOverride || false} 
@@ -128,8 +259,6 @@ export default function SettingsPage() {
             </div>
           </div>
         </label>
-
-
 
         <button type="submit" className="btn-primary" disabled={isSaving}>
           {isSaving ? 'Guardando...' : 'Guardar Configuración'}

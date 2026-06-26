@@ -39,6 +39,12 @@ model Config {
   isSuspended    Boolean    @default(false)
   logoUrl        String?
   themeColor     String?    @default("#e11d48")
+  bgColor        String?    @default("#ffffff")
+  cardColor      String?    @default("#ffffff")
+  textColor      String?    @default("#1a1a1a")
+  fontFamily     String?    @default("Inter")
+  cardLayout     String?    @default("grid")
+  bankAlias      String?
   restaurantId   Int
   restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -85,6 +91,8 @@ model Order {
   createdAt      DateTime    @default(now())
   items          OrderItem[]
   customerNotes  String?
+  paymentMethod  String?
+  paymentDetails String?
   restaurantId   Int
   restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

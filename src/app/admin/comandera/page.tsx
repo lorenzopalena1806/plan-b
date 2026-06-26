@@ -85,6 +85,21 @@ export default function ComanderaPage() {
                   
                   <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>{order.customerName}</h3>
                   
+                  {order.paymentMethod && (
+                    <div style={{ 
+                      marginBottom: '0.5rem', 
+                      padding: '0.5rem', 
+                      background: order.paymentMethod === 'TRANSFER' ? 'var(--color-green-light)' : 'rgba(0,0,0,0.03)', 
+                      border: `1px solid ${order.paymentMethod === 'TRANSFER' ? 'var(--color-green)' : 'var(--color-border)'}`,
+                      color: order.paymentMethod === 'TRANSFER' ? 'var(--color-green)' : 'var(--color-text)', 
+                      borderRadius: 'var(--border-radius-sm)', 
+                      fontSize: '0.875rem' 
+                    }}>
+                      <strong>Pago:</strong> {order.paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'}
+                      {order.paymentDetails && <div style={{ fontSize: '0.75rem', marginTop: '0.15rem' }}>{order.paymentDetails}</div>}
+                    </div>
+                  )}
+
                   {order.customerNotes && (
                     <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#fff3cd', color: '#856404', borderRadius: 'var(--border-radius-sm)', fontSize: '0.875rem' }}>
                       <strong>Nota:</strong> {order.customerNotes}

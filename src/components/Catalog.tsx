@@ -10,7 +10,7 @@ type ProductWithRelations = Product & {
   modifiers: ModifierOption[];
 };
 
-export default function Catalog({ products, whatsappNumber, isOpen, slug }: { products: ProductWithRelations[], whatsappNumber: string, isOpen: boolean, slug: string }) {
+export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '' }: { products: ProductWithRelations[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
   const [quantity, setQuantity] = useState(1);
@@ -103,7 +103,12 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug }: { pr
               {activeCategory === 'Promos' ? 'Promociones Destacadas' : activeCategory}
             </h2>
             
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+            <div className="grid" style={{ 
+              gridTemplateColumns: cardLayout === 'list' ? '1fr' : 'repeat(auto-fill, minmax(320px, 1fr))', 
+              gap: '1.5rem',
+              maxWidth: cardLayout === 'list' ? '800px' : '100%',
+              margin: cardLayout === 'list' ? '0 auto' : '0'
+            }}>
               {filteredProducts.map(product => (
                 <div 
                   key={product.id} 
@@ -162,7 +167,7 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug }: { pr
         )}
       </div>
 
-      <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} />
+      <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} />
 
       {/* Product Modal */}
       {selectedProduct && (

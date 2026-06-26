@@ -3,9 +3,11 @@
 import { useState } from 'react';
 import { useCartStore } from '@/store/cartStore';
 
-export default function Cart({ whatsappNumber, isOpen, slug }: { whatsappNumber: string, isOpen: boolean, slug: string }) {
+export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '' }: { whatsappNumber: string, isOpen: boolean, slug: string, bankAlias?: string }) {
   const { deliveryMethod, customerName, address, customerNotes, setDeliveryMethod, setCustomerName, setAddress, setCustomerNotes, removeItem, clearCart, getItems, getTotal } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+  const [cashAmount, setCashAmount] = useState('');
 
   const items = getItems(slug);
   const total = getTotal(slug);
@@ -34,6 +36,22 @@ export default function Cart({ whatsappNumber, isOpen, slug }: { whatsappNumber:
     setIsSubmitting(true);
     
     try {
+      let paymentDetails = '';
+      if (paymentMethod === 'CASH') {
+        if (cashAmount.trim()) {
+          const cashVal = parseFloat(cashAmount);
+          if (!isNaN(cashVal)) {
+            paymentDetails = `Paga con $${cashVal.toLocaleString()}${cashVal > total ? `. Vuelto: $${(cashVal - total).toLocaleString()}` : ''}`;
+          } else {
+            paymentDetails = 'Monto exacto';
+          }
+        } else {
+          paymentDetails = 'Monto exacto';
+        }
+      } else {
+        paymentDetails = `Alias: ${bankAlias}`;
+      }
+
       // 1. Guardar orden en DB
       const response = await fetch(`/api/public/${slug}/orders`, {
         method: 'POST',
@@ -44,7 +62,9 @@ export default function Cart({ whatsappNumber, isOpen, slug }: { whatsappNumber:
           address: deliveryMethod === 'DELIVERY' ? address : null,
           items,
           total,
-          customerNotes: customerNotes.trim() || null
+          customerNotes: customerNotes.trim() || null,
+          paymentMethod,
+          paymentDetails
         })
       });
 
@@ -57,6 +77,9 @@ export default function Cart({ whatsappNumber, isOpen, slug }: { whatsappNumber:
       msg += `*Cliente:* ${customerName}\n`;
       msg += `*Entrega:* ${deliveryMethod === 'TAKEAWAY' ? 'Retiro en local' : 'Delivery'}\n`;
       if (deliveryMethod === 'DELIVERY') msg += `*Dirección:* ${address}\n`;
+      
+      msg += `*Pago:* ${paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'}\n`;
+      if (paymentDetails) msg += `  > ${paymentDetails}\n`;
       
       msg += `\n*Detalle:*\n`;
       items.forEach(item => {
@@ -151,6 +174,50 @@ export default function Cart({ whatsappNumber, isOpen, slug }: { whatsappNumber:
             onChange={e => setAddress(e.target.value)}
             style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', outlineColor: 'var(--color-red-primary)' }}
           />
+        )}
+
+        {/* Payment Methods Selection */}
+        {bankAlias ? (
+          <div>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Método de Pago</label>
+            <div className="flex" style={{ gap: '0.5rem', marginBottom: '0.25rem' }}>
+              <button 
+                type="button"
+                className={`btn-outline ${paymentMethod === 'CASH' ? 'bg-red-light text-red' : ''}`} 
+                style={{ flex: 1, borderColor: paymentMethod === 'CASH' ? 'var(--color-red-primary)' : 'var(--color-border)', fontSize: '0.875rem', padding: '0.5rem' }}
+                onClick={() => setPaymentMethod('CASH')}
+              >
+                💵 Efectivo
+              </button>
+              <button 
+                type="button"
+                className={`btn-outline ${paymentMethod === 'TRANSFER' ? 'bg-red-light text-red' : ''}`} 
+                style={{ flex: 1, borderColor: paymentMethod === 'TRANSFER' ? 'var(--color-red-primary)' : 'var(--color-border)', fontSize: '0.875rem', padding: '0.5rem' }}
+                onClick={() => setPaymentMethod('TRANSFER')}
+              >
+                📱 Transferencia
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Specific payment details inputs */}
+        {paymentMethod === 'CASH' && bankAlias && (
+          <input 
+            type="number" 
+            placeholder="¿Con cuánto vas a pagar? (opcional)" 
+            value={cashAmount} 
+            onChange={e => setCashAmount(e.target.value)}
+            style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', outlineColor: 'var(--color-red-primary)' }}
+          />
+        )}
+
+        {paymentMethod === 'TRANSFER' && bankAlias && (
+          <div style={{ padding: '0.75rem', background: 'var(--color-green-light)', border: '1px solid var(--color-green)', borderRadius: 'var(--border-radius-sm)', fontSize: '0.875rem' }}>
+            <p style={{ fontWeight: 'bold', color: 'var(--color-green)' }}>Datos para la transferencia:</p>
+            <p style={{ marginTop: '0.25rem' }}>Alias: <strong style={{ textDecoration: 'underline' }}>{bankAlias}</strong></p>
+            <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Realiza la transferencia y envía el comprobante por WhatsApp al confirmar.</p>
+          </div>
         )}
 
         <textarea 

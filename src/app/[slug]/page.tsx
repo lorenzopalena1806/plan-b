@@ -56,12 +56,52 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     }
   }
 
+  const themeColor = config.themeColor || '#e11d48';
+  const bgColor = config.bgColor || '#ffffff';
+  const cardColor = config.cardColor || '#ffffff';
+  const textColor = config.textColor || '#1a1a1a';
+  const fontFamily = config.fontFamily || 'Inter';
+
+  // Simple brightness calculation or keyword matching for dark themes
+  const isDarkBg = bgColor === '#121212' || bgColor === '#1a1a1a' || bgColor === '#000000' || 
+                   (bgColor.startsWith('#') && parseInt(bgColor.substring(1, 3), 16) < 120);
+
+  const borderVal = isDarkBg ? '#2d2d2d' : '#eeeeee';
+  const textLightVal = isDarkBg ? '#9ca3af' : '#666666';
+  const redLightVal = isDarkBg ? '#3b1216' : '#ffebec';
+  const greenLightVal = isDarkBg ? '#062923' : '#e6f7f5';
+
   const cssVariables = {
-    '--color-red-primary': config.themeColor || '#e11d48',
+    '--color-bg': bgColor,
+    '--color-card': cardColor,
+    '--color-text': textColor,
+    '--color-text-light': textLightVal,
+    '--color-border': borderVal,
+    '--color-red-primary': themeColor,
+    '--color-red-light': redLightVal,
+    '--color-green-light': greenLightVal,
+    '--font-sans': fontFamily === 'Inter' ? `'Inter', system-ui, -apple-system, sans-serif` : `'${fontFamily}', sans-serif`,
   } as React.CSSProperties;
 
+  let fontLink = '';
+  if (fontFamily === 'Poppins') {
+    fontLink = 'https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap';
+  } else if (fontFamily === 'Montserrat') {
+    fontLink = 'https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap';
+  } else if (fontFamily === 'Playfair Display') {
+    fontLink = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap';
+  }
+
   return (
-    <div style={cssVariables}>
+    <div style={{ ...cssVariables, backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh', fontFamily: 'var(--font-sans)' }}>
+      {fontLink && (
+        <>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href={fontLink} rel="stylesheet" />
+        </>
+      )}
+
       <header style={{ padding: '1.5rem 0', textAlign: 'center', borderBottom: '1px solid var(--color-border)', marginBottom: '2rem' }}>
         {config.logoUrl ? (
           <img src={config.logoUrl} alt={restaurant.name} style={{ maxHeight: '120px', objectFit: 'contain', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
@@ -77,7 +117,16 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
         </div>
       )}
 
-      <Catalog products={products} whatsappNumber={config.whatsappNumber} isOpen={isOpen} slug={slug} />
+      <div className="container" style={{ paddingBottom: '3rem' }}>
+        <Catalog 
+          products={products} 
+          whatsappNumber={config.whatsappNumber} 
+          isOpen={isOpen} 
+          slug={slug} 
+          cardLayout={config.cardLayout || 'grid'} 
+          bankAlias={config.bankAlias || ''} 
+        />
+      </div>
     </div>
   );
 }
