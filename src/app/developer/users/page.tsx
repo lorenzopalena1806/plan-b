@@ -11,6 +11,7 @@ interface User {
   id: number;
   username: string;
   role: string;
+  rawPassword?: string | null;
   restaurantId: number | null;
   restaurant?: Restaurant;
 }
@@ -26,6 +27,11 @@ export default function DeveloperUsersPage() {
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState<Record<number, boolean>>({});
+
+  const togglePasswordVisibility = (id: number) => {
+    setShowPassword(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
     fetchData();
@@ -166,6 +172,7 @@ export default function DeveloperUsersPage() {
             <tr style={{ backgroundColor: 'var(--color-border)' }}>
               <th style={{ padding: '1rem' }}>ID</th>
               <th style={{ padding: '1rem' }}>Usuario</th>
+              <th style={{ padding: '1rem' }}>Contraseña</th>
               <th style={{ padding: '1rem' }}>Rol</th>
               <th style={{ padding: '1rem' }}>Local Asignado</th>
               <th style={{ padding: '1rem', textAlign: 'right' }}>Acciones</th>
@@ -183,6 +190,22 @@ export default function DeveloperUsersPage() {
                 <tr key={u.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: '1rem' }}>{u.id}</td>
                   <td style={{ padding: '1rem', fontWeight: 'bold' }}>{u.username}</td>
+                  <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
+                    {u.rawPassword ? (
+                      <div className="flex items-center" style={{ gap: '0.5rem' }}>
+                        <span>{showPassword[u.id] ? u.rawPassword : '••••••'}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => togglePasswordVisibility(u.id)}
+                          style={{ fontSize: '0.75rem', color: 'var(--color-red-primary)', textDecoration: 'underline', padding: 0 }}
+                        >
+                          {showPassword[u.id] ? 'Ocultar' : 'Mostrar'}
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-muted" style={{ fontStyle: 'italic', fontSize: '0.8rem' }}>Sin registrar</span>
+                    )}
+                  </td>
                   <td style={{ padding: '1rem' }}>
                     <span style={{ 
                       padding: '0.25rem 0.5rem', 

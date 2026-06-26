@@ -42,6 +42,7 @@ export async function POST(request: Request) {
       data: {
         username,
         password: hashedPassword,
+        rawPassword: password,
         role: role || 'ADMIN',
         restaurantId: restaurantId ? parseInt(restaurantId) : null,
       },

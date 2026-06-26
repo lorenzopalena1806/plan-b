@@ -25,6 +25,7 @@ model User {
   id           Int         @id @default(autoincrement())
   username     String      @unique
   password     String
+  rawPassword  String?
   role         String      @default("ADMIN") // SUPERADMIN o ADMIN
   restaurantId Int?
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)

@@ -20,7 +20,8 @@ export async function GET() {
       select: {
         id: true,
         username: true,
-        role: true
+        role: true,
+        rawPassword: true
       },
       orderBy: { id: 'desc' }
     });
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
       data: {
         username: trimmedUsername,
         password: hashedPassword,
+        rawPassword: password,
         role: role === 'ADMIN' ? 'ADMIN' : 'STAFF',
         restaurantId: session.user.restaurantId
       }

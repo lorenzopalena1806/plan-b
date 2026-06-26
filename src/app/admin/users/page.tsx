@@ -7,6 +7,7 @@ interface User {
   id: number;
   username: string;
   role: string;
+  rawPassword?: string | null;
 }
 
 export default function AdminUsersPage() {
@@ -18,6 +19,11 @@ export default function AdminUsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState<Record<number, boolean>>({});
+
+  const togglePasswordVisibility = (id: number) => {
+    setShowPassword(prev => ({ ...prev, [id]: !prev[id] }));
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -169,17 +175,31 @@ export default function AdminUsersPage() {
             {users.map(u => (
               <div key={u.id} className="flex justify-between items-center" style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--color-border)' }}>
                 <div>
-                  <span className="text-bold" style={{ fontSize: '1rem', marginRight: '0.75rem' }}>{u.username}</span>
-                  <span style={{ 
-                    padding: '0.2rem 0.5rem', 
-                    borderRadius: '4px', 
-                    fontSize: '0.75rem', 
-                    fontWeight: 'bold',
-                    backgroundColor: u.role === 'ADMIN' ? '#dbeafe' : '#f3f4f6',
-                    color: u.role === 'ADMIN' ? '#1e40af' : '#4b5563'
-                  }}>
-                    {u.role === 'ADMIN' ? 'Admin / Dueño' : 'Personal'}
-                  </span>
+                  <div className="flex items-center" style={{ gap: '0.75rem' }}>
+                    <span className="text-bold" style={{ fontSize: '1rem' }}>{u.username}</span>
+                    <span style={{ 
+                      padding: '0.2rem 0.5rem', 
+                      borderRadius: '4px', 
+                      fontSize: '0.75rem', 
+                      fontWeight: 'bold',
+                      backgroundColor: u.role === 'ADMIN' ? '#dbeafe' : '#f3f4f6',
+                      color: u.role === 'ADMIN' ? '#1e40af' : '#4b5563'
+                    }}>
+                      {u.role === 'ADMIN' ? 'Admin / Dueño' : 'Personal'}
+                    </span>
+                  </div>
+                  {u.rawPassword && (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', marginTop: '0.25rem', fontFamily: 'monospace' }}>
+                      Clave: {showPassword[u.id] ? u.rawPassword : '••••••'}{' '}
+                      <button
+                        type="button"
+                        onClick={() => togglePasswordVisibility(u.id)}
+                        style={{ fontSize: '0.75rem', color: 'var(--color-red-primary)', textDecoration: 'underline', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
+                      >
+                        {showPassword[u.id] ? 'Ocultar' : 'Mostrar'}
+                      </button>
+                    </div>
+                  )}
                 </div>
                 
                 <button
