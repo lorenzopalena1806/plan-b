@@ -5,85 +5,108 @@ import { Order, OrderItem } from '@prisma/client';
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
+const generateChimeDataUrl = () => {
+  if (typeof window === 'undefined') return '';
+  try {
+    const sampleRate = 11025;
+    const duration = 1.0;
+    const numSamples = sampleRate * duration;
+    const buffer = new Uint8Array(44 + numSamples);
+
+    // RIFF Header
+    buffer[0] = 0x52; buffer[1] = 0x49; buffer[2] = 0x46; buffer[3] = 0x46; // "RIFF"
+    const fileSize = 36 + numSamples;
+    buffer[4] = fileSize & 0xff;
+    buffer[5] = (fileSize >> 8) & 0xff;
+    buffer[6] = (fileSize >> 16) & 0xff;
+    buffer[7] = (fileSize >> 24) & 0xff;
+    buffer[8] = 0x57; buffer[9] = 0x41; buffer[10] = 0x56; buffer[11] = 0x45; // "WAVE"
+
+    // Format Chunk
+    buffer[12] = 0x66; buffer[13] = 0x6d; buffer[14] = 0x74; buffer[15] = 0x20; // "fmt "
+    buffer[16] = 16; buffer[17] = 0; buffer[18] = 0; buffer[19] = 0; // Subchunk1Size = 16
+    buffer[20] = 1; buffer[21] = 0; // AudioFormat = 1 (PCM)
+    buffer[22] = 1; buffer[23] = 0; // NumChannels = 1 (Mono)
+    
+    // SampleRate = 11025
+    buffer[24] = sampleRate & 0xff;
+    buffer[25] = (sampleRate >> 8) & 0xff;
+    buffer[26] = (sampleRate >> 16) & 0xff;
+    buffer[27] = (sampleRate >> 24) & 0xff;
+    
+    // ByteRate = 11025
+    buffer[28] = sampleRate & 0xff;
+    buffer[29] = (sampleRate >> 8) & 0xff;
+    buffer[30] = (sampleRate >> 16) & 0xff;
+    buffer[31] = (sampleRate >> 24) & 0xff;
+    
+    buffer[32] = 1; buffer[33] = 0; // BlockAlign = 1
+    buffer[34] = 8; buffer[35] = 0; // BitsPerSample = 8
+
+    // Data Chunk
+    buffer[36] = 0x64; buffer[37] = 0x61; buffer[38] = 0x74; buffer[39] = 0x61; // "data"
+    buffer[40] = numSamples & 0xff;
+    buffer[41] = (numSamples >> 8) & 0xff;
+    buffer[42] = (numSamples >> 16) & 0xff;
+    buffer[43] = (numSamples >> 24) & 0xff;
+
+    // Generate three notes (C5, E5, G5) sequentially with linear decay
+    const noteDuration = duration / 3;
+    for (let i = 0; i < numSamples; i++) {
+      const t = i / sampleRate;
+      let freq = 0;
+      let noteVolume = 0.25; // Good volume level
+      
+      if (t < noteDuration) {
+        freq = 523.25; // C5
+        noteVolume *= (1 - t / noteDuration);
+      } else if (t < noteDuration * 2) {
+        freq = 659.25; // E5
+        noteVolume *= (1 - (t - noteDuration) / noteDuration);
+      } else {
+        freq = 783.99; // G5
+        noteVolume *= (1 - (t - noteDuration * 2) / noteDuration);
+      }
+
+      const angle = 2 * Math.PI * freq * t;
+      const sample = Math.sin(angle);
+      buffer[44 + i] = Math.round(128 + sample * noteVolume * 127);
+    }
+
+    let binary = '';
+    const len = buffer.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(buffer[i]);
+    }
+    return `data:audio/wav;base64,${window.btoa(binary)}`;
+  } catch (e) {
+    console.error('Failed to generate chime WAV:', e);
+    return '';
+  }
+};
+
 export default function ComanderaPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
-  const audioCtxRef = useRef<any>(null);
-
-  const initAudio = () => {
-    if (typeof window === 'undefined') return;
-    try {
-      if (!audioCtxRef.current) {
-        const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
-        if (AudioCtx) {
-          audioCtxRef.current = new AudioCtx();
-        }
-      }
-      const audioCtx = audioCtxRef.current;
-      if (audioCtx) {
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume().then(() => {
-            setSoundEnabled(true);
-          });
-        } else if (audioCtx.state === 'running') {
-          setSoundEnabled(true);
-        }
-      }
-    } catch (e) {
-      console.error('AudioContext initialization error:', e);
-    }
-  };
-
-  const playChime = (audioCtx: AudioContext) => {
-    const playNote = (frequency: number, startTime: number, duration: number) => {
-      const oscillator = audioCtx.createOscillator();
-      const gainNode = audioCtx.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.value = frequency;
-      
-      // Smooth gain ramp to avoid speaker clicks
-      gainNode.gain.setValueAtTime(0, startTime);
-      gainNode.gain.linearRampToValueAtTime(0.2, startTime + 0.05); // slightly louder
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioCtx.destination);
-      
-      oscillator.start(startTime);
-      oscillator.stop(startTime + duration);
-    };
-
-    const now = audioCtx.currentTime;
-    playNote(523.25, now, 0.40); // C5
-    playNote(659.25, now + 0.12, 0.40); // E5
-    playNote(783.99, now + 0.24, 0.60); // G5
-  };
+  const chimeAudioUrlRef = useRef<string>('');
 
   const triggerChime = () => {
     if (typeof window === 'undefined') return;
     try {
-      if (!audioCtxRef.current) {
-        const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
-        if (AudioCtx) {
-          audioCtxRef.current = new AudioCtx();
-        }
+      if (!chimeAudioUrlRef.current) {
+        chimeAudioUrlRef.current = generateChimeDataUrl();
       }
-      const audioCtx = audioCtxRef.current;
-      if (!audioCtx) return;
-
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume().then(() => {
-          playChime(audioCtx);
-          setSoundEnabled(true);
-        }).catch(err => {
-          console.error('Error resuming AudioContext:', err);
-        });
-      } else {
-        playChime(audioCtx);
+      const url = chimeAudioUrlRef.current;
+      if (!url) return;
+      
+      const audio = new Audio(url);
+      audio.play().then(() => {
         setSoundEnabled(true);
-      }
+      }).catch(err => {
+        console.error('HTML5 Audio playback failed:', err);
+      });
     } catch (e) {
       console.error('Web Audio API chime error:', e);
     }
@@ -109,7 +132,7 @@ export default function ComanderaPage() {
     
     // Auto-unlock AudioContext on first page interaction
     const unlock = () => {
-      initAudio();
+      triggerChime();
       window.removeEventListener('click', unlock);
       window.removeEventListener('keydown', unlock);
       window.removeEventListener('touchstart', unlock);
