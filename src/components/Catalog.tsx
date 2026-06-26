@@ -204,7 +204,7 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
                           onChange={() => toggleModifier(mod)} 
                           style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
                         />
-                        <span>{mod.name}</span>
+                        <span>{mod.name} {mod.description ? `(${mod.description})` : ''}</span>
                       </label>
                     ))}
                   </div>
@@ -224,7 +224,7 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
                             onChange={() => toggleModifier(mod)} 
                             style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-green)' }}
                           />
-                          <span>{mod.name}</span>
+                          <span>{mod.name} {mod.description ? `(${mod.description})` : ''}</span>
                         </div>
                         <span className="text-green text-bold">+${mod.price}</span>
                       </label>

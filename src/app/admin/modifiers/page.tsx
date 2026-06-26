@@ -6,6 +6,7 @@ import Link from 'next/link';
 interface ModifierOption {
   id: number;
   name: string;
+  description: string | null;
   price: number;
   type: string; // 'FREE' | 'PAID'
 }
@@ -13,10 +14,12 @@ interface ModifierOption {
 export default function ModifiersPage() {
   const [modifiers, setModifiers] = useState<ModifierOption[]>([]);
   const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
   const [price, setPrice] = useState(0);
   const [type, setType] = useState('FREE');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingModifier, setEditingModifier] = useState<ModifierOption | null>(null);
 
   useEffect(() => {
     fetchModifiers();
@@ -42,29 +45,50 @@ export default function ModifiersPage() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch('/api/modifiers', {
-        method: 'POST',
+      const payload = {
+        name: name.trim(),
+        description: description.trim() || null,
+        price: type === 'FREE' ? 0 : price,
+        type
+      };
+
+      const url = editingModifier ? `/api/modifiers/${editingModifier.id}` : '/api/modifiers';
+      const method = editingModifier ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: name.trim(),
-          price: type === 'FREE' ? 0 : price,
-          type
-        })
+        body: JSON.stringify(payload)
       });
 
       if (res.ok) {
-        setName('');
-        setPrice(0);
-        setType('FREE');
+        handleCancelEdit();
         fetchModifiers();
       } else {
-        alert('Error al agregar el modificador');
+        alert(editingModifier ? 'Error al actualizar el modificador' : 'Error al agregar el modificador');
       }
     } catch (error) {
       console.error(error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStartEdit = (mod: ModifierOption) => {
+    setEditingModifier(mod);
+    setName(mod.name);
+    setDescription(mod.description || '');
+    setType(mod.type);
+    setPrice(mod.price);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingModifier(null);
+    setName('');
+    setDescription('');
+    setType('FREE');
+    setPrice(0);
   };
 
   const handleDelete = async (id: number) => {
@@ -74,6 +98,9 @@ export default function ModifiersPage() {
       const res = await fetch(`/api/modifiers/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setModifiers(modifiers.filter(m => m.id !== id));
+        if (editingModifier?.id === id) {
+          handleCancelEdit();
+        }
       } else {
         alert('Error al eliminar');
       }
@@ -92,7 +119,9 @@ export default function ModifiersPage() {
       </header>
 
       <form className="card" onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Nuevo Modificador</h2>
+        <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>
+          {editingModifier ? `Editar Modificador: ${editingModifier.name}` : 'Nuevo Modificador'}
+        </h2>
         <div className="grid" style={{ gridTemplateColumns: '2fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
             <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Nombre</label>
@@ -133,9 +162,28 @@ export default function ModifiersPage() {
             )}
           </div>
         </div>
-        <button type="submit" className="btn-primary" style={{ width: '100%' }} disabled={isSubmitting}>
-          {isSubmitting ? 'Guardando...' : 'Crear Modificador'}
-        </button>
+        
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Descripción Corta (Opcional)</label>
+          <input
+            type="text"
+            placeholder="Ej: Fundido y cremoso, Sin sal, Doble porción"
+            value={description}
+            onChange={e => setDescription(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+          />
+        </div>
+
+        <div className="flex" style={{ gap: '1rem' }}>
+          <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={isSubmitting}>
+            {isSubmitting ? 'Guardando...' : editingModifier ? 'Guardar Cambios' : 'Crear Modificador'}
+          </button>
+          {editingModifier && (
+            <button type="button" className="btn-outline" onClick={handleCancelEdit}>
+              Cancelar
+            </button>
+          )}
+        </div>
       </form>
 
       <div className="card">
@@ -144,18 +192,34 @@ export default function ModifiersPage() {
           {modifiers.map(mod => (
             <div key={mod.id} className="flex justify-between items-center" style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--color-border)' }}>
               <div>
-                <span className="text-bold" style={{ fontSize: '1rem' }}>{mod.name}</span>
-                <span className={`status-badge ${mod.type === 'FREE' ? 'bg-red-light text-red' : 'status-ready'}`} style={{ marginLeft: '0.75rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
-                  {mod.type === 'FREE' ? 'Sin Costo' : `+$${mod.price}`}
-                </span>
+                <div className="flex items-center">
+                  <span className="text-bold" style={{ fontSize: '1rem' }}>{mod.name}</span>
+                  <span className={`status-badge ${mod.type === 'FREE' ? 'bg-red-light text-red' : 'status-ready'}`} style={{ marginLeft: '0.75rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
+                    {mod.type === 'FREE' ? 'Sin Costo' : `+$${mod.price}`}
+                  </span>
+                </div>
+                {mod.description && (
+                  <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                    {mod.description}
+                  </div>
+                )}
               </div>
-              <button
-                onClick={() => handleDelete(mod.id)}
-                className="text-red text-bold"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
-              >
-                Eliminar
-              </button>
+              <div className="flex" style={{ gap: '1rem' }}>
+                <button
+                  onClick={() => handleStartEdit(mod)}
+                  className="text-bold"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--color-text-light)' }}
+                >
+                  Editar
+                </button>
+                <button
+                  onClick={() => handleDelete(mod.id)}
+                  className="text-red text-bold"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
           ))}
           {modifiers.length === 0 && <p className="text-muted text-center">No hay modificadores cargados.</p>}

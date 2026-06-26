@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { name, price, type } = data;
+    const { name, price, type, description } = data;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
     const modifier = await prisma.modifierOption.create({
       data: { 
         name: name.trim(),
+        description: description ? description.trim() : null,
         price: price ? parseFloat(price) : 0,
         type: type || 'FREE',
         restaurantId: session.user.restaurantId

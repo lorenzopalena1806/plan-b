@@ -11,6 +11,7 @@ interface Category {
 interface ModifierOption {
   id: number;
   name: string;
+  description: string | null;
   price: number;
   type: string;
 }
@@ -321,7 +322,7 @@ export default function ProductsPage() {
                 <ul style={{ paddingLeft: '1rem', margin: 0, listStyleType: 'circle' }}>
                   {product.modifiers.map(mod => (
                     <li key={mod.id} className={mod.type === 'FREE' ? 'text-red' : 'text-green'}>
-                      {mod.name} {mod.type === 'PAID' ? `(+$${mod.price})` : '(Gratis)'}
+                      {mod.name} {mod.description ? `(${mod.description})` : ''} {mod.type === 'PAID' ? `(+$${mod.price})` : '(Gratis)'}
                     </li>
                   ))}
                   {product.modifiers.length === 0 && <span style={{ color: '#aaa', fontSize: '0.75rem' }}>Ninguno</span>}

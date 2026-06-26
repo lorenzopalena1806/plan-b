@@ -78,6 +78,7 @@ model Product {
 model ModifierOption {
   id           Int        @id @default(autoincrement())
   name         String
+  description  String?
   price        Float      @default(0)
   type         String     @default("FREE") // "FREE" o "PAID"
   products     Product[]
