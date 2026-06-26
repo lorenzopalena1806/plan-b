@@ -19,6 +19,7 @@ export default function DeveloperDashboard() {
   const [isSavingSupport, setIsSavingSupport] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [pendingDates, setPendingDates] = useState<Record<number, string>>({});
 
   useEffect(() => {
     fetchRestaurants();
@@ -111,7 +112,14 @@ export default function DeveloperDashboard() {
         body: JSON.stringify({ subscriptionEnd: dateStr ? `${dateStr}T23:59:59.000Z` : null }),
       });
 
-      if (!res.ok) {
+      if (res.ok) {
+        // Clear pending date state upon success
+        setPendingDates(prev => {
+          const next = { ...prev };
+          delete next[id];
+          return next;
+        });
+      } else {
         const errData = await res.json().catch(() => ({}));
         alert(`Error al actualizar suscripción: ${res.status} ${errData.error || ''}`);
         fetchRestaurants();
@@ -282,13 +290,40 @@ export default function DeveloperDashboard() {
                   <td style={{ padding: '1rem' }} className="text-muted">
                     {new Date(rest.createdAt).toLocaleDateString()}
                   </td>
-                  <td style={{ padding: '1rem' }}>
-                    <input 
-                      type="date"
-                      value={rest.subscriptionEnd ? new Date(rest.subscriptionEnd).toISOString().split('T')[0] : ''}
-                      onChange={e => handleUpdateSubscription(rest.id, e.target.value)}
-                      style={{ padding: '0.4rem', border: '1px solid var(--color-border)', borderRadius: '4px', fontFamily: 'inherit' }}
-                    />
+                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                    {(() => {
+                      const savedDate = rest.subscriptionEnd ? new Date(rest.subscriptionEnd).toISOString().split('T')[0] : '';
+                      const pendingDate = pendingDates[rest.id];
+                      const displayValue = pendingDate !== undefined ? pendingDate : savedDate;
+                      const hasChanged = pendingDate !== undefined && pendingDate !== savedDate;
+                      
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                          <input 
+                            type="date"
+                            value={displayValue}
+                            onChange={e => setPendingDates({ ...pendingDates, [rest.id]: e.target.value })}
+                            style={{ padding: '0.4rem', border: '1px solid var(--color-border)', borderRadius: '4px', fontFamily: 'inherit' }}
+                          />
+                          {hasChanged && (
+                            <button
+                              onClick={() => handleUpdateSubscription(rest.id, pendingDate)}
+                              className="btn-primary"
+                              style={{
+                                padding: '0.3rem 0.5rem',
+                                marginLeft: '0.5rem',
+                                fontSize: '0.75rem',
+                                width: 'auto',
+                                backgroundColor: 'var(--color-green)',
+                                borderColor: 'var(--color-green)'
+                              }}
+                            >
+                              Confirmar
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'right' }}>
                     {(() => {

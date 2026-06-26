@@ -10,19 +10,26 @@ export default function ComanderaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  const audioCtxRef = useRef<any>(null);
 
   const initAudio = () => {
+    if (typeof window === 'undefined') return;
     try {
       if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          audioCtxRef.current = new AudioCtx();
+        }
       }
-      if (audioCtxRef.current.state === 'suspended') {
-        audioCtxRef.current.resume().then(() => {
+      const audioCtx = audioCtxRef.current;
+      if (audioCtx) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().then(() => {
+            setSoundEnabled(true);
+          });
+        } else if (audioCtx.state === 'running') {
           setSoundEnabled(true);
-        });
-      } else if (audioCtxRef.current.state === 'running') {
-        setSoundEnabled(true);
+        }
       }
     } catch (e) {
       console.error('AudioContext initialization error:', e);
@@ -30,11 +37,17 @@ export default function ComanderaPage() {
   };
 
   const triggerChime = () => {
+    if (typeof window === 'undefined') return;
     try {
       if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioCtx = (window as any).AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          audioCtxRef.current = new AudioCtx();
+        }
       }
       const audioCtx = audioCtxRef.current;
+      if (!audioCtx) return;
+
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
