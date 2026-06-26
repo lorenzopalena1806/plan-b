@@ -56,10 +56,18 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     }
   }
 
+  const cssVariables = {
+    '--color-red-primary': config.themeColor || '#e11d48',
+  } as React.CSSProperties;
+
   return (
-    <div>
+    <div style={cssVariables}>
       <header style={{ padding: '1.5rem 0', textAlign: 'center', borderBottom: '1px solid var(--color-border)', marginBottom: '2rem' }}>
-        <h1 className="text-red" style={{ fontSize: '2rem', letterSpacing: '-1px', textTransform: 'uppercase' }}>{restaurant.name}</h1>
+        {config.logoUrl ? (
+          <img src={config.logoUrl} alt={restaurant.name} style={{ maxHeight: '120px', objectFit: 'contain', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
+        ) : (
+          <h1 className="text-red" style={{ fontSize: '2rem', letterSpacing: '-1px', textTransform: 'uppercase' }}>{restaurant.name}</h1>
+        )}
         <p className="text-muted">Delivery & Takeaway</p>
       </header>
 

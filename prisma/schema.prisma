@@ -37,6 +37,8 @@ model Config {
   closeTime      String     // HH:MM format
   isOpenOverride Boolean    @default(true) 
   isSuspended    Boolean    @default(false)
+  logoUrl        String?
+  themeColor     String?    @default("#e11d48")
   restaurantId   Int
   restaurant     Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

@@ -7,6 +7,7 @@ export default function SettingsPage() {
   const [config, setConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     fetch('/api/config')
@@ -38,6 +39,34 @@ export default function SettingsPage() {
     }
   };
 
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (res.ok) {
+        const result = await res.json();
+        setConfig((prev: any) => ({ ...prev, logoUrl: result.url }));
+      } else {
+        alert('Error al subir la imagen');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Error en la conexión al subir archivo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando...</div>;
 
   return (
@@ -59,7 +88,38 @@ export default function SettingsPage() {
           />
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
+          <div>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Logo del Local (Opcional)</label>
+            {config?.logoUrl && (
+              <img src={config.logoUrl} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', marginBottom: '1rem', display: 'block', borderRadius: 'var(--border-radius-sm)' }} />
+            )}
+            <input 
+              type="file" 
+              accept="image/*"
+              onChange={handleUploadFile}
+              disabled={isUploading}
+              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+            />
+            {isUploading && <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Subiendo...</p>}
+          </div>
+
+          <div>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Color Principal de tu Marca</label>
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <input 
+                type="color" 
+                value={config?.themeColor || '#e11d48'} 
+                onChange={e => setConfig({...config, themeColor: e.target.value})}
+                style={{ width: '60px', height: '50px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+              />
+              <span className="text-muted font-mono">{config?.themeColor || '#e11d48'}</span>
+            </div>
+            <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Este color se usará en los botones y textos del menú público.</p>
+          </div>
+        </div>
+
+        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
           <div>
             <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Horario de Apertura</label>
             <input 

@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 
-  const { whatsappNumber, openTime, closeTime, isOpenOverride } = await request.json();
+  const { whatsappNumber, openTime, closeTime, isOpenOverride, logoUrl, themeColor } = await request.json();
 
   const config = await prisma.config.findFirst({
     where: { restaurantId: session.user.restaurantId }
@@ -41,12 +41,12 @@ export async function POST(request: Request) {
   if (config) {
     const updated = await prisma.config.update({
       where: { id: config.id },
-      data: { whatsappNumber, openTime, closeTime, isOpenOverride },
+      data: { whatsappNumber, openTime, closeTime, isOpenOverride, logoUrl, themeColor },
     });
     return NextResponse.json(updated);
   } else {
     const created = await prisma.config.create({
-      data: { whatsappNumber, openTime, closeTime, isOpenOverride, restaurantId: session.user.restaurantId },
+      data: { whatsappNumber, openTime, closeTime, isOpenOverride, logoUrl, themeColor, restaurantId: session.user.restaurantId },
     });
     return NextResponse.json(created);
   }
