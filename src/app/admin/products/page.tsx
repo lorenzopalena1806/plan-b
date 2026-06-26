@@ -71,10 +71,7 @@ export default function ProductsPage() {
     }
   };
 
-    } finally {
-      setIsUploading(false);
-    }
-  };
+
 
   const toggleModifierSelection = (id: number) => {
     if (selectedModifierIds.includes(id)) {
