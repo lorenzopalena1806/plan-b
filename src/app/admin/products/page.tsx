@@ -71,29 +71,6 @@ export default function ProductsPage() {
     }
   };
 
-  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        setImageUrl(result.url);
-      } else {
-        alert('Error al subir la imagen');
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Error en la conexión al subir archivo');
     } finally {
       setIsUploading(false);
     }
@@ -240,25 +217,20 @@ export default function ProductsPage() {
             {/* Product Image Fields */}
             <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#fafafa' }}>
               <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Imagen del Producto</label>
-              <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'center' }}>
-                <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)', display: 'block', marginBottom: '0.25rem' }}>Opción A: Pegar URL de imagen (Ej. de Google)</span>
-                  <input type="text" value={imageUrl} onChange={e => setImageUrl(e.target.value)} placeholder="https://ejemplo.com/foto.jpg" style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }} />
-                </div>
-                <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)', display: 'block', marginBottom: '0.25rem' }}>Opción B: Subir archivo de imagen local</span>
-                  <input type="file" accept="image/*" onChange={handleUploadFile} style={{ display: 'block' }} />
-                  {isUploading && <span style={{ fontSize: '0.75rem', color: 'var(--color-red-primary)' }} className="animate-pulse">Subiendo archivo...</span>}
-                </div>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>URL de la Imagen (Opcional)</label>
+                {imageUrl && (
+                  <img src={imageUrl} alt="Preview" style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: 'var(--border-radius-sm)', marginBottom: '1rem', display: 'block' }} />
+                )}
+                <input 
+                  type="url" 
+                  placeholder="https://ejemplo.com/hamburguesa.jpg"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                />
               </div>
-              {imageUrl && (
-                <div style={{ marginTop: '1rem' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)', display: 'block', marginBottom: '0.25rem' }}>Previsualización:</span>
-                  <img src={imageUrl} alt="Preview" style={{ height: '80px', objectFit: 'cover', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--color-border)' }} />
-                </div>
-              )}
             </div>
-          </div>
 
           {/* Modifier selection checklist */}
           <div style={{ marginBottom: '1.5rem' }}>

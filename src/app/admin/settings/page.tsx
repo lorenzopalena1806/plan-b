@@ -39,34 +39,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (res.ok) {
-        const result = await res.json();
-        setConfig((prev: any) => ({ ...prev, logoUrl: result.url }));
-      } else {
-        alert('Error al subir la imagen');
-      }
-    } catch (error) {
-      console.error(error);
-      alert('Error en la conexión al subir archivo');
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando...</div>;
 
   return (
@@ -90,18 +62,18 @@ export default function SettingsPage() {
 
         <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
           <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Logo del Local (Opcional)</label>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>URL del Logo (Opcional)</label>
             {config?.logoUrl && (
               <img src={config.logoUrl} alt="Logo" style={{ maxHeight: '80px', objectFit: 'contain', marginBottom: '1rem', display: 'block', borderRadius: 'var(--border-radius-sm)' }} />
             )}
             <input 
-              type="file" 
-              accept="image/*"
-              onChange={handleUploadFile}
-              disabled={isUploading}
+              type="url" 
+              placeholder="https://ejemplo.com/mi-logo.png"
+              value={config?.logoUrl || ''}
+              onChange={e => setConfig({...config, logoUrl: e.target.value})}
               style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
             />
-            {isUploading && <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Subiendo...</p>}
+            <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Pega el enlace de internet de tu imagen (ej: Imgur, Facebook, etc).</p>
           </div>
 
           <div>
