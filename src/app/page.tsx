@@ -321,12 +321,12 @@ export default function LandingPage() {
 
       {/* Navigation */}
       <nav className="glass-nav">
-        <div className="nav-logo">
-          Polo<span>sandia</span>
+        <div className="nav-logo" style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/logo.png" alt="Polosandia" style={{ height: '40px', objectFit: 'contain' }} />
         </div>
         <div>
           <Link href="/login" className="btn-secondary" style={{ padding: '0.6rem 1.5rem', fontSize: '0.9rem', borderRadius: '8px' }}>
-            Ingresar al Sistema
+            Ingresar
           </Link>
         </div>
       </nav>
@@ -337,7 +337,19 @@ export default function LandingPage() {
         <div className="hero-bg-blob-2"></div>
         
         <div className="hero-content">
-          <div className="badge fade-up-1">Plataforma Gastronómica 2.0</div>
+          <img 
+            src="/logo.png" 
+            alt="Polosandia Logo" 
+            className="fade-up-1"
+            style={{ 
+              width: '100%', 
+              maxWidth: '500px', 
+              height: 'auto', 
+              margin: '0 auto 2rem auto', 
+              display: 'block',
+              filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))'
+            }} 
+          />
           <h1 className="hero-title fade-up-2">
             Tu restaurante en<br/>
             <span>piloto automático.</span>
@@ -346,11 +358,8 @@ export default function LandingPage() {
             El sistema definitivo para gastronómicos. Carta digital interactiva, recepción de pedidos por WhatsApp, comandera inteligente y analíticas avanzadas. <strong>Cero comisiones por venta.</strong>
           </p>
           <div className="fade-up-3" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link href="/lo-del-pela" className="btn-glow">
-              Ver Menú de Prueba
-            </Link>
-            <Link href="/login" className="btn-secondary">
-              Probar Sistema Admin
+            <Link href="/login" className="btn-glow">
+              Ingresar al Sistema
             </Link>
           </div>
         </div>
@@ -407,8 +416,8 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer>
-        <div className="nav-logo" style={{ marginBottom: '1rem' }}>
-          Polo<span>sandia</span>
+        <div className="nav-logo" style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+          <img src="/logo.png" alt="Polosandia" style={{ height: '50px', objectFit: 'contain' }} />
         </div>
         <p style={{ color: '#666', fontSize: '0.9rem' }}>
           © {new Date().getFullYear()} Polosandia. El futuro de la gestión gastronómica.
