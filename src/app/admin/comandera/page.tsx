@@ -259,18 +259,30 @@ export default function ComanderaPage() {
                   
                   <div style={{ marginBottom: '1.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                     {order.items.map(item => {
-                      const modifiers = item.notes ? JSON.parse(item.notes) : [];
+                      let modifiers = [];
+                      let rawNote = '';
+                      if (item.notes) {
+                        try {
+                          const parsed = JSON.parse(item.notes);
+                          if (Array.isArray(parsed)) modifiers = parsed;
+                          else rawNote = item.notes;
+                        } catch (e) {
+                          rawNote = item.notes;
+                        }
+                      }
+
                       return (
                         <div key={item.id} style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed var(--color-border)' }}>
                           <div className="text-bold">{item.quantity}x {item.productName}</div>
                           {modifiers.length > 0 && (
-                            <ul style={{ listStyleType: 'none', paddingLeft: '1rem', marginTop: '0.25rem', fontSize: '0.875rem' }}>
-                              {modifiers.map((mod: any, idx: number) => (
-                                <li key={idx} className={mod.type === 'FREE' ? 'text-red' : 'text-green text-bold'}>
-                                  {mod.type === 'FREE' ? 'SIN ' : 'EXTRA '}{mod.name}
-                                </li>
-                              ))}
-                            </ul>
+                            <div className="text-muted" style={{ fontSize: '0.875rem' }}>
+                              {modifiers.map((mod: any) => mod.name).join(', ')}
+                            </div>
+                          )}
+                          {rawNote && (
+                            <div className="text-muted" style={{ fontSize: '0.875rem' }}>
+                              {rawNote}
+                            </div>
                           )}
                         </div>
                       );

@@ -113,13 +113,29 @@ export default function CajaPage() {
             
             <div style={{ marginBottom: '1.5rem', background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--color-border)', maxHeight: '350px', overflowY: 'auto' }}>
               {order.items.map(item => {
-                const modifiers = item.notes ? JSON.parse(item.notes) : [];
+                let modifiers = [];
+                let rawNote = '';
+                if (item.notes) {
+                  try {
+                    const parsed = JSON.parse(item.notes);
+                    if (Array.isArray(parsed)) modifiers = parsed;
+                    else rawNote = item.notes;
+                  } catch (e) {
+                    rawNote = item.notes;
+                  }
+                }
+
                 return (
                   <div key={item.id} style={{ marginBottom: '0.5rem', fontSize: '0.875rem' }}>
                     <div className="text-bold">{item.quantity}x {item.productName}</div>
                     {modifiers.length > 0 && (
                       <div className="text-muted" style={{ paddingLeft: '1rem' }}>
                         {modifiers.map((mod: any) => mod.name).join(', ')}
+                      </div>
+                    )}
+                    {rawNote && (
+                      <div className="text-muted" style={{ paddingLeft: '1rem' }}>
+                        {rawNote}
                       </div>
                     )}
                   </div>
