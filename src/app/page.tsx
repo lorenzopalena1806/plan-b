@@ -69,13 +69,12 @@ export default function LandingPage() {
         /* Hero Section */
         .hero-section {
           position: relative;
-          padding: 10rem 2rem 6rem;
+          padding: 8rem 2rem 4rem;
           text-align: center;
           overflow: hidden;
           display: flex;
           flex-direction: column;
           align-items: center;
-          min-height: 90vh;
           justify-content: center;
           background: radial-gradient(circle at top center, #ffffff 0%, #fafafa 100%);
         }
@@ -188,24 +187,6 @@ export default function LandingPage() {
         .btn-secondary:hover {
           background: #f3f4f6;
           border-color: rgba(0, 0, 0, 0.15);
-        }
-
-        /* Mockup Section */
-        .mockup-container {
-          position: relative;
-          z-index: 10;
-          margin-top: 4rem;
-          perspective: 1000px;
-          animation: float 6s ease-in-out infinite;
-        }
-
-        .mockup-image {
-          width: 100%;
-          max-width: 900px;
-          border-radius: 20px;
-          border: 1px solid var(--glass-border);
-          box-shadow: 0 30px 60px rgba(0,0,0,0.1), 0 0 40px rgba(225, 29, 72, 0.05);
-          transform: rotateX(5deg);
         }
 
         /* Features Section */
@@ -347,7 +328,7 @@ export default function LandingPage() {
               height: 'auto', 
               margin: '0 auto 2rem auto', 
               display: 'block',
-              filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))'
+              mixBlendMode: 'multiply'
             }} 
           />
           <h1 className="hero-title fade-up-2">
@@ -361,15 +342,10 @@ export default function LandingPage() {
             <Link href="/login" className="btn-glow">
               Ingresar al Sistema
             </Link>
+            <a href="https://wa.me/5491122334455" target="_blank" rel="noopener noreferrer" className="btn-secondary">
+              Contactate
+            </a>
           </div>
-        </div>
-
-        <div className="mockup-container fade-up-3">
-          <img 
-            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" 
-            alt="Polosandia Dashboard" 
-            className="mockup-image"
-          />
         </div>
       </header>
 
