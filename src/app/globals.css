@@ -244,6 +244,12 @@ button {
   box-shadow: var(--shadow-md);
 }
 
+@media (min-width: 900px) {
+  .floating-cart-wrapper {
+    display: none !important;
+  }
+}
+
 /* Social Buttons Styles */
 .social-buttons-container {
   display: flex;

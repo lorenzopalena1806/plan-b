@@ -17,8 +17,8 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { addItem } = useCartStore();
-
+  const { addItem, getItems, getTotal } = useCartStore();
+  const cartItemsCount = getItems(slug).reduce((sum, item) => sum + item.quantity, 0);
   // Extract unique categories from products (excluding promos from regular category list)
   const regularCategories = Array.from(
     new Set(products.map(p => p.category?.name).filter(Boolean))
@@ -233,8 +233,44 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
           </div>
         )}
       </div>
+      <div id="cart-section" style={{ paddingBottom: '100px' }}>
+        <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} shippingFee={shippingFee} />
+      </div>
 
-      <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} shippingFee={shippingFee} />
+      {/* Floating Cart Button (Mobile) */}
+      {cartItemsCount > 0 && (
+        <div className="floating-cart-wrapper" style={{
+          position: 'fixed',
+          bottom: '1.5rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 90,
+          width: '90%',
+          maxWidth: '400px'
+        }}>
+          <button 
+            onClick={() => document.getElementById('cart-section')?.scrollIntoView({ behavior: 'smooth' })}
+            style={{
+              width: '100%',
+              padding: '1rem',
+              backgroundColor: 'var(--color-red-primary)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '30px',
+              fontWeight: 'bold',
+              fontSize: '1.1rem',
+              boxShadow: '0 8px 24px rgba(225, 29, 72, 0.4)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              cursor: 'pointer'
+            }}
+          >
+            <span>Ver Carrito ({cartItemsCount})</span>
+            <span>${getTotal(slug).toLocaleString()}</span>
+          </button>
+        </div>
+      )}
 
       {/* Product Modal */}
       {selectedProduct && (
