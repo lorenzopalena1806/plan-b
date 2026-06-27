@@ -164,7 +164,7 @@ export default function AdminBillingPage() {
               <div>
                 <img src="/logo.png" alt="Polosandia" style={{ height: '75px', marginBottom: '0.75rem', objectFit: 'contain' }} />
                 <p style={{ fontSize: '0.85rem', color: '#666' }}>Sistema de Gestión para Gastronomía</p>
-                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>soporte@polosandia.com</p>
+                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>soportepolosandia@gmail.com</p>
               </div>
               <div style={{ textAlign: 'right' }}>
                 <span 
