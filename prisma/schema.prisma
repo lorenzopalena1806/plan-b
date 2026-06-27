@@ -44,6 +44,7 @@ model Config {
   isSuspended    Boolean    @default(false)
   logoUrl        String?
   themeColor     String?    @default("#e11d48")
+  buttonColor    String?    @default("#ffffff")
   bgColor        String?    @default("#ffffff")
   cardColor      String?    @default("#ffffff")
   textColor      String?    @default("#1a1a1a")

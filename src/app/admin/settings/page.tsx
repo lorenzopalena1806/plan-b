@@ -111,6 +111,7 @@ export default function SettingsPage() {
       setConfig({
         ...config,
         themeColor: '#c2410c',
+        buttonColor: '#f4efe6',
         bgColor: '#faf7f0',
         cardColor: '#f4efe6',
         textColor: '#431407'
@@ -216,15 +217,38 @@ export default function SettingsPage() {
 
             <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div>
-                <label className="text-bold" style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem' }}>Botones y Acentos</label>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Color Principal (Tema)</label>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                   <input 
                     type="color" 
                     value={config?.themeColor || '#e11d48'} 
                     onChange={e => setConfig({...config, themeColor: e.target.value})}
-                    style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                    style={{ width: '50px', height: '40px', padding: '0', border: 'none', borderRadius: 'var(--border-radius-sm)', cursor: 'pointer' }}
                   />
-                  <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.themeColor || '#e11d48'}</span>
+                  <input 
+                    type="text" 
+                    value={config?.themeColor || '#e11d48'} 
+                    onChange={e => setConfig({...config, themeColor: e.target.value})}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem' }}>Color de Botones de Categorías</label>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input 
+                    type="color" 
+                    value={config?.buttonColor || '#ffffff'} 
+                    onChange={e => setConfig({...config, buttonColor: e.target.value})}
+                    style={{ width: '50px', height: '40px', padding: '0', border: 'none', borderRadius: 'var(--border-radius-sm)', cursor: 'pointer' }}
+                  />
+                  <input 
+                    type="text" 
+                    value={config?.buttonColor || '#ffffff'} 
+                    onChange={e => setConfig({...config, buttonColor: e.target.value})}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  />
                 </div>
               </div>
 

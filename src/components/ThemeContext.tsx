@@ -57,6 +57,7 @@ interface ClientThemeWrapperProps {
   children: React.ReactNode;
   config: {
     themeColor: string;
+    buttonColor?: string;
     bgColor: string;
     cardColor: string;
     textColor: string;
@@ -70,6 +71,7 @@ export function ClientThemeWrapper({ children, config }: ClientThemeWrapperProps
   const isDark = theme === 'dark';
 
   const themeColor = config.themeColor || '#e11d48';
+  const buttonColor = config.buttonColor || 'var(--color-card)';
   
   // Custom dark mode overrides
   const bgColor = isDark ? '#121212' : (config.bgColor || '#ffffff');
@@ -89,6 +91,7 @@ export function ClientThemeWrapper({ children, config }: ClientThemeWrapperProps
     '--color-text-light': textLightVal,
     '--color-border': borderVal,
     '--color-red-primary': themeColor,
+    '--color-category-btn': buttonColor,
     '--color-red-light': redLightVal,
     '--color-green-light': greenLightVal,
     '--font-sans': fontFamily === 'Inter' ? `'Inter', system-ui, -apple-system, sans-serif` : `'${fontFamily}', sans-serif`,
