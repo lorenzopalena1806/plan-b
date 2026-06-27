@@ -18,7 +18,7 @@ export default async function DeveloperLayout({
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ backgroundColor: 'white', padding: '1rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontWeight: 'bold', fontSize: '1.25rem', display: 'flex', alignItems: 'center' }}>
-          <img src="/logo.png" alt="Polosandia" style={{ height: '45px' }} /> 
+          <img src="/logo.png" alt="Polosandia" style={{ height: '65px', objectFit: 'contain' }} /> 
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link href="/developer" className="btn-outline">Locales</Link>

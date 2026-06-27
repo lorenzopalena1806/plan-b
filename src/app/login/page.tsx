@@ -31,7 +31,7 @@ export default function LoginPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg)' }}>
       <div className="card flex-col" style={{ width: '100%', maxWidth: '400px', display: 'flex', gap: '1.5rem', padding: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <img src="/logo.png" alt="Polosandia" style={{ height: '100px', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Polosandia" style={{ height: '140px', objectFit: 'contain' }} />
         </div>
         <h2 style={{ textAlign: 'center', fontSize: '1.25rem', marginTop: '-0.5rem' }}>Acceso Administrativo</h2>
         
