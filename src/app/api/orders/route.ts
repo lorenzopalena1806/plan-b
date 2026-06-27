@@ -42,3 +42,45 @@ export async function GET(request: Request) {
 }
 
 // POST is moved to public API so customers can create orders without session.
+
+export async function DELETE(request: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user.restaurantId) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+
+  try {
+    const { ids } = await request.json();
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return NextResponse.json({ error: 'No se proporcionaron IDs válidos' }, { status: 400 });
+    }
+
+    // Verificamos que todos los pedidos pertenezcan a este restaurante
+    const orders = await prisma.order.findMany({
+      where: {
+        id: { in: ids }
+      }
+    });
+
+    const invalidOrder = orders.find(o => o.restaurantId !== session.user.restaurantId);
+    if (invalidOrder) {
+      return NextResponse.json({ error: 'No autorizado para algunos pedidos' }, { status: 403 });
+    }
+
+    // Eliminamos items primero para evitar error de foreign key
+    await prisma.orderItem.deleteMany({
+      where: { orderId: { in: ids } }
+    });
+
+    // Eliminamos los pedidos
+    await prisma.order.deleteMany({
+      where: { id: { in: ids } }
+    });
+
+    return NextResponse.json({ success: true, count: ids.length });
+  } catch (error) {
+    console.error('Error en borrado masivo:', error);
+    return NextResponse.json({ error: 'Error al eliminar pedidos' }, { status: 500 });
+  }
+}

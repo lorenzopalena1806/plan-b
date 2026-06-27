@@ -47,6 +47,7 @@ export default function SalesPage() {
   const [filter, setFilter] = useState<'ALL' | 'TODAY'>('ALL');
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
 
   useEffect(() => {
     fetchSales();
@@ -89,6 +90,27 @@ export default function SalesPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar ${selectedOrders.length} pedidos? Esta acción no se puede deshacer.`)) return;
+
+    try {
+      const res = await fetch(`/api/orders`, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedOrders })
+      });
+      if (res.ok) {
+        setSelectedOrders([]);
+        await fetchSales();
+      } else {
+        alert('Error al eliminar pedidos.');
+      }
+    } catch (error) {
+      console.error('Error deleting orders:', error);
+      alert('Error de conexión.');
+    }
+  };
+
   if (isLoading) return <div className="container" style={{ padding: '3rem 0' }}>Cargando estadísticas de ventas...</div>;
 
   if (error) {
@@ -120,6 +142,20 @@ export default function SalesPage() {
                           (order.address && order.address.toLowerCase().includes(search.toLowerCase()));
     return matchesFilter && matchesSearch;
   });
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedOrders(filteredOrders.map(o => o.id));
+    } else {
+      setSelectedOrders([]);
+    }
+  };
+
+  const toggleOrderSelection = (id: number) => {
+    setSelectedOrders(prev => 
+      prev.includes(id) ? prev.filter(orderId => orderId !== id) : [...prev, id]
+    );
+  };
 
   // Calculate filtered stats
   const filteredTotal = filteredOrders.reduce((sum, o) => sum + o.total, 0);
@@ -229,12 +265,29 @@ export default function SalesPage() {
                 onChange={e => setSearch(e.target.value)}
                 style={{ padding: '0.5rem 1rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', minWidth: '250px' }}
               />
+
+              {selectedOrders.length > 0 && (
+                <button 
+                  onClick={handleBulkDelete}
+                  className="btn-primary" 
+                  style={{ width: 'auto', padding: '0.5rem 1rem', backgroundColor: 'var(--color-red-primary)', gap: '0.5rem' }}
+                >
+                  🗑️ Eliminar Seleccionados ({selectedOrders.length})
+                </button>
+              )}
             </div>
 
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--color-border)', textAlign: 'left', backgroundColor: '#fafafa' }}>
+                    <th style={{ padding: '1rem 0.5rem', width: '40px', textAlign: 'center' }}>
+                      <input 
+                        type="checkbox" 
+                        onChange={handleSelectAll} 
+                        checked={filteredOrders.length > 0 && selectedOrders.length === filteredOrders.length}
+                      />
+                    </th>
                     <th style={{ padding: '1rem 0.5rem' }}>ID</th>
                     <th style={{ padding: '1rem 0.5rem' }}>Fecha</th>
                     <th style={{ padding: '1rem 0.5rem' }}>Cliente</th>
@@ -247,7 +300,14 @@ export default function SalesPage() {
 
                 <tbody>
                   {filteredOrders.map(order => (
-                    <tr key={order.id} style={{ borderBottom: '1px solid var(--color-border)', transition: 'background-color 0.2s' }}>
+                    <tr key={order.id} style={{ borderBottom: '1px solid var(--color-border)', transition: 'background-color 0.2s', backgroundColor: selectedOrders.includes(order.id) ? 'var(--color-red-light)' : 'transparent' }}>
+                      <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={selectedOrders.includes(order.id)}
+                          onChange={() => toggleOrderSelection(order.id)}
+                        />
+                      </td>
                       <td style={{ padding: '1rem 0.5rem', color: 'var(--color-text-light)', fontWeight: 'bold' }}>#{order.id}</td>
                       <td style={{ padding: '1rem 0.5rem' }}>
                         {new Date(order.createdAt).toLocaleDateString()}<br/>
@@ -308,7 +368,7 @@ export default function SalesPage() {
                   ))}
                   {filteredOrders.length === 0 && (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-light)' }}>
+                      <td colSpan={8} style={{ textAlign: 'center', padding: '3rem', color: 'var(--color-text-light)' }}>
                         No se encontraron pedidos.
                       </td>
                     </tr>
