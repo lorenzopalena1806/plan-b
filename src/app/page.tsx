@@ -339,10 +339,7 @@ export default function LandingPage() {
             El sistema definitivo para gastronómicos. Carta digital interactiva, recepción de pedidos por WhatsApp, comandera inteligente y analíticas avanzadas. <strong>Cero comisiones por venta.</strong>
           </p>
           <div className="fade-up-3" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Link href="/login" className="btn-glow">
-              Ingresar al Sistema
-            </Link>
-            <a href="https://wa.me/5491122334455" target="_blank" rel="noopener noreferrer" className="btn-secondary">
+            <a href="https://wa.me/5493512388658" target="_blank" rel="noopener noreferrer" className="btn-glow">
               Contactate
             </a>
           </div>
