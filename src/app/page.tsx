@@ -2,17 +2,18 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: 'var(--font-sans)', overflowX: 'hidden' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#fafafa', color: '#1a1a1a', fontFamily: 'var(--font-sans)', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{__html: `
         :root {
-          --glow-red: rgba(225, 29, 72, 0.4);
+          --glow-red: rgba(225, 29, 72, 0.15);
           --accent-red: #e11d48;
-          --glass-bg: rgba(255, 255, 255, 0.03);
-          --glass-border: rgba(255, 255, 255, 0.08);
+          --glass-bg: rgba(255, 255, 255, 0.85);
+          --glass-border: rgba(0, 0, 0, 0.08);
+          --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
         }
         
         body {
-          background-color: #0a0a0a;
+          background-color: #fafafa;
           margin: 0;
         }
 
@@ -47,7 +48,7 @@ export default function LandingPage() {
           display: flex;
           justifyContent: space-between;
           alignItems: center;
-          background: rgba(10, 10, 10, 0.7);
+          background: var(--glass-bg);
           backdrop-filter: blur(12px);
           border-bottom: 1px solid var(--glass-border);
           z-index: 1000;
@@ -58,14 +59,11 @@ export default function LandingPage() {
           font-size: 1.5rem;
           font-weight: 900;
           letter-spacing: -1px;
-          background: linear-gradient(to right, #fff, #a3a3a3);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #1a1a1a;
         }
 
         .nav-logo span {
           color: var(--accent-red);
-          -webkit-text-fill-color: var(--accent-red);
         }
 
         /* Hero Section */
@@ -79,6 +77,7 @@ export default function LandingPage() {
           align-items: center;
           min-height: 90vh;
           justify-content: center;
+          background: radial-gradient(circle at top center, #ffffff 0%, #fafafa 100%);
         }
 
         .hero-bg-blob-1 {
@@ -100,7 +99,7 @@ export default function LandingPage() {
           right: 10%;
           width: 400px;
           height: 400px;
-          background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
           animation: blob 20s infinite alternate-reverse;
           filter: blur(60px);
           z-index: 0;
@@ -116,12 +115,12 @@ export default function LandingPage() {
         .badge {
           display: inline-block;
           padding: 0.5rem 1rem;
-          background: rgba(225, 29, 72, 0.1);
+          background: rgba(225, 29, 72, 0.05);
           color: var(--accent-red);
           border: 1px solid rgba(225, 29, 72, 0.2);
           border-radius: 30px;
           font-size: 0.875rem;
-          font-weight: 600;
+          font-weight: 700;
           margin-bottom: 2rem;
           text-transform: uppercase;
           letter-spacing: 1px;
@@ -133,20 +132,18 @@ export default function LandingPage() {
           line-height: 1.05;
           margin-bottom: 1.5rem;
           letter-spacing: -2px;
-          background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          color: #0a0a0a;
         }
 
         .hero-title span {
-          background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+          background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
         }
 
         .hero-subtitle {
           font-size: clamp(1.1rem, 2vw, 1.35rem);
-          color: #888;
+          color: #555;
           max-width: 700px;
           margin: 0 auto 3rem auto;
           line-height: 1.6;
@@ -165,7 +162,6 @@ export default function LandingPage() {
           text-decoration: none;
           transition: all 0.3s ease;
           box-shadow: 0 10px 30px -10px var(--accent-red);
-          border: 1px solid rgba(255,255,255,0.1);
         }
         
         .btn-glow:hover {
@@ -178,19 +174,20 @@ export default function LandingPage() {
           display: inline-flex;
           align-items: center;
           padding: 1.25rem 3rem;
-          background: var(--glass-bg);
-          color: white;
+          background: #ffffff;
+          color: #1a1a1a;
           font-size: 1.1rem;
           font-weight: 600;
           border-radius: 50px;
           text-decoration: none;
           transition: all 0.3s ease;
           border: 1px solid var(--glass-border);
+          box-shadow: var(--shadow-soft);
         }
 
         .btn-secondary:hover {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.2);
+          background: #f3f4f6;
+          border-color: rgba(0, 0, 0, 0.15);
         }
 
         /* Mockup Section */
@@ -207,15 +204,16 @@ export default function LandingPage() {
           max-width: 900px;
           border-radius: 20px;
           border: 1px solid var(--glass-border);
-          box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(225, 29, 72, 0.1);
+          box-shadow: 0 30px 60px rgba(0,0,0,0.1), 0 0 40px rgba(225, 29, 72, 0.05);
           transform: rotateX(5deg);
         }
 
         /* Features Section */
         .features-section {
           padding: 8rem 2rem;
-          background: #050505;
+          background: #ffffff;
           position: relative;
+          border-top: 1px solid var(--glass-border);
         }
 
         .section-header {
@@ -228,10 +226,11 @@ export default function LandingPage() {
           font-weight: 800;
           margin-bottom: 1rem;
           letter-spacing: -1px;
+          color: #0a0a0a;
         }
 
         .section-subtitle {
-          color: #888;
+          color: #555;
           font-size: 1.1rem;
           max-width: 600px;
           margin: 0 auto;
@@ -246,12 +245,12 @@ export default function LandingPage() {
         }
 
         .feature-card {
-          background: var(--glass-bg);
+          background: #ffffff;
           border: 1px solid var(--glass-border);
           padding: 2.5rem;
           border-radius: 24px;
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          backdrop-filter: blur(10px);
+          box-shadow: var(--shadow-soft);
           position: relative;
           overflow: hidden;
         }
@@ -260,15 +259,15 @@ export default function LandingPage() {
           content: '';
           position: absolute;
           top: 0; left: 0; right: 0; height: 100%;
-          background: linear-gradient(180deg, rgba(225, 29, 72, 0.1) 0%, transparent 100%);
+          background: linear-gradient(180deg, rgba(225, 29, 72, 0.05) 0%, transparent 100%);
           opacity: 0;
           transition: opacity 0.4s ease;
         }
 
         .feature-card:hover {
           transform: translateY(-10px);
-          border-color: rgba(225, 29, 72, 0.3);
-          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+          border-color: rgba(225, 29, 72, 0.2);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         }
 
         .feature-card:hover::before {
@@ -278,7 +277,8 @@ export default function LandingPage() {
         .feature-icon {
           width: 60px;
           height: 60px;
-          background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+          background: linear-gradient(135deg, #ffe4e6 0%, #fda4af 100%);
+          color: var(--accent-red);
           border-radius: 16px;
           display: flex;
           align-items: center;
@@ -295,71 +295,14 @@ export default function LandingPage() {
           margin-bottom: 1rem;
           position: relative;
           z-index: 1;
+          color: #1a1a1a;
         }
 
         .feature-card p {
-          color: #999;
+          color: #666;
           line-height: 1.6;
           position: relative;
           z-index: 1;
-        }
-
-        /* Steps */
-        .steps-section {
-          padding: 8rem 2rem;
-          background: #0a0a0a;
-          border-top: 1px solid var(--glass-border);
-        }
-
-        .steps-container {
-          max-width: 1000px;
-          margin: 0 auto;
-        }
-
-        .step-row {
-          display: flex;
-          align-items: center;
-          gap: 4rem;
-          margin-bottom: 6rem;
-        }
-
-        .step-row:nth-child(even) {
-          flex-direction: row-reverse;
-        }
-
-        .step-content {
-          flex: 1;
-        }
-
-        .step-number {
-          font-size: 5rem;
-          font-weight: 900;
-          color: rgba(225, 29, 72, 0.1);
-          line-height: 1;
-          margin-bottom: -1rem;
-        }
-
-        .step-image {
-          flex: 1;
-          background: var(--glass-bg);
-          border: 1px solid var(--glass-border);
-          border-radius: 24px;
-          padding: 2rem;
-          text-align: center;
-          position: relative;
-        }
-
-        .step-image::after {
-          content: '';
-          position: absolute;
-          inset: -1px;
-          border-radius: 24px;
-          padding: 1px;
-          background: linear-gradient(135deg, rgba(225, 29, 72, 0.5), transparent);
-          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-          -webkit-mask-composite: xor;
-          mask-composite: exclude;
-          pointer-events: none;
         }
 
         /* Footer */
@@ -367,11 +310,10 @@ export default function LandingPage() {
           border-top: 1px solid var(--glass-border);
           padding: 4rem 2rem;
           text-align: center;
-          background: #050505;
+          background: #fafafa;
         }
 
         @media (max-width: 768px) {
-          .step-row { flex-direction: column !important; gap: 2rem; margin-bottom: 4rem; }
           .hero-section { padding-top: 8rem; }
           .btn-glow, .btn-secondary { width: 100%; justify-content: center; margin-bottom: 1rem; }
         }
@@ -384,7 +326,7 @@ export default function LandingPage() {
         </div>
         <div>
           <Link href="/login" className="btn-secondary" style={{ padding: '0.6rem 1.5rem', fontSize: '0.9rem', borderRadius: '8px' }}>
-            Ingresar
+            Ingresar al Sistema
           </Link>
         </div>
       </nav>
@@ -414,12 +356,10 @@ export default function LandingPage() {
         </div>
 
         <div className="mockup-container fade-up-3">
-          {/* Using a placeholder high quality UI image for the mockup */}
           <img 
             src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" 
             alt="Polosandia Dashboard" 
             className="mockup-image"
-            style={{ opacity: 0.8, filter: 'grayscale(20%) sepia(20%) hue-rotate(-50deg) saturate(200%)' }}
           />
         </div>
       </header>
