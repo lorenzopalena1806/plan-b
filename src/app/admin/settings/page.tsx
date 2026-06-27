@@ -132,6 +132,17 @@ export default function SettingsPage() {
         {/* Main Settings Form */}
         <form onSubmit={handleSave} className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
           <div>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Nombre del Local</label>
+            <input 
+              type="text" 
+              value={config?.restaurantName || ''} 
+              onChange={e => setConfig({...config, restaurantName: e.target.value})}
+              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+              required
+            />
+          </div>
+
+          <div>
             <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Número de WhatsApp (con código de país)</label>
             <input 
               type="text" 

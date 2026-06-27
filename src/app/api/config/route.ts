@@ -23,7 +23,12 @@ export async function GET() {
       }
     });
   }
-  return NextResponse.json(config);
+  
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: session.user.restaurantId }
+  });
+
+  return NextResponse.json({ ...config, restaurantName: restaurant?.name || '' });
 }
 
 export async function POST(request: Request) {
@@ -52,8 +57,16 @@ export async function POST(request: Request) {
     instagramUrl,
     whatsappUrl,
     mapsUrl,
-    shippingFee
+    shippingFee,
+    restaurantName
   } = await request.json();
+
+  if (restaurantName) {
+    await prisma.restaurant.update({
+      where: { id: session.user.restaurantId },
+      data: { name: restaurantName }
+    });
+  }
 
   const config = await prisma.config.findFirst({
     where: { restaurantId: session.user.restaurantId }
