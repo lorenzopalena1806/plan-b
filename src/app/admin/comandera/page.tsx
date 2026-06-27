@@ -195,7 +195,7 @@ export default function ComanderaPage() {
   if (isLoading) return <div className="container" style={{ padding: '2rem' }}>Cargando comandera...</div>;
 
   return (
-    <div style={{ padding: '1rem', height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ padding: '1rem', height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
       <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="text-red">Comandera</h1>
         <div className="flex" style={{ gap: '1rem', alignItems: 'center' }}>
