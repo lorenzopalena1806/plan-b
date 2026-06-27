@@ -169,7 +169,8 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
 
       // 3. Limpiar carrito y redirigir
       clearCart(slug);
-      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+      const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+      window.location.href = url;
       
     } catch (error) {
       alert("Hubo un problema procesando tu pedido.");
