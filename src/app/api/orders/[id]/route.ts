@@ -34,3 +34,40 @@ export async function PUT(
     return NextResponse.json({ error: 'Error al actualizar pedido' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user.restaurantId) {
+    return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+  }
+
+  try {
+    const { id } = await params;
+
+    const order = await prisma.order.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!order || order.restaurantId !== session.user.restaurantId) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
+
+    // Prisma has onDelete: Cascade for OrderItem if correctly modeled.
+    // Let's delete the order, which should cascade or we can manually delete items first to be safe.
+    await prisma.orderItem.deleteMany({
+      where: { orderId: parseInt(id) }
+    });
+
+    await prisma.order.delete({
+      where: { id: parseInt(id) }
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error al eliminar pedido:', error);
+    return NextResponse.json({ error: 'Error al eliminar pedido' }, { status: 500 });
+  }
+}

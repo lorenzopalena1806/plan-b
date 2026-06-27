@@ -73,6 +73,22 @@ export default function SalesPage() {
     }
   };
 
+  const handleDelete = async (id: number) => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar el pedido #${id}? Esta acción no se puede deshacer y los montos se descontarán del total.`)) return;
+
+    try {
+      const res = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchSales();
+      } else {
+        alert('Error al eliminar el pedido.');
+      }
+    } catch (error) {
+      console.error('Error deleting order:', error);
+      alert('Error de conexión.');
+    }
+  };
+
   if (isLoading) return <div className="container" style={{ padding: '3rem 0' }}>Cargando estadísticas de ventas...</div>;
 
   if (error) {
@@ -225,8 +241,10 @@ export default function SalesPage() {
                     <th style={{ padding: '1rem 0.5rem' }}>Productos</th>
                     <th style={{ padding: '1rem 0.5rem' }}>Notas</th>
                     <th style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>Total</th>
+                    <th style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>Acciones</th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {filteredOrders.map(order => (
                     <tr key={order.id} style={{ borderBottom: '1px solid var(--color-border)', transition: 'background-color 0.2s' }}>
@@ -267,6 +285,24 @@ export default function SalesPage() {
                       </td>
                       <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 'bold', fontSize: '1rem' }} className="text-red">
                         ${order.total.toLocaleString()}
+                      </td>
+                      <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                        <button 
+                          onClick={() => handleDelete(order.id)}
+                          style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: 'var(--color-text-light)',
+                            fontSize: '1.25rem',
+                            transition: 'transform 0.2s'
+                          }}
+                          title="Eliminar pedido"
+                          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
+                          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                        >
+                          🗑️
+                        </button>
                       </td>
                     </tr>
                   ))}
