@@ -39,8 +39,9 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Usuario</label>
+            <label htmlFor="username" className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Usuario</label>
             <input 
+              id="username"
               type="text" 
               value={username}
               onChange={e => setUsername(e.target.value)}
@@ -49,8 +50,9 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Contraseña</label>
+            <label htmlFor="password" className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Contraseña</label>
             <input 
+              id="password"
               type="password" 
               value={password}
               onChange={e => setPassword(e.target.value)}
