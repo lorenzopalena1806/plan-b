@@ -206,19 +206,15 @@ button {
 .category-nav {
   display: flex;
   gap: 0.5rem;
-  overflow-x: auto;
+  flex-wrap: wrap;
   padding-bottom: 0.75rem;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid var(--color-border);
-  scrollbar-width: none;
   position: sticky;
   top: 0;
   background-color: var(--color-card);
   z-index: 100;
   padding-top: 0.5rem;
-}
-.category-nav::-webkit-scrollbar {
-  display: none;
 }
 .category-tab {
   flex: 0 0 auto;
