@@ -154,7 +154,7 @@ export default function LandingPage() {
           Contactanos hoy mismo y te armamos una demostración gratuita con el menú real de tu restaurante.
         </p>
         <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-          <a href="https://wa.me/5491100000000?text=Hola,%20quiero%20información%20sobre%20el%20sistema%20Polosandia" target="_blank" rel="noreferrer" className="btn-primary" style={{ width: 'auto', backgroundColor: '#25D366', padding: '1rem 2rem', borderRadius: '30px' }}>
+          <a href="https://wa.me/5493512388658?text=Hola,%20quiero%20información%20sobre%20el%20sistema%20Polosandia" target="_blank" rel="noreferrer" className="btn-primary" style={{ width: 'auto', backgroundColor: '#25D366', padding: '1rem 2rem', borderRadius: '30px' }}>
             Contactar por WhatsApp
           </a>
         </div>
