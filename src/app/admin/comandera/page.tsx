@@ -221,7 +221,7 @@ export default function ComanderaPage() {
 
       <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
         {columns.map(col => (
-          <div key={col.id} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '1rem', display: 'flex', flexDirection: 'column', height: '100%' }}>
+          <div key={col.id} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '1rem', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-border)' }}>{col.title} ({orders.filter(o => o.status === col.id).length})</h2>
             
             <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: '1rem', paddingRight: '0.5rem' }}>
