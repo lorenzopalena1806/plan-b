@@ -85,7 +85,7 @@ export default function CajaPage() {
           <span className="text-muted text-bold animate-pulse">● Live (30s)</span>
           <button className="btn-outline" onClick={fetchOrders}>Refrescar</button>
           <Link href="/admin" className="btn-outline">Ir a Admin</Link>
-          <Link href="/comandera" className="btn-outline">Ir a Comandera</Link>
+          <Link href="/admin/comandera" className="btn-outline">Ir a Comandera</Link>
         </div>
       </header>
 
