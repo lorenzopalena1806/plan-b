@@ -111,7 +111,7 @@ export default function CajaPage() {
               </div>
             )}
             
-            <div style={{ marginBottom: '1.5rem', background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--color-border)' }}>
+            <div style={{ marginBottom: '1.5rem', background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--color-border)', maxHeight: '350px', overflowY: 'auto' }}>
               {order.items.map(item => {
                 const modifiers = item.notes ? JSON.parse(item.notes) : [];
                 return (

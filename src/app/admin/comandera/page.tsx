@@ -224,7 +224,7 @@ export default function ComanderaPage() {
           <div key={col.id} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '1rem', display: 'flex', flexDirection: 'column', height: '100%' }}>
             <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-border)' }}>{col.title} ({orders.filter(o => o.status === col.id).length})</h2>
             
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingRight: '0.5rem' }}>
+            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: '1rem', paddingRight: '0.5rem' }}>
               {orders.filter(o => o.status === col.id).map(order => (
                 <div key={order.id} className="card" style={{ borderLeft: `4px solid ${order.deliveryMethod === 'DELIVERY' ? 'var(--color-red-primary)' : 'var(--color-green)'}` }}>
                   <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
@@ -257,7 +257,7 @@ export default function ComanderaPage() {
                     </div>
                   )}
                   
-                  <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ marginBottom: '1.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
                     {order.items.map(item => {
                       const modifiers = item.notes ? JSON.parse(item.notes) : [];
                       return (
