@@ -2,165 +2,477 @@ import Link from 'next/link';
 
 export default function LandingPage() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#fafafa', fontFamily: 'var(--font-sans)' }}>
-      {/* Estilos específicos para la landing */}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#0a0a0a', color: '#ffffff', fontFamily: 'var(--font-sans)', overflowX: 'hidden' }}>
       <style dangerouslySetInnerHTML={{__html: `
+        :root {
+          --glow-red: rgba(225, 29, 72, 0.4);
+          --accent-red: #e11d48;
+          --glass-bg: rgba(255, 255, 255, 0.03);
+          --glass-border: rgba(255, 255, 255, 0.08);
+        }
+        
+        body {
+          background-color: #0a0a0a;
+          margin: 0;
+        }
+
+        /* Animations */
+        @keyframes blob {
+          0% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.9); }
+          100% { transform: translate(0px, 0px) scale(1); }
+        }
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+          100% { transform: translateY(0px); }
+        }
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-up-1 { animation: fadeUp 0.8s ease-out forwards; opacity: 0; }
+        .fade-up-2 { animation: fadeUp 0.8s ease-out 0.2s forwards; opacity: 0; }
+        .fade-up-3 { animation: fadeUp 0.8s ease-out 0.4s forwards; opacity: 0; }
+
+        /* Navigation */
+        .glass-nav {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          padding: 1rem 2rem;
+          display: flex;
+          justifyContent: space-between;
+          alignItems: center;
+          background: rgba(10, 10, 10, 0.7);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--glass-border);
+          z-index: 1000;
+          transition: all 0.3s ease;
+        }
+
+        .nav-logo {
+          font-size: 1.5rem;
+          font-weight: 900;
+          letter-spacing: -1px;
+          background: linear-gradient(to right, #fff, #a3a3a3);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .nav-logo span {
+          color: var(--accent-red);
+          -webkit-text-fill-color: var(--accent-red);
+        }
+
+        /* Hero Section */
         .hero-section {
-          background: linear-gradient(135deg, #fff 0%, #ffebec 100%);
-          padding: 6rem 2rem;
-          text-align: center;
           position: relative;
+          padding: 10rem 2rem 6rem;
+          text-align: center;
           overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-height: 90vh;
+          justify-content: center;
         }
+
+        .hero-bg-blob-1 {
+          position: absolute;
+          top: 10%;
+          left: 10%;
+          width: 500px;
+          height: 500px;
+          background: radial-gradient(circle, var(--glow-red) 0%, transparent 70%);
+          animation: blob 15s infinite alternate;
+          filter: blur(60px);
+          z-index: 0;
+          pointer-events: none;
+        }
+
+        .hero-bg-blob-2 {
+          position: absolute;
+          bottom: 10%;
+          right: 10%;
+          width: 400px;
+          height: 400px;
+          background: radial-gradient(circle, rgba(139, 92, 246, 0.2) 0%, transparent 70%);
+          animation: blob 20s infinite alternate-reverse;
+          filter: blur(60px);
+          z-index: 0;
+          pointer-events: none;
+        }
+
+        .hero-content {
+          position: relative;
+          z-index: 10;
+          max-width: 900px;
+        }
+
+        .badge {
+          display: inline-block;
+          padding: 0.5rem 1rem;
+          background: rgba(225, 29, 72, 0.1);
+          color: var(--accent-red);
+          border: 1px solid rgba(225, 29, 72, 0.2);
+          border-radius: 30px;
+          font-size: 0.875rem;
+          font-weight: 600;
+          margin-bottom: 2rem;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
         .hero-title {
-          font-size: 3.5rem;
-          font-weight: 800;
-          color: #1a1a1a;
-          line-height: 1.1;
+          font-size: clamp(3rem, 8vw, 5rem);
+          font-weight: 900;
+          line-height: 1.05;
           margin-bottom: 1.5rem;
-          max-width: 800px;
-          margin-inline: auto;
-          letter-spacing: -1.5px;
+          letter-spacing: -2px;
+          background: linear-gradient(135deg, #ffffff 0%, #a3a3a3 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
+
         .hero-title span {
-          color: var(--color-red-primary);
+          background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
         }
+
         .hero-subtitle {
-          font-size: 1.25rem;
-          color: #555;
-          max-width: 600px;
+          font-size: clamp(1.1rem, 2vw, 1.35rem);
+          color: #888;
+          max-width: 700px;
           margin: 0 auto 3rem auto;
           line-height: 1.6;
         }
-        .feature-card {
-          background: white;
-          padding: 2.5rem;
-          border-radius: var(--border-radius-lg);
-          box-shadow: var(--shadow-sm);
-          transition: all 0.3s ease;
-          border: 1px solid var(--color-border);
-        }
-        .feature-card:hover {
-          transform: translateY(-5px);
-          box-shadow: var(--shadow-lg);
-          border-color: var(--color-red-primary);
-        }
-        .feature-icon {
-          font-size: 2.5rem;
-          margin-bottom: 1.5rem;
-          display: inline-block;
-          background: var(--color-red-light);
-          padding: 1rem;
-          border-radius: 20px;
-        }
-        .pricing-card {
-          background: white;
-          border: 2px solid var(--color-red-primary);
-          border-radius: 24px;
-          padding: 3rem;
-          max-width: 450px;
-          margin: 0 auto;
-          text-align: center;
-          box-shadow: 0 20px 40px rgba(230, 57, 70, 0.15);
-        }
-        .cta-section {
-          background-color: #1a1a1a;
+
+        .btn-glow {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 1.25rem 3rem;
+          background: var(--accent-red);
           color: white;
-          padding: 5rem 2rem;
-          text-align: center;
+          font-size: 1.1rem;
+          font-weight: 700;
+          border-radius: 50px;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          box-shadow: 0 10px 30px -10px var(--accent-red);
+          border: 1px solid rgba(255,255,255,0.1);
         }
+        
+        .btn-glow:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 20px 40px -10px var(--accent-red);
+          background: #be123c;
+        }
+
+        .btn-secondary {
+          display: inline-flex;
+          align-items: center;
+          padding: 1.25rem 3rem;
+          background: var(--glass-bg);
+          color: white;
+          font-size: 1.1rem;
+          font-weight: 600;
+          border-radius: 50px;
+          text-decoration: none;
+          transition: all 0.3s ease;
+          border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Mockup Section */
+        .mockup-container {
+          position: relative;
+          z-index: 10;
+          margin-top: 4rem;
+          perspective: 1000px;
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .mockup-image {
+          width: 100%;
+          max-width: 900px;
+          border-radius: 20px;
+          border: 1px solid var(--glass-border);
+          box-shadow: 0 30px 60px rgba(0,0,0,0.5), 0 0 40px rgba(225, 29, 72, 0.1);
+          transform: rotateX(5deg);
+        }
+
+        /* Features Section */
+        .features-section {
+          padding: 8rem 2rem;
+          background: #050505;
+          position: relative;
+        }
+
+        .section-header {
+          text-align: center;
+          margin-bottom: 5rem;
+        }
+
+        .section-title {
+          font-size: 3rem;
+          font-weight: 800;
+          margin-bottom: 1rem;
+          letter-spacing: -1px;
+        }
+
+        .section-subtitle {
+          color: #888;
+          font-size: 1.1rem;
+          max-width: 600px;
+          margin: 0 auto;
+        }
+
+        .features-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 2rem;
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+
+        .feature-card {
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          padding: 2.5rem;
+          border-radius: 24px;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          backdrop-filter: blur(10px);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .feature-card::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 0; right: 0; height: 100%;
+          background: linear-gradient(180deg, rgba(225, 29, 72, 0.1) 0%, transparent 100%);
+          opacity: 0;
+          transition: opacity 0.4s ease;
+        }
+
+        .feature-card:hover {
+          transform: translateY(-10px);
+          border-color: rgba(225, 29, 72, 0.3);
+          box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .feature-card:hover::before {
+          opacity: 1;
+        }
+
+        .feature-icon {
+          width: 60px;
+          height: 60px;
+          background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          margin-bottom: 1.5rem;
+          position: relative;
+          z-index: 1;
+        }
+
+        .feature-card h3 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-bottom: 1rem;
+          position: relative;
+          z-index: 1;
+        }
+
+        .feature-card p {
+          color: #999;
+          line-height: 1.6;
+          position: relative;
+          z-index: 1;
+        }
+
+        /* Steps */
+        .steps-section {
+          padding: 8rem 2rem;
+          background: #0a0a0a;
+          border-top: 1px solid var(--glass-border);
+        }
+
+        .steps-container {
+          max-width: 1000px;
+          margin: 0 auto;
+        }
+
+        .step-row {
+          display: flex;
+          align-items: center;
+          gap: 4rem;
+          margin-bottom: 6rem;
+        }
+
+        .step-row:nth-child(even) {
+          flex-direction: row-reverse;
+        }
+
+        .step-content {
+          flex: 1;
+        }
+
+        .step-number {
+          font-size: 5rem;
+          font-weight: 900;
+          color: rgba(225, 29, 72, 0.1);
+          line-height: 1;
+          margin-bottom: -1rem;
+        }
+
+        .step-image {
+          flex: 1;
+          background: var(--glass-bg);
+          border: 1px solid var(--glass-border);
+          border-radius: 24px;
+          padding: 2rem;
+          text-align: center;
+          position: relative;
+        }
+
+        .step-image::after {
+          content: '';
+          position: absolute;
+          inset: -1px;
+          border-radius: 24px;
+          padding: 1px;
+          background: linear-gradient(135deg, rgba(225, 29, 72, 0.5), transparent);
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+        }
+
+        /* Footer */
+        footer {
+          border-top: 1px solid var(--glass-border);
+          padding: 4rem 2rem;
+          text-align: center;
+          background: #050505;
+        }
+
         @media (max-width: 768px) {
-          .hero-title { font-size: 2.5rem; }
-          .features-grid { grid-template-columns: 1fr !important; }
+          .step-row { flex-direction: column !important; gap: 2rem; margin-bottom: 4rem; }
+          .hero-section { padding-top: 8rem; }
+          .btn-glow, .btn-secondary { width: 100%; justify-content: center; margin-bottom: 1rem; }
         }
       `}} />
 
-      {/* Navbar */}
-      <nav style={{ padding: '1.5rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', borderBottom: '1px solid var(--color-border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <img src="/logo.png" alt="Polosandia" style={{ height: '35px', objectFit: 'contain' }} />
+      {/* Navigation */}
+      <nav className="glass-nav">
+        <div className="nav-logo">
+          Polo<span>sandia</span>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <Link href="/login" className="btn-outline" style={{ fontWeight: 'bold' }}>
-            Ingresar al Sistema
+        <div>
+          <Link href="/login" className="btn-secondary" style={{ padding: '0.6rem 1.5rem', fontSize: '0.9rem', borderRadius: '8px' }}>
+            Ingresar
           </Link>
         </div>
       </nav>
 
       {/* Hero Section */}
       <header className="hero-section">
-        <h1 className="hero-title">Tu restaurante en piloto automático. <span>Cero comisiones.</span></h1>
-        <p className="hero-subtitle">
-          El sistema Todo-en-Uno diseñado para gastronómicos. Carta digital, carrito de WhatsApp, comandera inteligente y gestión total.
-        </p>
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-          <a href="#contacto" className="btn-primary" style={{ padding: '1rem 2.5rem', fontSize: '1.1rem', width: 'auto', borderRadius: '30px' }}>
-            Quiero mi Demo
-          </a>
+        <div className="hero-bg-blob-1"></div>
+        <div className="hero-bg-blob-2"></div>
+        
+        <div className="hero-content">
+          <div className="badge fade-up-1">Plataforma Gastronómica 2.0</div>
+          <h1 className="hero-title fade-up-2">
+            Tu restaurante en<br/>
+            <span>piloto automático.</span>
+          </h1>
+          <p className="hero-subtitle fade-up-3">
+            El sistema definitivo para gastronómicos. Carta digital interactiva, recepción de pedidos por WhatsApp, comandera inteligente y analíticas avanzadas. <strong>Cero comisiones por venta.</strong>
+          </p>
+          <div className="fade-up-3" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link href="/lo-del-pela" className="btn-glow">
+              Ver Menú de Prueba
+            </Link>
+            <Link href="/login" className="btn-secondary">
+              Probar Sistema Admin
+            </Link>
+          </div>
+        </div>
+
+        <div className="mockup-container fade-up-3">
+          {/* Using a placeholder high quality UI image for the mockup */}
+          <img 
+            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80" 
+            alt="Polosandia Dashboard" 
+            className="mockup-image"
+            style={{ opacity: 0.8, filter: 'grayscale(20%) sepia(20%) hue-rotate(-50deg) saturate(200%)' }}
+          />
         </div>
       </header>
 
       {/* Features Section */}
-      <section style={{ padding: '6rem 2rem', maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem', letterSpacing: '-1px' }}>Todo lo que necesitas para crecer</h2>
-          <p style={{ color: '#666', fontSize: '1.1rem' }}>Olvídate de pagar 30% a las apps de delivery.</p>
+      <section className="features-section">
+        <div className="section-header">
+          <h2 className="section-title">Diseñado para la rentabilidad</h2>
+          <p className="section-subtitle">Todo lo que necesitás para modernizar tu negocio y dejar de depender de aplicaciones de delivery costosas.</p>
         </div>
         
-        <div className="features-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+        <div className="features-grid">
           <div className="feature-card">
             <div className="feature-icon">📱</div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Menú QR & WhatsApp</h3>
-            <p style={{ color: '#666' }}>Tus clientes navegan tu catálogo online y el pedido te llega perfectamente detallado a tu WhatsApp, listo para cobrar.</p>
+            <h3>Menú Digital Premium</h3>
+            <p>Una experiencia de compra fluida y hermosa para tus clientes desde el celular. Con modificadores, fotos y carrito inteligente.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">💬</div>
+            <h3>Pedidos por WhatsApp</h3>
+            <p>El cliente arma su pedido y llega directamente a tu WhatsApp estructurado, calculado y listo para ser enviado a cocina.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">👨‍🍳</div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Comandera Inteligente</h3>
-            <p style={{ color: '#666' }}>Una pantalla en tiempo real para tu cocina. Los pedidos nuevos suenan y se organizan solos. Adiós a los papeles perdidos.</p>
+            <h3>Comandera en Vivo</h3>
+            <p>Tus cocineros ven los pedidos en tiempo real en una pantalla. Sincronización instantánea y control de tiempos de preparación.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">📊</div>
+            <h3>Caja y Analíticas</h3>
+            <p>Control total de tu facturación. Ticket promedio, productos más vendidos, métodos de pago y mucho más en un panel central.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🎟️</div>
-            <h3 style={{ fontSize: '1.25rem', marginBottom: '0.75rem' }}>Marketing Activo</h3>
-            <p style={{ color: '#666' }}>Crea cupones de descuento, configura horarios de doble turno y ofrece promociones para fidelizar a tus mejores clientes.</p>
+            <h3>Cupones de Descuento</h3>
+            <p>Fidelizá a tus clientes creando códigos promocionales (ej: BLACKFRIDAY) con descuentos fijos o en porcentajes.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🚀</div>
+            <h3>Cero Comisiones</h3>
+            <p>A diferencia de PedidosYa o Rappi, la tienda es tuya. No pagás porcentajes por venta, maximizando tus márgenes de ganancia.</p>
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section style={{ padding: '4rem 2rem', backgroundColor: 'white', borderTop: '1px solid var(--color-border)' }}>
-        <div className="pricing-card">
-          <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--color-red-primary)' }}>Suscripción Mensual</h3>
-          <p style={{ color: '#666', marginBottom: '2rem' }}>Vende ilimitado por un costo fijo</p>
-          <div style={{ fontSize: '3.5rem', fontWeight: '800', marginBottom: '2rem', letterSpacing: '-2px' }}>
-            $25.000<span style={{ fontSize: '1.25rem', color: '#888', fontWeight: 'normal', letterSpacing: '0' }}>/mes</span>
-          </div>
-          <ul style={{ textAlign: 'left', marginBottom: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', color: '#444' }}>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✅ <span>Catálogo ilimitado de productos</span></li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✅ <span>Pedidos directos por WhatsApp</span></li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✅ <span>Acceso a la Comandera de Cocina</span></li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✅ <span>Panel de métricas y cierre de caja</span></li>
-            <li style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>✅ <span>Soporte técnico directo</span></li>
-          </ul>
-          <a href="#contacto" className="btn-primary" style={{ padding: '1rem', fontSize: '1.1rem', borderRadius: '30px' }}>
-            Contratar Sistema
-          </a>
+      {/* Footer */}
+      <footer>
+        <div className="nav-logo" style={{ marginBottom: '1rem' }}>
+          Polo<span>sandia</span>
         </div>
-      </section>
-
-      {/* CTA / Footer */}
-      <footer className="cta-section" id="contacto">
-        <h2 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>¿Listo para modernizar tu local?</h2>
-        <p style={{ fontSize: '1.1rem', color: '#aaa', marginBottom: '2.5rem', maxWidth: '600px', marginInline: 'auto' }}>
-          Contactanos hoy mismo y te armamos una demostración gratuita con el menú real de tu restaurante.
+        <p style={{ color: '#666', fontSize: '0.9rem' }}>
+          © {new Date().getFullYear()} Polosandia. El futuro de la gestión gastronómica.
         </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-          <a href="https://wa.me/5493512388658?text=Hola,%20quiero%20información%20sobre%20el%20sistema%20Polosandia" target="_blank" rel="noreferrer" className="btn-primary" style={{ width: 'auto', backgroundColor: '#25D366', padding: '1rem 2rem', borderRadius: '30px' }}>
-            Contactar por WhatsApp
-          </a>
-        </div>
-        <div style={{ marginTop: '5rem', paddingTop: '2rem', borderTop: '1px solid #333', color: '#666', fontSize: '0.9rem' }}>
-          &copy; {new Date().getFullYear()} Polosandia. Todos los derechos reservados.
-        </div>
       </footer>
     </div>
   );
