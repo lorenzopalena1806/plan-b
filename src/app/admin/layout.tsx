@@ -42,8 +42,8 @@ export default async function AdminLayout({
       <nav style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
           <Link href="/admin" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
-            <img src="/logo.png" alt="Polosandia" style={{ height: '24px', marginRight: '10px' }} />
-            <span className="text-red">Admin</span> <span style={{ marginLeft: '6px', fontWeight: 'normal' }}>- {restaurantName}</span>
+            <img src="/logo.png" alt="Polosandia" style={{ height: '40px', marginRight: '12px' }} />
+            <span style={{ fontWeight: 'normal', fontSize: '1rem', borderLeft: '1px solid #ccc', paddingLeft: '12px', color: '#555' }}>{restaurantName}</span>
           </Link>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>

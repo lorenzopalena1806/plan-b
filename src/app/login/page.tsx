@@ -30,10 +30,10 @@ export default function LoginPage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--color-bg)' }}>
       <div className="card flex-col" style={{ width: '100%', maxWidth: '400px', display: 'flex', gap: '1.5rem', padding: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
-          <img src="/logo.png" alt="Polosandia" style={{ height: '60px', objectFit: 'contain' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <img src="/logo.png" alt="Polosandia" style={{ height: '100px', objectFit: 'contain' }} />
         </div>
-        <h2 style={{ textAlign: 'center', fontSize: '1.25rem', marginTop: '-1rem' }}>Acceso Administrativo</h2>
+        <h2 style={{ textAlign: 'center', fontSize: '1.25rem', marginTop: '-0.5rem' }}>Acceso Administrativo</h2>
         
         {error && <div style={{ color: 'var(--color-red-primary)', background: 'var(--color-red-light)', padding: '0.75rem', borderRadius: 'var(--border-radius-sm)', textAlign: 'center' }}>{error}</div>}
 

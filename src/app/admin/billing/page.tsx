@@ -162,7 +162,7 @@ export default function AdminBillingPage() {
             {/* Header info */}
             <div className="flex justify-between items-start" style={{ borderBottom: '2px solid #1a1a1a', paddingBottom: '1.5rem', marginBottom: '1.5rem' }}>
               <div>
-                <img src="/logo.png" alt="Polosandia" style={{ height: '45px', marginBottom: '0.5rem', objectFit: 'contain' }} />
+                <img src="/logo.png" alt="Polosandia" style={{ height: '75px', marginBottom: '0.75rem', objectFit: 'contain' }} />
                 <p style={{ fontSize: '0.85rem', color: '#666' }}>Sistema de Gestión para Gastronomía</p>
                 <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>soporte@polosandia.com</p>
               </div>
