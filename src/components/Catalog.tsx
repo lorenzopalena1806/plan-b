@@ -347,6 +347,11 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
           </div>
         </div>
       )}
+      {/* Footer Powered By Polosandia */}
+      <div style={{ textAlign: 'center', marginTop: '4rem', marginBottom: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--color-border)' }}>
+        <p style={{ fontSize: '0.75rem', color: '#a0aec0', marginBottom: '0.5rem' }}>Desarrollado por</p>
+        <img src="/logo.png" alt="Polosandia" style={{ height: '30px', opacity: 0.8 }} />
+      </div>
     </div>
   );
 }
