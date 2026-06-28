@@ -55,10 +55,10 @@ export default async function AdminLayout({
           </Link>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Link href="/admin/users" style={linkStyle('/admin/users')}>👥 Usuarios</Link>
-          <Link href="/admin/drivers" style={linkStyle('/admin/drivers')}>🛵 Repartidores</Link>
-          <Link href="/admin/banners" style={linkStyle('/admin/banners')}>🖼️ Banners</Link>
+          <Link href="/admin/products" style={linkStyle('/admin/products')}>🍔 Catálogo</Link>
           <Link href="/admin/settings" style={linkStyle('/admin/settings')}>⚙️ Configuración</Link>
+          <Link href="/admin/caja" style={linkStyle('/admin/caja')}>💵 Caja</Link>
+          <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>👨‍🍳 Comandera</Link>
           {subscriptionEnd && (
             <span style={{ 
               fontSize: '0.8rem', 

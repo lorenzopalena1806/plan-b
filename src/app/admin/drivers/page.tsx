@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Driver } from '@prisma/client';
+import Link from 'next/link';
 
 export default function DriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -80,7 +81,10 @@ export default function DriversPage() {
     <div className="container" style={{ padding: '2rem 0' }}>
       <header className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
         <h1>Repartidores (Delivery)</h1>
-        <button className="btn-primary" onClick={openNew}>+ Nuevo Repartidor</button>
+        <div className="flex" style={{ gap: '1rem' }}>
+          <button className="btn-primary" onClick={openNew}>+ Nuevo Repartidor</button>
+          <Link href="/admin" className="btn-outline">Volver al Panel</Link>
+        </div>
       </header>
 
       <div className="grid">

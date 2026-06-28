@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Banner } from '@prisma/client';
+import Link from 'next/link';
 
 export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -83,7 +84,10 @@ export default function BannersPage() {
           <h1>Carrusel de Banners</h1>
           <p className="text-muted" style={{ fontSize: '0.85rem' }}>Las imágenes que subas aquí irán rotando en la parte superior de tu menú digital.</p>
         </div>
-        <button className="btn-primary" onClick={openNew}>+ Nuevo Banner</button>
+        <div className="flex" style={{ gap: '1rem' }}>
+          <button className="btn-primary" onClick={openNew}>+ Nuevo Banner</button>
+          <Link href="/admin" className="btn-outline">Volver al Panel</Link>
+        </div>
       </header>
 
       <div className="grid">

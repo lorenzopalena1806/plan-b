@@ -146,7 +146,7 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
 
         {/* Banners Carousel */}
         {banners.length > 0 && (
-          <div style={{ marginBottom: '2rem', borderRadius: 'var(--border-radius-md)', overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '21/9', backgroundColor: 'var(--color-bg)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ marginBottom: '2rem', borderRadius: 'var(--border-radius-md)', overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '16/9', backgroundColor: 'transparent', boxShadow: 'var(--shadow-sm)' }}>
             {banners.map((banner, index) => (
               <a 
                 key={banner.id}
@@ -158,10 +158,10 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
                   opacity: index === currentBannerIndex ? 1 : 0,
                   transition: 'opacity 0.5s ease-in-out',
                   zIndex: index === currentBannerIndex ? 1 : 0,
-                  backgroundColor: '#f8f9fa'
+                  backgroundColor: 'transparent'
                 }}
               >
-                <img src={banner.imageUrl} alt="Promo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src={banner.imageUrl} alt="Promo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </a>
             ))}
             {banners.length > 1 && (
