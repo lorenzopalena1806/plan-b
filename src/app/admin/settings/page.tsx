@@ -259,9 +259,14 @@ export default function SettingsPage() {
                     type="color" 
                     value={config?.bgColor || '#ffffff'} 
                     onChange={e => setConfig({...config, bgColor: e.target.value})}
-                    style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                    style={{ width: '50px', height: '40px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
                   />
-                  <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.bgColor || '#ffffff'}</span>
+                  <input 
+                    type="text" 
+                    value={config?.bgColor || '#ffffff'} 
+                    onChange={e => setConfig({...config, bgColor: e.target.value})}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', fontFamily: 'monospace' }}
+                  />
                 </div>
               </div>
 
@@ -272,9 +277,14 @@ export default function SettingsPage() {
                     type="color" 
                     value={config?.cardColor || '#ffffff'} 
                     onChange={e => setConfig({...config, cardColor: e.target.value})}
-                    style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                    style={{ width: '50px', height: '40px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
                   />
-                  <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.cardColor || '#ffffff'}</span>
+                  <input 
+                    type="text" 
+                    value={config?.cardColor || '#ffffff'} 
+                    onChange={e => setConfig({...config, cardColor: e.target.value})}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', fontFamily: 'monospace' }}
+                  />
                 </div>
               </div>
 
@@ -285,9 +295,14 @@ export default function SettingsPage() {
                     type="color" 
                     value={config?.textColor || '#1a1a1a'} 
                     onChange={e => setConfig({...config, textColor: e.target.value})}
-                    style={{ width: '45px', height: '35px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
+                    style={{ width: '50px', height: '40px', padding: '0', border: 'none', cursor: 'pointer', borderRadius: 'var(--border-radius-sm)' }}
                   />
-                  <span className="text-muted font-mono" style={{ fontSize: '0.85rem' }}>{config?.textColor || '#1a1a1a'}</span>
+                  <input 
+                    type="text" 
+                    value={config?.textColor || '#1a1a1a'} 
+                    onChange={e => setConfig({...config, textColor: e.target.value})}
+                    style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', fontFamily: 'monospace' }}
+                  />
                 </div>
               </div>
             </div>
