@@ -297,7 +297,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
 
       {/* Propina Digital */}
       <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-md)' }}>
-        <label className="text-bold" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>Propina para el equipo 💖</label>
+        <label className="text-bold" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>Propina para el equipo</label>
         <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', marginBottom: showCustomTip ? '0.75rem' : '0' }}>
           {[0, 5, 10, 15].map(pct => {
             const isSelected = tipAmount === (subtotal * pct / 100) && !showCustomTip;

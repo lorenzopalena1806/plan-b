@@ -39,6 +39,8 @@ interface SalesData {
     todayEarnings: number;
     totalOrdersCount: number;
     todayOrdersCount: number;
+    totalTips: number;
+    todayTips: number;
   };
   productSales: ProductSale[];
 }
@@ -236,6 +238,27 @@ export default function SalesPage() {
             ${filteredAOV.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
           </h3>
           <span className="text-muted" style={{ fontSize: '0.75rem' }}>Valor promedio por compra realizada</span>
+        </div>
+
+        {/* Card 4: Propinas */}
+        <div className="card" style={{ 
+          backgroundColor: 'var(--color-card)', 
+          padding: '1.5rem', 
+          borderRadius: 'var(--border-radius-lg)', 
+          boxShadow: 'var(--shadow-sm)', 
+          border: '1px solid var(--color-border)',
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'center', 
+          minHeight: '130px' 
+        }}>
+          <span className="text-muted" style={{ fontSize: '0.875rem', fontWeight: '600' }}>Propinas del Equipo</span>
+          <h3 className="text-bold" style={{ fontSize: '2.25rem', margin: '0.5rem 0', color: 'var(--color-text)' }}>
+            ${(filter === 'TODAY' ? data.stats.todayTips : data.stats.totalTips).toLocaleString()}
+          </h3>
+          <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+            {filter === 'TODAY' ? 'Acumulado hoy' : 'Acumulado histórico'}
+          </span>
         </div>
       </div>
 

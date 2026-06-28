@@ -146,7 +146,7 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
 
         {/* Banners Carousel */}
         {banners.length > 0 && (
-          <div style={{ marginBottom: '2rem', borderRadius: 'var(--border-radius-md)', overflow: 'hidden', position: 'relative', height: '200px', backgroundColor: 'var(--color-bg)', boxShadow: 'var(--shadow-sm)' }}>
+          <div style={{ marginBottom: '2rem', borderRadius: 'var(--border-radius-md)', overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '21/9', backgroundColor: 'var(--color-bg)', boxShadow: 'var(--shadow-sm)' }}>
             {banners.map((banner, index) => (
               <a 
                 key={banner.id}
@@ -158,9 +158,10 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
                   opacity: index === currentBannerIndex ? 1 : 0,
                   transition: 'opacity 0.5s ease-in-out',
                   zIndex: index === currentBannerIndex ? 1 : 0,
+                  backgroundColor: '#f8f9fa'
                 }}
               >
-                <img src={banner.imageUrl} alt="Promo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <img src={banner.imageUrl} alt="Promo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </a>
             ))}
             {banners.length > 1 && (
@@ -402,8 +403,8 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
                 <button className="btn-outline" onClick={() => setQuantity(quantity + 1)}>+</button>
                 {selectedProduct.allowBulkQuantities && (
                   <div className="flex" style={{ gap: '0.5rem', marginLeft: '0.5rem' }}>
-                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity + 6)}>+6</button>
-                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity + 12)}>+12</button>
+                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity === 1 ? 6 : quantity + 6)}>+6</button>
+                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity === 1 ? 12 : quantity + 12)}>+12</button>
                   </div>
                 )}
               </div>

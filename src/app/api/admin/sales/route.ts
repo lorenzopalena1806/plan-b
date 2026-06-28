@@ -36,6 +36,8 @@ export async function GET() {
     let todayEarnings = 0;
     let totalOrdersCount = orders.length;
     let todayOrdersCount = 0;
+    let totalTips = 0;
+    let todayTips = 0;
 
     // Map to track product quantities sold
     const productSalesMap: Record<string, { quantity: number; revenue: number }> = {};
@@ -50,7 +52,9 @@ export async function GET() {
         if (isToday) {
           todayEarnings += order.total;
           todayOrdersCount++;
+          todayTips += order.tipAmount || 0;
         }
+        totalTips += order.tipAmount || 0;
 
         order.items.forEach(item => {
           const key = item.productName;
@@ -75,7 +79,9 @@ export async function GET() {
         totalEarnings,
         todayEarnings,
         totalOrdersCount,
-        todayOrdersCount
+        todayOrdersCount,
+        totalTips,
+        todayTips
       },
       productSales: productSalesList
     });
