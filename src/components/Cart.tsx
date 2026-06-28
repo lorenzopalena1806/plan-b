@@ -8,6 +8,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
   const [cashAmount, setCashAmount] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
 
   // Coupon state
   const [couponCodeInput, setCouponCodeInput] = useState('');
@@ -86,6 +87,11 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
       return;
     }
 
+    if (!customerPhone.trim()) {
+      alert("Por favor ingresa tu número de WhatsApp para poder contactarte.");
+      return;
+    }
+
     if (deliveryMethod === 'DELIVERY' && !address.trim()) {
       alert("Por favor ingresa tu dirección para el delivery.");
       return;
@@ -121,6 +127,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerName,
+          customerPhone,
           deliveryMethod,
           address: deliveryMethod === 'DELIVERY' ? address : null,
           items,
@@ -280,6 +287,14 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           placeholder="Tu Nombre" 
           value={customerName} 
           onChange={e => setCustomerName(e.target.value)}
+          style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', outlineColor: 'var(--color-red-primary)' }}
+        />
+        
+        <input 
+          type="tel" 
+          placeholder="Tu WhatsApp (ej: 1123456789)" 
+          value={customerPhone} 
+          onChange={e => setCustomerPhone(e.target.value)}
           style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', outlineColor: 'var(--color-red-primary)' }}
         />
         

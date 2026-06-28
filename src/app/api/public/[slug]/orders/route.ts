@@ -18,6 +18,7 @@ export async function POST(
     const data = await request.json();
     const { 
       customerName, 
+      customerPhone,
       deliveryMethod, 
       address, 
       items, 
@@ -32,6 +33,7 @@ export async function POST(
     const newOrder = await prisma.order.create({
       data: {
         customerName,
+        customerPhone,
         deliveryMethod,
         address,
         total: parseFloat(total),

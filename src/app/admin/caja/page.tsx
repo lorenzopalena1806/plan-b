@@ -211,10 +211,24 @@ export default function CajaPage() {
               </div>
             </div>
             
-            <div className="flex" style={{ gap: '1rem' }}>
-              <button className="btn-primary" style={{ flex: 2 }} onClick={() => confirmOrder(order.id)}>✅ Confirmar Pago</button>
-              <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => rejectOrder(order.id)}>❌ Rechazar</button>
-              <button className="btn-outline" style={{ flex: 1 }} onClick={() => handlePrintTicket(order)}>🖨️ Imprimir</button>
+            <div className="flex flex-col" style={{ gap: '0.75rem' }}>
+              <div className="flex" style={{ gap: '0.5rem' }}>
+                <button className="btn-primary" style={{ flex: 2 }} onClick={() => confirmOrder(order.id)}>✅ Confirmar Pago</button>
+                <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => rejectOrder(order.id)}>❌ Rechazar</button>
+                <button className="btn-outline" style={{ flex: 0, padding: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Ticket" onClick={() => handlePrintTicket(order)}>🖨️</button>
+              </div>
+              
+              {order.customerPhone && (
+                <a 
+                  href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${order.customerName}, recibimos tu pedido #${order.id}. Por favor enviá tu comprobante por este medio para enviarlo a cocina.`)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-outline"
+                  style={{ width: '100%', display: 'block', textAlign: 'center', borderColor: '#25D366', color: '#25D366', fontWeight: 'bold' }}
+                >
+                  💬 Hablar por WhatsApp
+                </a>
+              )}
             </div>
           </div>
         ))}

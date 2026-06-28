@@ -96,6 +96,7 @@ model ModifierOption {
 model Order {
   id             Int         @id @default(autoincrement())
   customerName   String
+  customerPhone  String?
   deliveryMethod String      
   address        String?
   status         String      @default("AWAITING_CONFIRMATION") 

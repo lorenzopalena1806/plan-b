@@ -28,7 +28,11 @@ export async function GET() {
     where: { id: session.user.restaurantId }
   });
 
-  return NextResponse.json({ ...config, restaurantName: restaurant?.name || '' });
+  return NextResponse.json({ 
+    ...config, 
+    restaurantName: restaurant?.name || '',
+    restaurantSlug: restaurant?.slug || ''
+  });
 }
 
 export async function POST(request: Request) {

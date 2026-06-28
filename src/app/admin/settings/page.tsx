@@ -400,6 +400,34 @@ export default function SettingsPage() {
           </button>
         </form>
 
+        {/* QR Code Section */}
+        {config?.restaurantSlug && (
+          <div className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
+            <div>
+              <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Código QR de mi Menú</h3>
+              <p className="text-muted" style={{ fontSize: '0.85rem' }}>
+                Usa este código para imprimirlo en las mesas de tu local o en tus redes. Al escanearlo, tus clientes serán dirigidos automáticamente a tu menú digital.
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center justify-center" style={{ padding: '1rem', background: 'var(--color-bg)', borderRadius: 'var(--border-radius-sm)', border: '1px dashed var(--color-border)' }}>
+              {(() => {
+                const menuUrl = typeof window !== 'undefined' ? `${window.location.origin}/${config.restaurantSlug}` : `https://polosandia.vercel.app/${config.restaurantSlug}`;
+                const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(menuUrl)}`;
+                return (
+                  <>
+                    <img src={qrUrl} alt="QR Code" style={{ width: '250px', height: '250px', marginBottom: '1rem' }} />
+                    <p className="text-bold" style={{ marginBottom: '1rem' }}>{menuUrl}</p>
+                    <a href={qrUrl} download={`qr-${config.restaurantSlug}.png`} target="_blank" rel="noreferrer" className="btn-primary" style={{ textDecoration: 'none' }}>
+                      ⬇️ Descargar Código QR
+                    </a>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
+
         {/* Weekly Business Hours Form */}
         <div className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
           <div>
