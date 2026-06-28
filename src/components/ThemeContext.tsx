@@ -98,8 +98,15 @@ export function ClientThemeWrapper({ children, config }: ClientThemeWrapperProps
   } as React.CSSProperties;
 
   return (
-    <div style={{ ...cssVariables, backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh', fontFamily: 'var(--font-sans)', transition: 'background-color 0.3s ease, color 0.3s ease' }}>
-      {children}
-    </div>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        body {
+          background-color: ${bgColor} !important;
+        }
+      `}} />
+      <div style={{ ...cssVariables, backgroundColor: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh', fontFamily: 'var(--font-sans)', transition: 'background-color 0.3s ease, color 0.3s ease', overflowX: 'hidden' }}>
+        {children}
+      </div>
+    </>
   );
 }
