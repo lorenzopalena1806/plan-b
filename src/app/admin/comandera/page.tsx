@@ -92,6 +92,7 @@ export default function ComanderaPage() {
   const [selectedDrivers, setSelectedDrivers] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [hideAssigned, setHideAssigned] = useState(false);
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
   const chimeAudioUrlRef = useRef<string>('');
 
@@ -262,7 +263,8 @@ export default function ComanderaPage() {
   const columns = [
     { id: 'PENDING', title: 'Pendiente' },
     { id: 'PREPARING', title: 'En Preparación' },
-    { id: 'READY', title: 'Listo para entregar' }
+    { id: 'DELIVERY', title: 'Delivery (Listos)' },
+    { id: 'PICKUP', title: 'Retiro Local (Listos)' }
   ];
 
   if (isLoading) return <div className="container" style={{ padding: '2rem' }}>Cargando comandera...</div>;
@@ -288,130 +290,171 @@ export default function ComanderaPage() {
           >
             {soundEnabled ? '🔊 Sonido Habilitado (Probar)' : '🔇 Habilitar Sonido'}
           </button>
+          <button 
+            className="btn-outline" 
+            onClick={() => setHideAssigned(!hideAssigned)}
+            style={{ fontWeight: '600', backgroundColor: hideAssigned ? 'var(--color-card)' : 'transparent' }}
+          >
+            {hideAssigned ? '🙈 Asignados Ocultos' : '👀 Ver Asignados'}
+          </button>
           <button className="btn-outline" onClick={fetchOrders}>Refrescar</button>
         </div>
       </header>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', flex: 1, overflow: 'hidden' }}>
-        {columns.map(col => (
-          <div key={col.id} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '1rem', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-border)' }}>{col.title} ({orders.filter(o => o.status === col.id).length})</h2>
-            
-            <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: '1rem', paddingRight: '0.5rem' }}>
-              {orders.filter(o => o.status === col.id).map(order => (
-                <div key={order.id} className="card" style={{ borderLeft: `4px solid ${order.deliveryMethod === 'DELIVERY' ? 'var(--color-red-primary)' : 'var(--color-green)'}` }}>
-                  <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
-                    <span className="text-bold text-muted">#{order.id}</span>
-                    <span className={`status-badge ${order.deliveryMethod === 'DELIVERY' ? 'bg-red-light text-red' : 'status-ready'}`}>
-                      {order.deliveryMethod}
-                    </span>
-                  </div>
-                  
-                  <h3 style={{ fontSize: '1.125rem', marginBottom: '0.5rem' }}>{order.customerName}</h3>
-                  
-                  {order.paymentMethod && (
-                    <div style={{ 
-                      marginBottom: '0.5rem', 
-                      padding: '0.5rem', 
-                      background: order.paymentMethod === 'TRANSFER' ? 'var(--color-green-light)' : 'rgba(0,0,0,0.03)', 
-                      border: `1px solid ${order.paymentMethod === 'TRANSFER' ? 'var(--color-green)' : 'var(--color-border)'}`,
-                      color: order.paymentMethod === 'TRANSFER' ? 'var(--color-green)' : 'var(--color-text)', 
-                      borderRadius: 'var(--border-radius-sm)', 
-                      fontSize: '0.875rem' 
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', flex: 1, overflow: 'hidden' }}>
+        {columns.map(col => {
+          let columnOrders = orders.filter(o => {
+            if (col.id === 'PENDING') return o.status === 'PENDING';
+            if (col.id === 'PREPARING') return o.status === 'PREPARING';
+            if (col.id === 'DELIVERY') return o.status === 'READY' && o.deliveryMethod === 'DELIVERY';
+            if (col.id === 'PICKUP') return o.status === 'READY' && o.deliveryMethod === 'PICKUP';
+            return false;
+          });
+
+          // Si es delivery y se ocultan los asignados
+          if (col.id === 'DELIVERY' && hideAssigned) {
+            columnOrders = columnOrders.filter(o => !o.driverId);
+          }
+
+          return (
+            <div key={col.id} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '0.75rem', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+              <h2 style={{ fontSize: '1.15rem', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-border)' }}>
+                {col.title} ({columnOrders.length})
+              </h2>
+              
+              <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem' }}>
+                {columnOrders.map(order => {
+                  const isAssigned = order.driverId != null;
+                  const assignedDriver = drivers.find(d => d.id === order.driverId);
+
+                  return (
+                    <div key={order.id} className="card flex-col" style={{ 
+                      borderLeft: `4px solid ${order.deliveryMethod === 'DELIVERY' ? 'var(--color-red-primary)' : 'var(--color-green)'}`,
+                      padding: '0.75rem',
+                      opacity: isAssigned ? 0.75 : 1,
+                      backgroundColor: isAssigned ? '#e9ecef' : 'var(--color-card)',
+                      gap: '0.5rem'
                     }}>
-                      <strong>Pago:</strong> {order.paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'}
-                      {order.paymentDetails && <div style={{ fontSize: '0.75rem', marginTop: '0.15rem' }}>{order.paymentDetails}</div>}
-                    </div>
-                  )}
-
-                  {order.customerNotes && (
-                    <div style={{ marginBottom: '1rem', padding: '0.5rem', background: '#fff3cd', color: '#856404', borderRadius: 'var(--border-radius-sm)', fontSize: '0.875rem' }}>
-                      <strong>Nota:</strong> {order.customerNotes}
-                    </div>
-                  )}
-                  
-                  <div style={{ marginBottom: '1.5rem', maxHeight: '350px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                    {order.items.map(item => {
-                      let modifiers = [];
-                      let rawNote = '';
-                      if (item.notes) {
-                        try {
-                          const parsed = JSON.parse(item.notes);
-                          if (Array.isArray(parsed)) modifiers = parsed;
-                          else rawNote = item.notes;
-                        } catch (e) {
-                          rawNote = item.notes;
-                        }
-                      }
-
-                      return (
-                        <div key={item.id} style={{ marginBottom: '0.75rem', paddingBottom: '0.75rem', borderBottom: '1px dashed var(--color-border)' }}>
-                          <div className="text-bold">{item.quantity}x {item.productName}</div>
-                          {modifiers.length > 0 && (
-                            <div className="text-muted" style={{ fontSize: '0.875rem' }}>
-                              {modifiers.map((mod: any) => mod.name).join(', ')}
-                            </div>
-                          )}
-                          {rawNote && (
-                            <div className="text-muted" style={{ fontSize: '0.875rem' }}>
-                              {rawNote}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  
-                  {/* Coupon and Total Summary */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.25rem', padding: '0.75rem', backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: 'var(--border-radius-sm)', fontSize: '0.875rem' }}>
-                    {order.couponCode && (
-                      <div className="flex justify-between text-green" style={{ color: 'var(--color-green)' }}>
-                        <span>Cupón: <strong>{order.couponCode}</strong></span>
-                        <span>-${order.discountApplied.toLocaleString()}</span>
+                      <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
+                        <span className="text-bold text-muted">#{order.id}</span>
+                        <span className={`status-badge ${order.deliveryMethod === 'DELIVERY' ? 'bg-red-light text-red' : 'status-ready'}`} style={{ fontSize: '0.7rem' }}>
+                          {order.deliveryMethod}
+                        </span>
                       </div>
-                    )}
-                    <div className="flex justify-between text-bold" style={{ fontSize: '1rem', borderTop: order.couponCode ? '1px dashed var(--color-border)' : 'none', paddingTop: order.couponCode ? '0.25rem' : '0' }}>
-                      <span>Total:</span>
-                      <span>${order.total.toLocaleString()}</span>
-                    </div>
-                  </div>
+                      
+                      <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{order.customerName}</h3>
+                      
+                      {isAssigned ? (
+                        <div style={{ padding: '0.5rem', background: '#d4edda', color: '#155724', borderRadius: '4px', fontSize: '0.8rem', textAlign: 'center', fontWeight: 'bold' }}>
+                          🛵 Asignado a: {assignedDriver?.name || `Repartidor #${order.driverId}`}
+                        </div>
+                      ) : (
+                        <>
+                          {order.paymentMethod && (
+                            <div style={{ 
+                              padding: '0.4rem', 
+                              background: order.paymentMethod === 'TRANSFER' ? 'var(--color-green-light)' : 'rgba(0,0,0,0.03)', 
+                              border: `1px solid ${order.paymentMethod === 'TRANSFER' ? 'var(--color-green)' : 'var(--color-border)'}`,
+                              color: order.paymentMethod === 'TRANSFER' ? 'var(--color-green)' : 'var(--color-text)', 
+                              borderRadius: 'var(--border-radius-sm)', 
+                              fontSize: '0.8rem' 
+                            }}>
+                              <strong>Pago:</strong> {order.paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'}
+                              {order.paymentDetails && <div style={{ fontSize: '0.7rem', marginTop: '0.15rem' }}>{order.paymentDetails}</div>}
+                            </div>
+                          )}
 
-                  {col.id === 'READY' && order.deliveryMethod === 'DELIVERY' && (
-                    <div className="flex flex-col" style={{ gap: '0.5rem', marginBottom: '0.5rem', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', background: 'var(--color-card)' }}>
-                      <label className="text-bold text-muted" style={{ fontSize: '0.75rem' }}>Asignar Repartidor:</label>
-                      <select 
-                        value={selectedDrivers[order.id] || ''}
-                        onChange={(e) => setSelectedDrivers({ ...selectedDrivers, [order.id]: e.target.value })}
-                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
-                      >
-                        <option value="">-- Seleccionar --</option>
-                        {drivers.map(d => (
-                          <option key={d.id} value={d.id.toString()}>{d.name}</option>
-                        ))}
-                      </select>
-                      {selectedDrivers[order.id] && (
-                        <button 
-                          onClick={() => handleAssignDriver(order, selectedDrivers[order.id])}
-                          className="btn-outline"
-                          style={{ borderColor: '#25D366', color: '#25D366', textAlign: 'center', display: 'block', textDecoration: 'none' }}
-                        >
-                          🛵 Avisar a Repartidor
-                        </button>
+                          {order.customerNotes && (
+                            <div style={{ padding: '0.4rem', background: '#fff3cd', color: '#856404', borderRadius: 'var(--border-radius-sm)', fontSize: '0.8rem' }}>
+                              <strong>Nota:</strong> {order.customerNotes}
+                            </div>
+                          )}
+                          
+                          <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                            {order.items.map(item => {
+                              let modifiers = [];
+                              let rawNote = '';
+                              if (item.notes) {
+                                try {
+                                  const parsed = JSON.parse(item.notes);
+                                  if (Array.isArray(parsed)) modifiers = parsed;
+                                  else rawNote = item.notes;
+                                } catch (e) {
+                                  rawNote = item.notes;
+                                }
+                              }
+
+                              return (
+                                <div key={item.id} style={{ marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px dashed var(--color-border)' }}>
+                                  <div className="text-bold" style={{ fontSize: '0.9rem' }}>{item.quantity}x {item.productName}</div>
+                                  {modifiers.length > 0 && (
+                                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>
+                                      {modifiers.map((mod: any) => mod.name).join(', ')}
+                                    </div>
+                                  )}
+                                  {rawNote && (
+                                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>
+                                      {rawNote}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                          
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', padding: '0.5rem', backgroundColor: 'rgba(0,0,0,0.02)', borderRadius: 'var(--border-radius-sm)', fontSize: '0.85rem' }}>
+                            {order.couponCode && (
+                              <div className="flex justify-between text-green" style={{ color: 'var(--color-green)' }}>
+                                <span>Cupón: <strong>{order.couponCode}</strong></span>
+                                <span>-${order.discountApplied.toLocaleString()}</span>
+                              </div>
+                            )}
+                            <div className="flex justify-between text-bold" style={{ fontSize: '0.95rem', borderTop: order.couponCode ? '1px dashed var(--color-border)' : 'none', paddingTop: order.couponCode ? '0.25rem' : '0' }}>
+                              <span>Total:</span>
+                              <span>${order.total.toLocaleString()}</span>
+                            </div>
+                          </div>
+
+                          {col.id === 'DELIVERY' && (
+                            <div className="flex flex-col" style={{ gap: '0.5rem', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', background: 'var(--color-card)' }}>
+                              <label className="text-bold text-muted" style={{ fontSize: '0.75rem' }}>Asignar Repartidor:</label>
+                              <select 
+                                value={selectedDrivers[order.id] || ''}
+                                onChange={(e) => setSelectedDrivers({ ...selectedDrivers, [order.id]: e.target.value })}
+                                style={{ padding: '0.4rem', borderRadius: '4px', border: '1px solid var(--color-border)', fontSize: '0.85rem' }}
+                              >
+                                <option value="">-- Seleccionar --</option>
+                                {drivers.map(d => (
+                                  <option key={d.id} value={d.id.toString()}>{d.name}</option>
+                                ))}
+                              </select>
+                              {selectedDrivers[order.id] && (
+                                <button 
+                                  onClick={() => handleAssignDriver(order, selectedDrivers[order.id])}
+                                  className="btn-outline"
+                                  style={{ borderColor: '#25D366', color: '#25D366', textAlign: 'center', display: 'block', fontSize: '0.85rem', padding: '0.4rem' }}
+                                >
+                                  🛵 Avisar a Repartidor
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </>
                       )}
-                    </div>
-                  )}
 
-                  <div className="flex justify-between mt-auto" style={{ gap: '0.5rem' }}>
-                    {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085', flex: 1 }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}
-                    {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724', flex: 1 }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}
-                    {col.id === 'READY' && <button className="btn-primary" onClick={() => updateOrderStatus(order.id, 'COMPLETED')} style={{ flex: 1 }}>Entregar</button>}
-                    <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Comanda">🖨️</button>
-                  </div>
-                </div>
-              ))}
+                      <div className="flex justify-between mt-auto" style={{ gap: '0.4rem', paddingTop: '0.5rem' }}>
+                        {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085', flex: 1, fontSize: '0.85rem', padding: '0.5rem' }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}
+                        {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724', flex: 1, fontSize: '0.85rem', padding: '0.5rem' }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}
+                        {col.id === 'PICKUP' && <button className="btn-primary" onClick={() => updateOrderStatus(order.id, 'COMPLETED')} style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }}>Entregar al Cliente</button>}
+                        <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Comanda">🖨️</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
