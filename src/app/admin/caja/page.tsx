@@ -9,6 +9,7 @@ type OrderWithItems = Order & { items: OrderItem[] };
 
 export default function CajaPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [config, setConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchOrders = async () => {
@@ -27,6 +28,7 @@ export default function CajaPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetch('/api/config').then(res => res.json()).then(data => setConfig(data)).catch(console.error);
     const interval = setInterval(fetchOrders, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
   }, []);
@@ -220,7 +222,11 @@ export default function CajaPage() {
               
               {order.customerPhone && (
                 <a 
-                  href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hola ${order.customerName}, recibimos tu pedido #${order.id}. Por favor enviá tu comprobante por este medio para enviarlo a cocina.`)}`}
+                  href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                    order.paymentMethod === 'Transferencia' 
+                    ? `Hola ${order.customerName}, recibimos tu pedido #${order.id}.\n\nPara enviarlo a cocina necesitamos que realices el pago de *$${order.total.toLocaleString()}* a nuestro alias: *${config?.bankAlias || 'N/A'}*.\n\n🚨 *IMPORTANTE: EL PEDIDO NO SE PREPARARÁ HASTA QUE ENVÍES EL COMPROBANTE POR ACÁ.* 🚨`
+                    : `Hola ${order.customerName}, recibimos tu pedido #${order.id} por un total de *$${order.total.toLocaleString()}*. ¡Ya lo enviamos a cocina!`
+                  )}`}
                   target="_blank"
                   rel="noreferrer"
                   className="btn-outline"
