@@ -90,11 +90,11 @@ export default function CajaPage() {
       }
       itemsHtml += `
         <tr>
-          <td class="w-qty">\${item.quantity}x</td>
+          <td class="w-qty">${item.quantity}x</td>
           <td>
-            \${item.productName}
-            \${modifiers.length > 0 ? \`<br><small class="comanda-notes">\${modifiers.map((m:any) => m.name).join(', ')}</small>\` : ''}
-            \${rawNote ? \`<br><small class="comanda-notes">\${rawNote}</small>\` : ''}
+            ${item.productName}
+            ${modifiers.length > 0 ? `<br><small class="comanda-notes">${modifiers.map((m:any) => m.name).join(', ')}</small>` : ''}
+            ${rawNote ? `<br><small class="comanda-notes">${rawNote}</small>` : ''}
           </td>
         </tr>
       `;
@@ -103,15 +103,15 @@ export default function CajaPage() {
     const html = `
       <div class="text-center mb-4">
         <h1 class="text-xl mb-1">TICKET DE PEDIDO</h1>
-        <div class="text-lg font-bold">Orden #\${order.id}</div>
-        <div>\${new Date(order.createdAt).toLocaleString()}</div>
+        <div class="text-lg font-bold">Orden #${order.id}</div>
+        <div>${new Date(order.createdAt).toLocaleString()}</div>
       </div>
       
       <div class="border-b mb-2">
-        <div><strong>Cliente:</strong> \${order.customerName}</div>
-        \${order.address ? \`<div><strong>Dirección:</strong> \${order.address}</div>\` : ''}
-        <div><strong>Método:</strong> \${order.deliveryMethod === 'DELIVERY' ? 'Envío' : 'Retiro por local'}</div>
-        \${order.customerNotes ? \`<div class="mt-4"><strong>Nota:</strong> \${order.customerNotes}</div>\` : ''}
+        <div><strong>Cliente:</strong> ${order.customerName}</div>
+        ${order.address ? `<div><strong>Dirección:</strong> ${order.address}</div>` : ''}
+        <div><strong>Método:</strong> ${order.deliveryMethod === 'DELIVERY' ? 'Envío' : 'Retiro por local'}</div>
+        ${order.customerNotes ? `<div class="mt-4"><strong>Nota:</strong> ${order.customerNotes}</div>` : ''}
       </div>
 
       <table class="mb-4">
@@ -122,12 +122,12 @@ export default function CajaPage() {
           </tr>
         </thead>
         <tbody>
-          \${itemsHtml}
+          ${itemsHtml}
         </tbody>
       </table>
 
       <div class="border-t pt-2 mt-4 text-right">
-        <div class="text-2xl font-bold">TOTAL: $\${order.total.toLocaleString()}</div>
+        <div class="text-2xl font-bold">TOTAL: $${order.total.toLocaleString()}</div>
       </div>
       
       <div class="text-center mt-4 border-t pt-2">

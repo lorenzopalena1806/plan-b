@@ -203,9 +203,9 @@ export default function ComanderaPage() {
       }
       itemsHtml += `
         <div class="comanda-item">
-          <span class="comanda-qty">\${item.quantity}x</span> \${item.productName}
-          \${modifiers.length > 0 ? \`<span class="comanda-notes">\${modifiers.map((m:any) => m.name).join(', ')}</span>\` : ''}
-          \${rawNote ? \`<span class="comanda-notes">\${rawNote}</span>\` : ''}
+          <span class="comanda-qty">${item.quantity}x</span> ${item.productName}
+          ${modifiers.length > 0 ? `<span class="comanda-notes">${modifiers.map((m:any) => m.name).join(', ')}</span>` : ''}
+          ${rawNote ? `<span class="comanda-notes">${rawNote}</span>` : ''}
         </div>
       `;
     });
@@ -213,18 +213,18 @@ export default function ComanderaPage() {
     const html = `
       <div class="text-center border-b mb-4">
         <h1 class="text-2xl font-bold mb-1">COMANDA</h1>
-        <div class="text-xl font-bold">Orden #\${order.id}</div>
-        <div>\${new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-        \${order.deliveryMethod === 'DELIVERY' 
+        <div class="text-xl font-bold">Orden #${order.id}</div>
+        <div>${new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+        ${order.deliveryMethod === 'DELIVERY' 
           ? '<div class="text-lg font-bold mt-4" style="background:#000; color:#fff; padding:5px;">ENVÍO</div>' 
           : '<div class="text-lg font-bold mt-4" style="border: 2px solid #000; padding:5px;">RETIRO</div>'}
       </div>
       
       <div class="mb-4">
-        \${itemsHtml}
+        ${itemsHtml}
       </div>
       
-      \${order.customerNotes ? \`<div class="border-t pt-2 mt-4 text-lg"><strong>NOTA DEL CLIENTE:</strong><br>\${order.customerNotes}</div>\` : ''}
+      ${order.customerNotes ? `<div class="border-t pt-2 mt-4 text-lg"><strong>NOTA DEL CLIENTE:</strong><br>${order.customerNotes}</div>` : ''}
     `;
 
     printTicket(html);

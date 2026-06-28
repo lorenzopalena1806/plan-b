@@ -58,17 +58,17 @@ export const printTicket = (htmlContent: string) => {
 
   // Write content to iframe
   doc.open();
-  doc.write(\`
+  doc.write(`
     <html>
       <head>
         <title>Imprimir Ticket</title>
-        <style>\${styles}</style>
+        <style>${styles}</style>
       </head>
       <body>
-        \${htmlContent}
+        ${htmlContent}
       </body>
     </html>
-  \`);
+  `);
   doc.close();
 
   // Wait for images/fonts to load (if any), then print
