@@ -21,6 +21,8 @@ interface Order {
   customerNotes: string | null;
   paymentMethod?: string | null;
   paymentDetails?: string | null;
+  status: string;
+  cancelReason?: string | null;
   items: OrderItem[];
 }
 
@@ -158,8 +160,10 @@ export default function SalesPage() {
   };
 
   // Calculate filtered stats
-  const filteredTotal = filteredOrders.reduce((sum, o) => sum + o.total, 0);
-  const filteredAOV = filteredOrders.length > 0 ? (filteredTotal / filteredOrders.length) : 0;
+  // Calculate filtered stats (ONLY FOR COMPLETED)
+  const completedFiltered = filteredOrders.filter(o => o.status === 'COMPLETED');
+  const filteredTotal = completedFiltered.reduce((sum, o) => sum + o.total, 0);
+  const filteredAOV = completedFiltered.length > 0 ? (filteredTotal / completedFiltered.length) : 0;
   const maxQuantity = Math.max(...data.productSales.map(ps => ps.quantity), 1);
 
   return (
@@ -314,6 +318,11 @@ export default function SalesPage() {
                         <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
                           {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
+                        {order.status === 'REJECTED' && (
+                          <div style={{ marginTop: '0.25rem' }}>
+                            <span style={{ backgroundColor: 'var(--color-red-primary)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>RECHAZADO</span>
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '1rem 0.5rem' }}>
                         <div className="text-bold">{order.customerName}</div>
@@ -338,10 +347,16 @@ export default function SalesPage() {
                       </td>
                       <td style={{ padding: '1rem 0.5rem', maxWidth: '150px', wordBreak: 'break-word' }}>
                         {order.customerNotes ? (
-                          <span style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', display: 'inline-block' }}>
+                          <span style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '2px 6px', borderRadius: '4px', fontSize: '0.75rem', display: 'inline-block', marginBottom: '0.25rem' }}>
                             {order.customerNotes}
                           </span>
-                        ) : '-'}
+                        ) : null}
+                        {order.cancelReason && (
+                          <div style={{ backgroundColor: '#ffebee', color: '#c62828', padding: '4px 6px', borderRadius: '4px', fontSize: '0.75rem', border: '1px solid #ef5350' }}>
+                            <strong>Motivo Cancelación:</strong><br/>{order.cancelReason}
+                          </div>
+                        )}
+                        {!order.customerNotes && !order.cancelReason && '-'}
                       </td>
                       <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 'bold', fontSize: '1rem' }} className="text-red">
                         ${order.total.toLocaleString()}

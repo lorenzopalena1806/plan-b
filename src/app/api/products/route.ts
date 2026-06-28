@@ -29,7 +29,7 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json();
-    const { name, description, price, imageUrl, categoryId, isPromo, isActive, modifierIds } = data;
+    const { name, description, price, imageUrl, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds } = data;
 
     const product = await prisma.product.create({
       data: {
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
         categoryId: categoryId ? parseInt(categoryId) : null,
         isPromo: Boolean(isPromo),
         isActive: isActive !== undefined ? Boolean(isActive) : true,
+        allowBulkQuantities: Boolean(allowBulkQuantities),
         restaurantId: session.user.restaurantId,
         modifiers: modifierIds && modifierIds.length > 0 ? {
           connect: modifierIds.map((id: number) => ({ id }))

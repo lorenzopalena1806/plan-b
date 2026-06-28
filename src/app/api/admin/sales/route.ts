@@ -14,10 +14,10 @@ export async function GET() {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 
-    // Fetch all COMPLETED orders to construct stats
+    // Fetch all COMPLETED and REJECTED orders to construct stats and audit
     const orders = await prisma.order.findMany({
       where: {
-        status: 'COMPLETED',
+        status: { in: ['COMPLETED', 'REJECTED'] },
         restaurantId: session.user.restaurantId
       },
       include: {
@@ -41,24 +41,26 @@ export async function GET() {
     const productSalesMap: Record<string, { quantity: number; revenue: number }> = {};
 
     orders.forEach(order => {
-      totalEarnings += order.total;
+      if (order.status === 'COMPLETED') {
+        totalEarnings += order.total;
 
-      const orderDate = new Date(order.createdAt);
-      const isToday = orderDate >= today;
+        const orderDate = new Date(order.createdAt);
+        const isToday = orderDate >= today;
 
-      if (isToday) {
-        todayEarnings += order.total;
-        todayOrdersCount++;
-      }
-
-      order.items.forEach(item => {
-        const key = item.productName;
-        if (!productSalesMap[key]) {
-          productSalesMap[key] = { quantity: 0, revenue: 0 };
+        if (isToday) {
+          todayEarnings += order.total;
+          todayOrdersCount++;
         }
-        productSalesMap[key].quantity += item.quantity;
-        productSalesMap[key].revenue += item.priceAtPurchase * item.quantity;
-      });
+
+        order.items.forEach(item => {
+          const key = item.productName;
+          if (!productSalesMap[key]) {
+            productSalesMap[key] = { quantity: 0, revenue: 0 };
+          }
+          productSalesMap[key].quantity += item.quantity;
+          productSalesMap[key].revenue += item.priceAtPurchase * item.quantity;
+        });
+      }
     });
 
     const productSalesList = Object.entries(productSalesMap).map(([name, stats]) => ({

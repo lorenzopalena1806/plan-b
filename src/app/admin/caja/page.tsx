@@ -56,7 +56,11 @@ export default function CajaPage() {
   };
 
   const rejectOrder = async (id: number) => {
-    if (!confirm('¿Estás seguro de cancelar/rechazar este pedido?')) return;
+    const reason = prompt('Auditoría: ¿Por qué estás cancelando este pedido? (Obligatorio)');
+    if (!reason || reason.trim() === '') {
+      alert('Debes ingresar un motivo para poder cancelar el pedido.');
+      return;
+    }
 
     try {
       setOrders(orders.map(o => o.id === id ? { ...o, status: 'REJECTED' } : o));
@@ -64,7 +68,7 @@ export default function CajaPage() {
       const res = await fetch(`/api/orders/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'REJECTED' })
+        body: JSON.stringify({ status: 'REJECTED', cancelReason: reason })
       });
       
       if (!res.ok) {

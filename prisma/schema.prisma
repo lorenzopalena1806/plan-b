@@ -23,6 +23,8 @@ model Restaurant {
   businessHours   BusinessHour[]
   coupons         Coupon[]
   receipts        Receipt[]
+  drivers         Driver[]
+  banners         Banner[]
 }
 
 model User {
@@ -77,6 +79,7 @@ model Product {
   category     Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isPromo      Boolean          @default(false)
   isActive     Boolean          @default(true)
+  allowBulkQuantities Boolean   @default(false)
   modifiers    ModifierOption[]
   restaurantId Int
   restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -108,6 +111,8 @@ model Order {
   paymentDetails String?
   couponCode     String?
   discountApplied Float      @default(0)
+  tipAmount      Float       @default(0)
+  cancelReason   String?
   restaurantId   Int
   restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
@@ -163,6 +168,25 @@ model Receipt {
   periodStart  DateTime
   periodEnd    DateTime
   description  String?
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Driver {
+  id           Int        @id @default(autoincrement())
+  name         String
+  phone        String
+  isActive     Boolean    @default(true)
+  restaurantId Int
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Banner {
+  id           Int        @id @default(autoincrement())
+  imageUrl     String
+  link         String?
+  isActive     Boolean    @default(true)
+  orderIndex   Int        @default(0)
   restaurantId Int
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }

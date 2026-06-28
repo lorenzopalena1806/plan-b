@@ -37,6 +37,14 @@ export default async function AdminLayout({
   const systemConfig = await prisma.systemConfig.findFirst();
   const supportContact = systemConfig?.supportContact || '';
 
+  const linkStyle = (path: string) => ({
+    textDecoration: 'none',
+    color: '#333',
+    padding: '0.5rem 1rem',
+    borderRadius: '4px',
+    backgroundColor: 'transparent'
+  });
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -47,6 +55,10 @@ export default async function AdminLayout({
           </Link>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <Link href="/admin/users" style={linkStyle('/admin/users')}>👥 Usuarios</Link>
+          <Link href="/admin/drivers" style={linkStyle('/admin/drivers')}>🛵 Repartidores</Link>
+          <Link href="/admin/banners" style={linkStyle('/admin/banners')}>🖼️ Banners</Link>
+          <Link href="/admin/settings" style={linkStyle('/admin/settings')}>⚙️ Configuración</Link>
           {subscriptionEnd && (
             <span style={{ 
               fontSize: '0.8rem', 

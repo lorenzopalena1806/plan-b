@@ -27,7 +27,8 @@ export async function POST(
       paymentMethod, 
       paymentDetails,
       couponCode,
-      discountApplied
+      discountApplied,
+      tipAmount
     } = data;
 
     const newOrder = await prisma.order.create({
@@ -42,6 +43,7 @@ export async function POST(
         paymentDetails,
         couponCode: couponCode || null,
         discountApplied: discountApplied ? parseFloat(discountApplied) : 0,
+        tipAmount: tipAmount ? parseFloat(tipAmount) : 0,
         restaurantId: restaurant.id,
         items: {
           create: items.map((item: any) => ({

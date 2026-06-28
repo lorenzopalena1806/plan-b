@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
-    const [config, categories, products] = await Promise.all([
+    const [config, categories, products, banners] = await Promise.all([
       prisma.config.findFirst({ where: { restaurantId: restaurant.id } }),
       prisma.category.findMany({ 
         where: { restaurantId: restaurant.id },
@@ -28,6 +28,10 @@ export async function GET(
         },
         include: { modifiers: true },
         orderBy: { id: 'desc' }
+      }),
+      prisma.banner.findMany({
+        where: { restaurantId: restaurant.id, isActive: true },
+        orderBy: { orderIndex: 'asc' }
       })
     ]);
 
@@ -38,7 +42,8 @@ export async function GET(
       },
       config,
       categories,
-      products
+      products,
+      banners
     });
   } catch (error) {
     return NextResponse.json({ error: 'Error loading catalog' }, { status: 500 });

@@ -74,6 +74,11 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     },
   });
 
+  const banners = await prisma.banner.findMany({
+    where: { restaurantId: restaurant.id, isActive: true },
+    orderBy: { orderIndex: 'asc' }
+  });
+
   if (!config) {
     return <div className="container" style={{ paddingTop: '2rem' }}><h1>Error de configuración del local</h1></div>;
   }
@@ -258,6 +263,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
         <div className="container" style={{ paddingBottom: '3rem' }}>
           <Catalog 
             products={products} 
+            banners={banners}
             whatsappNumber={config.whatsappNumber} 
             isOpen={isOpen} 
             slug={slug} 

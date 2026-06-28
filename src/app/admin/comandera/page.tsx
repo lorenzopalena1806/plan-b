@@ -88,6 +88,8 @@ const generateChimeDataUrl = () => {
 
 export default function ComanderaPage() {
   const [orders, setOrders] = useState<OrderWithItems[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [selectedDrivers, setSelectedDrivers] = useState<Record<number, string>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
@@ -129,6 +131,7 @@ export default function ComanderaPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetch('/api/admin/drivers').then(res => res.json()).then(data => setDrivers(data.filter((d: any) => d.isActive))).catch(console.error);
     const interval = setInterval(fetchOrders, 30000); // Poll every 30 seconds
     
     // Auto-unlock AudioContext on first page interaction
@@ -346,6 +349,33 @@ export default function ComanderaPage() {
                       <span>${order.total.toLocaleString()}</span>
                     </div>
                   </div>
+
+                  {col.id === 'READY' && order.deliveryMethod === 'DELIVERY' && (
+                    <div className="flex flex-col" style={{ gap: '0.5rem', marginBottom: '0.5rem', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', background: 'var(--color-card)' }}>
+                      <label className="text-bold text-muted" style={{ fontSize: '0.75rem' }}>Asignar Repartidor:</label>
+                      <select 
+                        value={selectedDrivers[order.id] || ''}
+                        onChange={(e) => setSelectedDrivers({ ...selectedDrivers, [order.id]: e.target.value })}
+                        style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--color-border)' }}
+                      >
+                        <option value="">-- Seleccionar --</option>
+                        {drivers.map(d => (
+                          <option key={d.id} value={d.phone}>{d.name}</option>
+                        ))}
+                      </select>
+                      {selectedDrivers[order.id] && (
+                        <a 
+                          href={`https://wa.me/${selectedDrivers[order.id].replace(/\D/g, '')}?text=${encodeURIComponent(`Nuevo viaje para llevar a ${order.address}. El cliente se llama ${order.customerName} y su teléfono es ${order.customerPhone || 'N/A'}. ${order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia' ? 'Ya está pagado por transferencia.' : `Tenés que cobrarle $${order.total.toLocaleString()} en efectivo.`}`)}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="btn-outline"
+                          style={{ borderColor: '#25D366', color: '#25D366', textAlign: 'center', display: 'block', textDecoration: 'none' }}
+                        >
+                          🛵 Avisar a Repartidor
+                        </a>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex justify-between mt-auto" style={{ gap: '0.5rem' }}>
                     {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085', flex: 1 }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}

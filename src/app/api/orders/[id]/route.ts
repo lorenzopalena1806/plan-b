@@ -14,7 +14,7 @@ export async function PUT(
 
   try {
     const { id } = await params;
-    const { status } = await request.json();
+    const { status, cancelReason } = await request.json();
 
     const order = await prisma.order.findUnique({
       where: { id: parseInt(id) }
@@ -26,7 +26,7 @@ export async function PUT(
 
     const updatedOrder = await prisma.order.update({
       where: { id: parseInt(id) },
-      data: { status },
+      data: { status, cancelReason },
     });
 
     return NextResponse.json(updatedOrder);

@@ -10,12 +10,13 @@ type ProductWithRelations = Product & {
   modifiers: ModifierOption[];
 };
 
-export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
+export default function Catalog({ products, banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
 
   const { addItem, getItems, getTotal } = useCartStore();
   const cartItemsCount = getItems(slug).reduce((sum, item) => sum + item.quantity, 0);
@@ -36,6 +37,16 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
       setActiveCategory(categoriesList[0]);
     }
   }, [products]);
+
+  // Auto-slide banners
+  useEffect(() => {
+    if (banners.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentBannerIndex((prev) => (prev + 1) % banners.length);
+      }, 3500);
+      return () => clearInterval(interval);
+    }
+  }, [banners]);
 
   const openModal = (product: ProductWithRelations) => {
     setSelectedProduct(product);
@@ -102,28 +113,13 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
         
         {/* Search Bar */}
         <div style={{ marginBottom: '1.5rem', position: 'relative' }}>
-          <span style={{ position: 'absolute', left: '1rem', top: '50%', transform: 'translateY(-50%)', color: '#a0aec0', display: 'flex', alignItems: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </span>
-          <input
-            type="text"
-            placeholder="Buscar hamburguesa, pizza, bebida..."
+          <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+          <input 
+            type="text" 
+            placeholder="Buscar productos, ingredientes..." 
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem 0.75rem 2.75rem',
-              border: '1px solid var(--color-border)',
-              borderRadius: '30px',
-              fontSize: '1rem',
-              backgroundColor: 'white',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-              outlineColor: 'var(--color-red-primary)',
-              transition: 'all 0.2s ease',
-            }}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--color-border)', outlineColor: 'var(--color-primary)' }}
           />
           {searchTerm && (
             <button
@@ -147,6 +143,35 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
             </button>
           )}
         </div>
+
+        {/* Banners Carousel */}
+        {banners.length > 0 && (
+          <div style={{ marginBottom: '2rem', borderRadius: 'var(--border-radius-md)', overflow: 'hidden', position: 'relative', height: '200px', backgroundColor: 'var(--color-bg)', boxShadow: 'var(--shadow-sm)' }}>
+            {banners.map((banner, index) => (
+              <a 
+                key={banner.id}
+                href={banner.link || '#'}
+                style={{
+                  display: 'block',
+                  position: 'absolute',
+                  top: 0, left: 0, right: 0, bottom: 0,
+                  opacity: index === currentBannerIndex ? 1 : 0,
+                  transition: 'opacity 0.5s ease-in-out',
+                  zIndex: index === currentBannerIndex ? 1 : 0,
+                }}
+              >
+                <img src={banner.imageUrl} alt="Promo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </a>
+            ))}
+            {banners.length > 1 && (
+              <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '8px', zIndex: 10 }}>
+                {banners.map((_, idx) => (
+                  <div key={idx} style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: idx === currentBannerIndex ? '#fff' : 'rgba(255,255,255,0.5)' }} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Category sticky tab navigation */}
         {searchTerm.trim() === '' && categoriesList.length > 0 && (
@@ -371,10 +396,16 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
             </div>
 
             <div className="flex justify-between items-center" style={{ marginTop: 'auto', paddingTop: '1.5rem', borderTop: '1px solid var(--color-border)' }}>
-              <div className="flex items-center" style={{ gap: '1rem' }}>
+              <div className="flex items-center" style={{ gap: '1rem', flexWrap: 'wrap' }}>
                 <button className="btn-outline" onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
                 <span className="text-bold" style={{ fontSize: '1.25rem' }}>{quantity}</span>
                 <button className="btn-outline" onClick={() => setQuantity(quantity + 1)}>+</button>
+                {selectedProduct.allowBulkQuantities && (
+                  <div className="flex" style={{ gap: '0.5rem', marginLeft: '0.5rem' }}>
+                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity + 6)}>+6</button>
+                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity + 12)}>+12</button>
+                  </div>
+                )}
               </div>
               <button className="btn-primary" style={{ width: 'auto' }} onClick={handleAddToCart}>
                 Agregar ${( (selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0)) * quantity ).toLocaleString()}

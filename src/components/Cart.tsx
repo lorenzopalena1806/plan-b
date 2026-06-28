@@ -9,6 +9,9 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
   const [cashAmount, setCashAmount] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
+  const [tipAmount, setTipAmount] = useState<number>(0);
+  const [customTip, setCustomTip] = useState('');
+  const [showCustomTip, setShowCustomTip] = useState(false);
 
   // Coupon state
   const [couponCodeInput, setCouponCodeInput] = useState('');
@@ -41,7 +44,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
     }
   }
 
-  const finalTotal = subtotal + (deliveryMethod === 'DELIVERY' ? shippingFee : 0) - discountApplied;
+  const finalTotal = subtotal + (deliveryMethod === 'DELIVERY' ? shippingFee : 0) - discountApplied + tipAmount;
 
   const handleApplyCoupon = async () => {
     if (!couponCodeInput.trim()) return;
@@ -136,7 +139,8 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           paymentMethod,
           paymentDetails,
           couponCode: appliedCoupon ? appliedCoupon.code : null,
-          discountApplied
+          discountApplied,
+          tipAmount
         })
       });
 
@@ -170,6 +174,10 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
 
       if (customerNotes.trim()) {
         msg += `\n*Notas/Aclaraciones:* ${customerNotes.trim()}\n`;
+      }
+      
+      if (tipAmount > 0) {
+        msg += `\n*Propina (Digital):* $${tipAmount.toLocaleString()}\n`;
       }
       
       msg += `\n*TOTAL A PAGAR: $${finalTotal.toLocaleString()}*`;
@@ -275,10 +283,62 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
             <span>-${discountApplied.toLocaleString()}</span>
           </div>
         )}
+        {tipAmount > 0 && (
+          <div className="flex justify-between text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+            <span>Propina al equipo:</span>
+            <span>+${tipAmount.toLocaleString()}</span>
+          </div>
+        )}
         <div className="flex justify-between text-bold" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
           <span>Total:</span>
           <span>${finalTotal.toLocaleString()}</span>
         </div>
+      </div>
+
+      {/* Propina Digital */}
+      <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-md)' }}>
+        <label className="text-bold" style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.875rem' }}>Propina para el equipo 💖</label>
+        <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', marginBottom: showCustomTip ? '0.75rem' : '0' }}>
+          {[0, 5, 10, 15].map(pct => {
+            const isSelected = tipAmount === (subtotal * pct / 100) && !showCustomTip;
+            return (
+              <button
+                key={pct}
+                onClick={() => {
+                  setShowCustomTip(false);
+                  setTipAmount(subtotal * pct / 100);
+                  setCustomTip('');
+                }}
+                className={`btn-outline ${isSelected ? 'bg-red-light text-red text-bold' : ''}`}
+                style={{ padding: '0.5rem 0', fontSize: '0.8rem', borderColor: isSelected ? 'var(--color-red-primary)' : 'var(--color-border)' }}
+              >
+                {pct === 0 ? 'Sin Propina' : `${pct}%`}
+              </button>
+            );
+          })}
+          <button
+            onClick={() => {
+              setShowCustomTip(true);
+              setTipAmount(parseInt(customTip) || 0);
+            }}
+            className={`btn-outline ${showCustomTip ? 'bg-red-light text-red text-bold' : ''}`}
+            style={{ padding: '0.5rem 0', fontSize: '0.8rem', borderColor: showCustomTip ? 'var(--color-red-primary)' : 'var(--color-border)', gridColumn: '1 / -1', marginTop: '0.5rem' }}
+          >
+            Otro monto
+          </button>
+        </div>
+        {showCustomTip && (
+          <input
+            type="number"
+            placeholder="Ingresa el monto (ej: 500)"
+            value={customTip}
+            onChange={(e) => {
+              setCustomTip(e.target.value);
+              setTipAmount(parseInt(e.target.value) || 0);
+            }}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-red-primary)', borderRadius: 'var(--border-radius-sm)', outline: 'none' }}
+          />
+        )}
       </div>
 
       <div className="grid" style={{ gap: '1rem', marginBottom: '1.5rem' }}>

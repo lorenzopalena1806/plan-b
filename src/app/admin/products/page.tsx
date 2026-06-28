@@ -26,6 +26,7 @@ interface Product {
   category?: Category | null;
   isPromo: boolean;
   isActive: boolean;
+  allowBulkQuantities: boolean;
   modifiers: ModifierOption[];
 }
 
@@ -49,6 +50,7 @@ export default function ProductsPage() {
   const [selectedModifierIds, setSelectedModifierIds] = useState<number[]>([]);
   const [isPromo, setIsPromo] = useState(false);
   const [isActive, setIsActive] = useState(true);
+  const [allowBulkQuantities, setAllowBulkQuantities] = useState(false);
 
   useEffect(() => {
     fetchInitialData();
@@ -112,6 +114,7 @@ export default function ProductsPage() {
     setSelectedModifierIds(product.modifiers.map(m => m.id));
     setIsPromo(product.isPromo);
     setIsActive(product.isActive !== undefined ? product.isActive : true);
+    setAllowBulkQuantities(product.allowBulkQuantities || false);
     setIsAdding(true);
     // Scroll to form smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -128,6 +131,7 @@ export default function ProductsPage() {
     setSelectedModifierIds([]);
     setIsPromo(false);
     setIsActive(true);
+    setAllowBulkQuantities(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -143,7 +147,8 @@ export default function ProductsPage() {
         categoryId: categoryId ? Number(categoryId) : null,
         modifierIds: selectedModifierIds,
         isPromo,
-        isActive
+        isActive,
+        allowBulkQuantities
       };
 
       const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
@@ -235,6 +240,10 @@ export default function ProductsPage() {
               <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
                 <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
                 <span>¿Producto Disponible? (Si se desmarca, se ocultará en la carta pública)</span>
+              </label>
+              <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
+                <input type="checkbox" checked={allowBulkQuantities} onChange={e => setAllowBulkQuantities(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
+                <span>Permitir agregar cantidades por docena (+1, +6, +12)</span>
               </label>
             </div>
 
