@@ -16,7 +16,7 @@ export default function LoginPage() {
 
     const res = await signIn('credentials', {
       redirect: false,
-      username,
+      username: username.trim(),
       password,
     });
 
