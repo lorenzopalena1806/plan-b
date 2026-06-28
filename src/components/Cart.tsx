@@ -369,6 +369,13 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           </div>
         )}
 
+        {paymentMethod === 'TRANSFER' && deliveryMethod === 'DELIVERY' && (
+          <div style={{ padding: '0.75rem', background: '#ffebee', border: '1px solid #ef5350', borderRadius: 'var(--border-radius-sm)', fontSize: '0.875rem', color: '#c62828' }}>
+            <p style={{ fontWeight: 'bold' }}>🚨 IMPORTANTE</p>
+            <p style={{ marginTop: '0.25rem' }}>Tu pedido <strong>no será enviado a cocina ni despachado</strong> hasta que recibamos y verifiquemos el comprobante de pago.</p>
+          </div>
+        )}
+
         <textarea 
           placeholder="Notas/Aclaraciones adicionales (ej: sin mayonesa, tocar timbre fuerte, etc.)" 
           value={customerNotes} 

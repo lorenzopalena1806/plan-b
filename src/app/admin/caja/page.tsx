@@ -223,7 +223,7 @@ export default function CajaPage() {
               {order.customerPhone && (
                 <a 
                   href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
-                    order.paymentMethod === 'Transferencia' 
+                    order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia'
                     ? `Hola ${order.customerName}, recibimos tu pedido #${order.id}.\n\nPara enviarlo a cocina necesitamos que realices el pago de *$${order.total.toLocaleString()}* a nuestro alias: *${config?.bankAlias || 'N/A'}*.\n\n🚨 *IMPORTANTE: EL PEDIDO NO SE PREPARARÁ HASTA QUE ENVÍES EL COMPROBANTE POR ACÁ.* 🚨`
                     : `Hola ${order.customerName}, recibimos tu pedido #${order.id} por un total de *$${order.total.toLocaleString()}*. ¡Ya lo enviamos a cocina!`
                   )}`}
