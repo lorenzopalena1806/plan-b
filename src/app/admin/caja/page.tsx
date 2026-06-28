@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Order, OrderItem } from '@prisma/client';
 import Link from 'next/link';
+import { printTicket } from '@/lib/printUtils';
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
@@ -71,6 +72,70 @@ export default function CajaPage() {
       console.error('Error updating order:', error);
       fetchOrders();
     }
+  };
+
+  const handlePrintTicket = (order: OrderWithItems) => {
+    let itemsHtml = '';
+    order.items.forEach(item => {
+      let modifiers = [];
+      let rawNote = '';
+      if (item.notes) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (Array.isArray(parsed)) modifiers = parsed;
+          else rawNote = item.notes;
+        } catch (e) {
+          rawNote = item.notes;
+        }
+      }
+      itemsHtml += `
+        <tr>
+          <td class="w-qty">\${item.quantity}x</td>
+          <td>
+            \${item.productName}
+            \${modifiers.length > 0 ? \`<br><small class="comanda-notes">\${modifiers.map((m:any) => m.name).join(', ')}</small>\` : ''}
+            \${rawNote ? \`<br><small class="comanda-notes">\${rawNote}</small>\` : ''}
+          </td>
+        </tr>
+      `;
+    });
+
+    const html = `
+      <div class="text-center mb-4">
+        <h1 class="text-xl mb-1">TICKET DE PEDIDO</h1>
+        <div class="text-lg font-bold">Orden #\${order.id}</div>
+        <div>\${new Date(order.createdAt).toLocaleString()}</div>
+      </div>
+      
+      <div class="border-b mb-2">
+        <div><strong>Cliente:</strong> \${order.customerName}</div>
+        \${order.address ? \`<div><strong>Dirección:</strong> \${order.address}</div>\` : ''}
+        <div><strong>Método:</strong> \${order.deliveryMethod === 'DELIVERY' ? 'Envío' : 'Retiro por local'}</div>
+        \${order.customerNotes ? \`<div class="mt-4"><strong>Nota:</strong> \${order.customerNotes}</div>\` : ''}
+      </div>
+
+      <table class="mb-4">
+        <thead>
+          <tr class="border-b">
+            <th class="w-qty">Cant</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          \${itemsHtml}
+        </tbody>
+      </table>
+
+      <div class="border-t pt-2 mt-4 text-right">
+        <div class="text-2xl font-bold">TOTAL: $\${order.total.toLocaleString()}</div>
+      </div>
+      
+      <div class="text-center mt-4 border-t pt-2">
+        <small>¡Gracias por su compra!</small>
+      </div>
+    `;
+
+    printTicket(html);
   };
 
   if (isLoading) return <div className="container" style={{ padding: '2rem' }}>Cargando caja...</div>;
@@ -149,6 +214,7 @@ export default function CajaPage() {
             <div className="flex" style={{ gap: '1rem' }}>
               <button className="btn-primary" style={{ flex: 2 }} onClick={() => confirmOrder(order.id)}>✅ Confirmar Pago</button>
               <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => rejectOrder(order.id)}>❌ Rechazar</button>
+              <button className="btn-outline" style={{ flex: 1 }} onClick={() => handlePrintTicket(order)}>🖨️ Imprimir</button>
             </div>
           </div>
         ))}

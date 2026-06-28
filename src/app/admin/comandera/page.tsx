@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Order, OrderItem } from '@prisma/client';
+import { printTicket } from '@/lib/printUtils';
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
@@ -186,6 +187,49 @@ export default function ComanderaPage() {
     }
   };
 
+  const handlePrintComanda = (order: OrderWithItems) => {
+    let itemsHtml = '';
+    order.items.forEach(item => {
+      let modifiers = [];
+      let rawNote = '';
+      if (item.notes) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (Array.isArray(parsed)) modifiers = parsed;
+          else rawNote = item.notes;
+        } catch (e) {
+          rawNote = item.notes;
+        }
+      }
+      itemsHtml += `
+        <div class="comanda-item">
+          <span class="comanda-qty">\${item.quantity}x</span> \${item.productName}
+          \${modifiers.length > 0 ? \`<span class="comanda-notes">\${modifiers.map((m:any) => m.name).join(', ')}</span>\` : ''}
+          \${rawNote ? \`<span class="comanda-notes">\${rawNote}</span>\` : ''}
+        </div>
+      `;
+    });
+
+    const html = `
+      <div class="text-center border-b mb-4">
+        <h1 class="text-2xl font-bold mb-1">COMANDA</h1>
+        <div class="text-xl font-bold">Orden #\${order.id}</div>
+        <div>\${new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+        \${order.deliveryMethod === 'DELIVERY' 
+          ? '<div class="text-lg font-bold mt-4" style="background:#000; color:#fff; padding:5px;">ENVÍO</div>' 
+          : '<div class="text-lg font-bold mt-4" style="border: 2px solid #000; padding:5px;">RETIRO</div>'}
+      </div>
+      
+      <div class="mb-4">
+        \${itemsHtml}
+      </div>
+      
+      \${order.customerNotes ? \`<div class="border-t pt-2 mt-4 text-lg"><strong>NOTA DEL CLIENTE:</strong><br>\${order.customerNotes}</div>\` : ''}
+    `;
+
+    printTicket(html);
+  };
+
   const columns = [
     { id: 'PENDING', title: 'Pendiente' },
     { id: 'PREPARING', title: 'En Preparación' },
@@ -303,10 +347,11 @@ export default function ComanderaPage() {
                     </div>
                   </div>
 
-                  <div className="flex justify-between mt-auto">
-                    {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085' }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}
-                    {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724' }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}
-                    {col.id === 'READY' && <button className="btn-outline" onClick={() => updateOrderStatus(order.id, 'COMPLETED')}>Archivar</button>}
+                  <div className="flex justify-between mt-auto" style={{ gap: '0.5rem' }}>
+                    {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085', flex: 1 }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}
+                    {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724', flex: 1 }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}
+                    {col.id === 'READY' && <button className="btn-primary" onClick={() => updateOrderStatus(order.id, 'COMPLETED')} style={{ flex: 1 }}>Entregar</button>}
+                    <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Comanda">🖨️</button>
                   </div>
                 </div>
               ))}
