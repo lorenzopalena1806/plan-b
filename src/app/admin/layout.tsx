@@ -19,6 +19,10 @@ export default async function AdminLayout({
     redirect('/developer');
   }
 
+  if (session.user.role === 'DRIVER') {
+    redirect('/driver');
+  }
+
   let restaurantName = 'Mi Local';
   let restaurantSlug = '';
   let subscriptionEnd: Date | null = null;

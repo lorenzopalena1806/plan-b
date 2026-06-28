@@ -190,6 +190,32 @@ export default function ComanderaPage() {
     }
   };
 
+  const handleAssignDriver = async (order: OrderWithItems, driverIdStr: string) => {
+    if (!driverIdStr) return;
+    const driverId = parseInt(driverIdStr);
+    const driver = drivers.find(d => d.id === driverId);
+    if (!driver) return;
+
+    try {
+      // Guardar asignación en BD
+      await fetch(`/api/orders/${order.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ driverId })
+      });
+
+      // Abrir WhatsApp
+      const text = `Nuevo viaje para llevar a ${order.address}. El cliente se llama ${order.customerName} y su teléfono es ${order.customerPhone || 'N/A'}. ${order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia' ? 'Ya está pagado por transferencia.' : `Tenés que cobrarle $${order.total.toLocaleString()} en efectivo.`}`;
+      window.open(`https://wa.me/${driver.phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
+      
+      // Actualizar localmente si es necesario
+      fetchOrders();
+    } catch (error) {
+      console.error('Error asignando repartidor:', error);
+      alert('Error al asignar el repartidor. Por favor reintenta.');
+    }
+  };
+
   const handlePrintComanda = (order: OrderWithItems) => {
     let itemsHtml = '';
     order.items.forEach(item => {
@@ -360,19 +386,17 @@ export default function ComanderaPage() {
                       >
                         <option value="">-- Seleccionar --</option>
                         {drivers.map(d => (
-                          <option key={d.id} value={d.phone}>{d.name}</option>
+                          <option key={d.id} value={d.id.toString()}>{d.name}</option>
                         ))}
                       </select>
                       {selectedDrivers[order.id] && (
-                        <a 
-                          href={`https://wa.me/${selectedDrivers[order.id].replace(/\D/g, '')}?text=${encodeURIComponent(`Nuevo viaje para llevar a ${order.address}. El cliente se llama ${order.customerName} y su teléfono es ${order.customerPhone || 'N/A'}. ${order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia' ? 'Ya está pagado por transferencia.' : `Tenés que cobrarle $${order.total.toLocaleString()} en efectivo.`}`)}`}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button 
+                          onClick={() => handleAssignDriver(order, selectedDrivers[order.id])}
                           className="btn-outline"
                           style={{ borderColor: '#25D366', color: '#25D366', textAlign: 'center', display: 'block', textDecoration: 'none' }}
                         >
                           🛵 Avisar a Repartidor
-                        </a>
+                        </button>
                       )}
                     </div>
                   )}

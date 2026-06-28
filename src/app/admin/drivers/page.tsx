@@ -9,8 +9,8 @@ export default function DriversPage() {
   const [isLoading, setIsLoading] = useState(true);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
-  const [formData, setFormData] = useState({ name: '', phone: '', isActive: true });
+  const [editingDriver, setEditingDriver] = useState<any>(null);
+  const [formData, setFormData] = useState({ name: '', phone: '', isActive: true, username: '', password: '' });
 
   const fetchDrivers = async () => {
     try {
@@ -55,13 +55,19 @@ export default function DriversPage() {
 
   const openNew = () => {
     setEditingDriver(null);
-    setFormData({ name: '', phone: '', isActive: true });
+    setFormData({ name: '', phone: '', isActive: true, username: '', password: '' });
     setIsModalOpen(true);
   };
 
-  const openEdit = (driver: Driver) => {
+  const openEdit = (driver: any) => {
     setEditingDriver(driver);
-    setFormData({ name: driver.name, phone: driver.phone, isActive: driver.isActive });
+    setFormData({ 
+      name: driver.name, 
+      phone: driver.phone, 
+      isActive: driver.isActive,
+      username: driver.user?.username || '',
+      password: '' // empty password so we don't show the hashed one
+    });
     setIsModalOpen(true);
   };
 
@@ -140,6 +146,34 @@ export default function DriversPage() {
                 required
                 style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
               />
+            </div>
+
+            <div style={{ padding: '1rem', background: 'rgba(0,0,0,0.02)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
+              <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '1rem' }}>Acceso al Portal</h3>
+              <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>Crea un usuario para que el cadete pueda ingresar y ver sus entregas.</p>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Usuario</label>
+                <input 
+                  type="text" 
+                  value={formData.username} 
+                  onChange={e => setFormData({...formData, username: e.target.value})}
+                  required={!editingDriver}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                />
+              </div>
+
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Contraseña</label>
+                <input 
+                  type="password" 
+                  value={formData.password} 
+                  onChange={e => setFormData({...formData, password: e.target.value})}
+                  required={!editingDriver}
+                  placeholder={editingDriver ? "Dejar en blanco para mantener actual" : ""}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                />
+              </div>
             </div>
             
             <label className="flex items-center" style={{ gap: '0.5rem', cursor: 'pointer' }}>

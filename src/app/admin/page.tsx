@@ -13,7 +13,14 @@ export default async function AdminDashboard() {
     if (session?.user?.role === 'SUPERADMIN') {
       redirect('/developer');
     }
+    if (session?.user?.role === 'DRIVER') {
+      redirect('/driver');
+    }
     redirect('/login');
+  }
+
+  if (session.user.role === 'DRIVER') {
+    redirect('/driver');
   }
 
   const isStaff = session.user.role === 'STAFF';
