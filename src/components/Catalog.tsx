@@ -253,9 +253,9 @@ export default function Catalog({ products, whatsappNumber, isOpen, slug, cardLa
             style={{
               width: '100%',
               padding: '1rem',
-              backgroundColor: 'var(--color-red-primary)',
-              color: 'white',
-              border: 'none',
+              backgroundColor: 'var(--color-category-btn)',
+              color: 'var(--color-text)',
+              border: '1px solid var(--color-border)',
               borderRadius: '30px',
               fontWeight: 'bold',
               fontSize: '1.1rem',
