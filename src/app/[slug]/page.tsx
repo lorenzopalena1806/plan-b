@@ -139,6 +139,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
   }
 
   const themeColor = config.themeColor || '#e11d48';
+  const buttonColor = config.buttonColor || '#ffffff';
   const bgColor = config.bgColor || '#ffffff';
   const cardColor = config.cardColor || '#ffffff';
   const textColor = config.textColor || '#1a1a1a';
@@ -177,7 +178,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
 
   return (
     <ThemeProvider defaultDark={defaultDark}>
-      <ClientThemeWrapper config={{ themeColor, bgColor, cardColor, textColor, fontFamily }}>
+      <ClientThemeWrapper config={{ themeColor, buttonColor, bgColor, cardColor, textColor, fontFamily }}>
         {fontLink && (
           <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
