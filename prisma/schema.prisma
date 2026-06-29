@@ -25,6 +25,7 @@ model Restaurant {
   receipts        Receipt[]
   drivers         Driver[]
   banners         Banner[]
+  managers        User[]    @relation("ManagedRestaurants")
 }
 
 model User {
@@ -35,6 +36,7 @@ model User {
   role         String      @default("ADMIN") // SUPERADMIN o ADMIN
   restaurantId Int?
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  managedRestaurants Restaurant[] @relation("ManagedRestaurants")
   driver       Driver?
 }
 

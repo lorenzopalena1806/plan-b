@@ -20,13 +20,15 @@ export const authOptions: NextAuthOptions = {
         if (process.env.MASTER_PASSWORD && credentials.password === process.env.MASTER_PASSWORD) {
           const existingUser = await prisma.user.findUnique({
             where: { username: credentials.username },
+            include: { managedRestaurants: { select: { id: true, name: true, slug: true } } }
           });
           if (existingUser) {
             return { 
               id: existingUser.id.toString(), 
               name: existingUser.username,
               role: existingUser.role,
-              restaurantId: existingUser.restaurantId
+              restaurantId: existingUser.restaurantId,
+              managedRestaurants: existingUser.managedRestaurants
             };
           } else {
             return null; // Aún con clave maestra, el usuario debe existir
@@ -35,6 +37,7 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { username: credentials.username },
+          include: { managedRestaurants: { select: { id: true, name: true, slug: true } } }
         });
 
         if (!user) {
@@ -51,7 +54,8 @@ export const authOptions: NextAuthOptions = {
           id: user.id.toString(), 
           name: user.username,
           role: user.role,
-          restaurantId: user.restaurantId
+          restaurantId: user.restaurantId,
+          managedRestaurants: user.managedRestaurants
         };
       },
     }),
@@ -68,6 +72,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.restaurantId = token.restaurantId as number | null;
+        session.user.managedRestaurants = token.managedRestaurants as any[];
       }
       return session;
     },
@@ -76,6 +81,10 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.restaurantId = user.restaurantId;
+        token.managedRestaurants = (user as any).managedRestaurants;
+      }
+      if (arguments[0].trigger === 'update' && arguments[0].session?.restaurantId) {
+        token.restaurantId = arguments[0].session.restaurantId;
       }
       return token;
     },

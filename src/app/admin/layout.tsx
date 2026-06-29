@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
+import RestaurantSwitcher from './components/RestaurantSwitcher';
 
 export default async function AdminLayout({
   children,
@@ -52,11 +53,14 @@ export default async function AdminLayout({
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ backgroundColor: 'white', padding: '1rem 2rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
+        <div style={{ fontWeight: 'bold', fontSize: '1.25rem', display: 'flex', alignItems: 'center' }}>
           <Link href="/admin" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
             <img src="/logo.png" alt="Polosandia" style={{ height: '60px', marginRight: '12px', objectFit: 'contain' }} />
-            <span style={{ fontWeight: 'normal', fontSize: '1.25rem', borderLeft: '1px solid #ccc', paddingLeft: '12px', color: '#555' }}>{restaurantName}</span>
           </Link>
+          <RestaurantSwitcher 
+            restaurants={session.user.managedRestaurants || [{ id: session.user.restaurantId as number, name: restaurantName, slug: restaurantSlug }]} 
+            currentId={session.user.restaurantId} 
+          />
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link href="/admin/products" style={linkStyle('/admin/products')}>🍔 Catálogo</Link>
