@@ -279,34 +279,52 @@ export default function DeveloperUsersPage() {
                     </span>
                   </td>
                   <td style={{ padding: '1rem' }} className="text-muted">
-                    {u.managedRestaurants && u.managedRestaurants.length > 0 ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                        {u.managedRestaurants.map(r => (
-                          <span key={r.id} style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            padding: '0.25rem 0.5rem',
-                            backgroundColor: '#f1f5f9',
-                            border: '1px solid #cbd5e1',
-                            borderRadius: '4px',
-                            fontSize: '0.8rem',
-                            color: '#334155',
-                            fontWeight: '500'
-                          }}>
-                            {r.name}
-                            <button
-                              onClick={() => handleLinkRestaurant(u.id, r.id.toString(), 'disconnect')}
-                              style={{ marginLeft: '0.5rem', color: '#ef4444', fontWeight: 'bold', fontSize: '0.8rem', padding: 0 }}
-                              title="Desvincular"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-muted">Sin locales vinculados</span>
-                    )}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      {/* Mostrar el local principal (STAFF/DRIVER) */}
+                      {u.restaurant && (
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#e0f2fe',
+                          border: '1px solid #bae6fd',
+                          borderRadius: '4px',
+                          fontSize: '0.8rem',
+                          color: '#0369a1',
+                          fontWeight: '600'
+                        }} title="Local Principal">
+                          {u.restaurant.name} (Principal)
+                        </span>
+                      )}
+                      
+                      {/* Mostrar locales adicionales gestionados (ADMIN/SUPERADMIN) */}
+                      {u.managedRestaurants && u.managedRestaurants.map(r => (
+                        <span key={r.id} style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#f1f5f9',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '4px',
+                          fontSize: '0.8rem',
+                          color: '#334155',
+                          fontWeight: '500'
+                        }}>
+                          {r.name}
+                          <button
+                            onClick={() => handleLinkRestaurant(u.id, r.id.toString(), 'disconnect')}
+                            style={{ marginLeft: '0.5rem', color: '#ef4444', fontWeight: 'bold', fontSize: '0.8rem', padding: 0 }}
+                            title="Desvincular"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+
+                      {!u.restaurant && (!u.managedRestaurants || u.managedRestaurants.length === 0) && (
+                        <span className="text-muted">Sin locales vinculados</span>
+                      )}
+                    </div>
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                     <select
