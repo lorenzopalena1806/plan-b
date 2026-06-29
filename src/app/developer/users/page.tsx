@@ -21,6 +21,9 @@ export default function DeveloperUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   
+  const [filterUsername, setFilterUsername] = useState('');
+  const [filterRestaurantId, setFilterRestaurantId] = useState('');
+  
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('ADMIN');
@@ -188,6 +191,26 @@ export default function DeveloperUsersPage() {
       </div>
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <div style={{ padding: '1rem', backgroundColor: '#f8f9fa', borderBottom: '1px solid var(--color-border)', display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', marginRight: 'auto' }}>Lista de Usuarios</h3>
+          <input
+            type="text"
+            placeholder="Buscar por usuario..."
+            value={filterUsername}
+            onChange={(e) => setFilterUsername(e.target.value)}
+            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', minWidth: '200px' }}
+          />
+          <select
+            value={filterRestaurantId}
+            onChange={(e) => setFilterRestaurantId(e.target.value)}
+            style={{ padding: '0.5rem', borderRadius: '4px', border: '1px solid #ccc', backgroundColor: 'white' }}
+          >
+            <option value="">Todos los locales</option>
+            {restaurants.map(r => (
+              <option key={r.id} value={r.id}>{r.name}</option>
+            ))}
+          </select>
+        </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead>
             <tr style={{ backgroundColor: 'var(--color-border)' }}>
@@ -200,14 +223,30 @@ export default function DeveloperUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.length === 0 ? (
+            {users.filter(u => {
+              if (filterUsername && !u.username.toLowerCase().includes(filterUsername.toLowerCase())) return false;
+              if (filterRestaurantId) {
+                if (!u.managedRestaurants || !u.managedRestaurants.some(r => r.id.toString() === filterRestaurantId)) {
+                  return false;
+                }
+              }
+              return true;
+            }).length === 0 ? (
               <tr>
-                <td colSpan={5} style={{ padding: '2rem', textAlign: 'center' }} className="text-muted">
-                  No hay usuarios registrados.
+                <td colSpan={6} style={{ padding: '2rem', textAlign: 'center' }} className="text-muted">
+                  No hay usuarios que coincidan con la búsqueda.
                 </td>
               </tr>
             ) : (
-              users.map((u) => (
+              users.filter(u => {
+                if (filterUsername && !u.username.toLowerCase().includes(filterUsername.toLowerCase())) return false;
+                if (filterRestaurantId) {
+                  if (!u.managedRestaurants || !u.managedRestaurants.some(r => r.id.toString() === filterRestaurantId)) {
+                    return false;
+                  }
+                }
+                return true;
+              }).map((u) => (
                 <tr key={u.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
                   <td style={{ padding: '1rem' }}>{u.id}</td>
                   <td style={{ padding: '1rem', fontWeight: 'bold' }}>{u.username}</td>
