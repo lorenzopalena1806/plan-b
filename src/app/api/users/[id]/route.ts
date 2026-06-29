@@ -46,17 +46,20 @@ export async function PUT(
     }
     const { id } = await params;
     const userId = parseInt(id);
-    const { restaurantId } = await request.json();
+    const { restaurantId, action = 'connect' } = await request.json();
 
     if (!restaurantId) return NextResponse.json({ error: 'Falta restaurantId' }, { status: 400 });
 
+    const updateData: any = { managedRestaurants: {} };
+    if (action === 'disconnect') {
+      updateData.managedRestaurants.disconnect = { id: parseInt(restaurantId) };
+    } else {
+      updateData.managedRestaurants.connect = { id: parseInt(restaurantId) };
+    }
+
     await prisma.user.update({
       where: { id: userId },
-      data: {
-        managedRestaurants: {
-          connect: { id: parseInt(restaurantId) }
-        }
-      }
+      data: updateData
     });
     return NextResponse.json({ success: true });
   } catch (error) {

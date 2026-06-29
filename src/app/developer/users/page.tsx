@@ -14,6 +14,7 @@ interface User {
   rawPassword?: string | null;
   restaurantId: number | null;
   restaurant?: Restaurant;
+  managedRestaurants?: Restaurant[];
 }
 
 export default function DeveloperUsersPage() {
@@ -98,20 +99,20 @@ export default function DeveloperUsersPage() {
     }
   };
 
-  const handleLinkRestaurant = async (userId: number, restaurantId: string) => {
+  const handleLinkRestaurant = async (userId: number, restaurantId: string, action: 'connect' | 'disconnect' = 'connect') => {
     if (!restaurantId) return;
     try {
       const res = await fetch(`/api/users/${userId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ restaurantId })
+        body: JSON.stringify({ restaurantId, action })
       });
       if (res.ok) {
-        alert('Local vinculado correctamente');
+        alert(action === 'connect' ? 'Local vinculado correctamente' : 'Local desvinculado correctamente');
         fetchData();
       } else {
         const data = await res.json();
-        alert(data.error || 'Error al vincular local');
+        alert(data.error || 'Error al modificar vinculación');
       }
     } catch (err) {
       alert('Error de conexión');
@@ -239,7 +240,34 @@ export default function DeveloperUsersPage() {
                     </span>
                   </td>
                   <td style={{ padding: '1rem' }} className="text-muted">
-                    {u.restaurant ? <span style={{ fontWeight: 'bold', color: 'var(--color-text)' }}>{u.restaurant.name}</span> : 'Sin local'}
+                    {u.managedRestaurants && u.managedRestaurants.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {u.managedRestaurants.map(r => (
+                          <span key={r.id} style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '0.25rem 0.5rem',
+                            backgroundColor: '#f1f5f9',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '4px',
+                            fontSize: '0.8rem',
+                            color: '#334155',
+                            fontWeight: '500'
+                          }}>
+                            {r.name}
+                            <button
+                              onClick={() => handleLinkRestaurant(u.id, r.id.toString(), 'disconnect')}
+                              style={{ marginLeft: '0.5rem', color: '#ef4444', fontWeight: 'bold', fontSize: '0.8rem', padding: 0 }}
+                              title="Desvincular"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-muted">Sin locales vinculados</span>
+                    )}
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                     <select

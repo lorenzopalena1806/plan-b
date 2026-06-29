@@ -13,7 +13,8 @@ export async function GET() {
 
   const users = await prisma.user.findMany({
     include: {
-      restaurant: true
+      restaurant: true,
+      managedRestaurants: true
     },
     orderBy: { id: 'desc' },
   });
