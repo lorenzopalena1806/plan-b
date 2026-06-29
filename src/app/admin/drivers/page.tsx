@@ -20,6 +20,11 @@ export default function DriversPage() {
   const [editingDriver, setEditingDriver] = useState<any>(null);
   const [formData, setFormData] = useState({ name: '', phone: '', isActive: true, username: '', password: '' });
 
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [historyDriver, setHistoryDriver] = useState<any>(null);
+  const [driverHistory, setDriverHistory] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
   const fetchDrivers = async () => {
     try {
       const res = await fetch('/api/admin/drivers');
@@ -79,6 +84,22 @@ export default function DriversPage() {
     setIsModalOpen(true);
   };
 
+  const openHistory = async (driver: any) => {
+    setHistoryDriver(driver);
+    setIsHistoryModalOpen(true);
+    setIsLoadingHistory(true);
+    try {
+      const res = await fetch(`/api/admin/drivers/${driver.id}/history`);
+      if (res.ok) {
+        setDriverHistory(await res.json());
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
   const deleteDriver = async (id: number) => {
     if (!confirm('¿Estás seguro de eliminar este repartidor?')) return;
     try {
@@ -124,8 +145,9 @@ export default function DriversPage() {
             </div>
             
             <div className="flex" style={{ gap: '0.5rem', marginTop: 'auto' }}>
-              <button className="btn-outline" style={{ flex: 1 }} onClick={() => openEdit(driver)}>Editar</button>
-              <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => deleteDriver(driver.id)}>Eliminar</button>
+              <button className="btn-outline" style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }} onClick={() => openEdit(driver)}>Editar</button>
+              <button className="btn-outline" style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem', borderColor: '#0369a1', color: '#0369a1' }} onClick={() => openHistory(driver)}>Historial</button>
+              <button className="btn-outline" style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem', borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => deleteDriver(driver.id)}>Eliminar</button>
             </div>
           </div>
         ))}
@@ -197,11 +219,65 @@ export default function DriversPage() {
               <span className="text-bold">Activo (Disponible para repartir)</span>
             </label>
             
-            <div className="flex" style={{ gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" className="btn-primary" style={{ flex: 1 }}>Guardar</button>
-              <button type="button" className="btn-outline" style={{ flex: 1 }} onClick={() => setIsModalOpen(false)}>Cancelar</button>
+            <div className="flex justify-end" style={{ gap: '1rem', marginTop: '1rem' }}>
+              <button type="button" className="btn-outline" onClick={() => setIsModalOpen(false)}>Cancelar</button>
+              <button type="submit" className="btn-primary">Guardar</button>
             </div>
           </form>
+        </div>
+      )}
+
+      {isHistoryModalOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card flex-col" style={{ width: '90%', maxWidth: '600px', maxHeight: '80vh', display: 'flex', background: 'var(--color-bg)', padding: '1.5rem', overflow: 'hidden' }}>
+            <div className="flex justify-between items-center" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', marginBottom: '1rem' }}>
+              <h2 className="text-bold">Historial de {historyDriver?.name}</h2>
+              <button onClick={() => setIsHistoryModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666' }}>×</button>
+            </div>
+            
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
+              {isLoadingHistory ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Cargando historial...</div>
+              ) : driverHistory.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>No hay viajes completados registrados.</div>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f8f9fa', borderBottom: '2px solid var(--color-border)' }}>
+                      <th style={{ padding: '0.75rem', textAlign: 'left' }}>ID</th>
+                      <th style={{ padding: '0.75rem', textAlign: 'left' }}>Fecha y Hora</th>
+                      <th style={{ padding: '0.75rem', textAlign: 'left' }}>Cliente</th>
+                      <th style={{ padding: '0.75rem', textAlign: 'right' }}>Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {driverHistory.map((order: any) => (
+                      <tr key={order.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                        <td style={{ padding: '0.75rem', fontWeight: 'bold' }}>#{order.id}</td>
+                        <td style={{ padding: '0.75rem' }}>
+                          {new Date(order.createdAt).toLocaleString('es-AR', {
+                            day: '2-digit', month: '2-digit', year: '2-digit',
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </td>
+                        <td style={{ padding: '0.75rem' }}>
+                          {order.customerName}<br/>
+                          <span style={{ color: '#666', fontSize: '0.75rem' }}>{order.address}</span>
+                        </td>
+                        <td style={{ padding: '0.75rem', textAlign: 'right', fontWeight: 'bold', color: 'var(--color-green)' }}>
+                          ${order.total.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+            
+            <div style={{ textAlign: 'center', color: '#666', fontSize: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+              Mostrando los últimos 50 viajes entregados
+            </div>
+          </div>
         </div>
       )}
     </div>

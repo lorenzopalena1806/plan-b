@@ -27,6 +27,10 @@ export default function DriverPortal() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyOrders, setHistoryOrders] = useState<any[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
   const fetchOrders = async () => {
     try {
       const res = await fetch('/api/driver/orders');
@@ -73,6 +77,21 @@ export default function DriverPortal() {
     }
   };
 
+  const openHistory = async () => {
+    setIsHistoryOpen(true);
+    setIsLoadingHistory(true);
+    try {
+      const res = await fetch('/api/driver/history');
+      if (res.ok) {
+        setHistoryOrders(await res.json());
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
   if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando tus viajes...</div>;
   if (error) return <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>{error}</div>;
 
@@ -82,8 +101,16 @@ export default function DriverPortal() {
         <h1 className="text-red" style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Mis Viajes Activos</h1>
         <p className="text-muted" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>Aquí verás los pedidos que tenés que entregar</p>
         
-        <div style={{ display: 'inline-block', padding: '0.5rem 1rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', border: '1px solid #bae6fd' }}>
-          🛵 Viajes entregados hoy: {completedTrips}
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', alignItems: 'center' }}>
+          <div style={{ padding: '0.5rem 1rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', border: '1px solid #bae6fd' }}>
+            🛵 Viajes entregados hoy: {completedTrips}
+          </div>
+          <button 
+            onClick={openHistory}
+            style={{ padding: '0.5rem 1rem', backgroundColor: '#fff', color: '#333', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', border: '1px solid #ccc', cursor: 'pointer' }}
+          >
+            Ver Historial
+          </button>
         </div>
       </header>
 
@@ -177,6 +204,49 @@ export default function DriverPortal() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {isHistoryOpen && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card flex-col" style={{ width: '100%', maxWidth: '600px', height: '80vh', borderBottomLeftRadius: 0, borderBottomRightRadius: 0, display: 'flex', background: 'var(--color-bg)', padding: '1.5rem', overflow: 'hidden' }}>
+            <div className="flex justify-between items-center" style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', marginBottom: '1rem' }}>
+              <h2 className="text-bold">Mi Historial de Viajes</h2>
+              <button onClick={() => setIsHistoryOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: '#666' }}>×</button>
+            </div>
+            
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem' }}>
+              {isLoadingHistory ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>Cargando historial...</div>
+              ) : historyOrders.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>No tenés viajes completados recientes.</div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {historyOrders.map((order: any) => (
+                    <div key={order.id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '1rem', backgroundColor: '#fff' }}>
+                      <div className="flex justify-between items-center" style={{ marginBottom: '0.5rem' }}>
+                        <span className="text-bold">#{order.id} - {order.customerName}</span>
+                        <span style={{ fontSize: '0.85rem', color: '#666' }}>
+                          {new Date(order.createdAt).toLocaleString('es-AR', {
+                            day: '2-digit', month: '2-digit',
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '0.5rem' }}>📍 {order.address}</div>
+                      <div className="text-bold" style={{ color: 'var(--color-green)', textAlign: 'right' }}>
+                        Total: ${order.total.toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div style={{ textAlign: 'center', color: '#666', fontSize: '0.75rem', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+              Mostrando tus últimos 50 viajes entregados
+            </div>
+          </div>
         </div>
       )}
     </div>
