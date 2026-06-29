@@ -307,7 +307,7 @@ export default function ComanderaPage() {
             if (col.id === 'PENDING') return o.status === 'PENDING';
             if (col.id === 'PREPARING') return o.status === 'PREPARING';
             if (col.id === 'DELIVERY') return o.status === 'READY' && o.deliveryMethod === 'DELIVERY';
-            if (col.id === 'PICKUP') return o.status === 'READY' && o.deliveryMethod === 'PICKUP';
+            if (col.id === 'PICKUP') return o.status === 'READY' && o.deliveryMethod === 'TAKEAWAY';
             return false;
           });
 

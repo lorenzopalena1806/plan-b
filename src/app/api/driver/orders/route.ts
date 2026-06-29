@@ -41,7 +41,7 @@ export async function GET() {
       where: {
         driverId: driver.id,
         status: 'COMPLETED',
-        updatedAt: {
+        createdAt: {
           gte: today
         }
       }
