@@ -98,6 +98,26 @@ export default function DeveloperUsersPage() {
     }
   };
 
+  const handleLinkRestaurant = async (userId: number, restaurantId: string) => {
+    if (!restaurantId) return;
+    try {
+      const res = await fetch(`/api/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurantId })
+      });
+      if (res.ok) {
+        alert('Local vinculado correctamente');
+        fetchData();
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Error al vincular local');
+      }
+    } catch (err) {
+      alert('Error de conexión');
+    }
+  };
+
   if (loading) return <div style={{ padding: '2rem' }}>Cargando...</div>;
 
   return (
@@ -221,7 +241,18 @@ export default function DeveloperUsersPage() {
                   <td style={{ padding: '1rem' }} className="text-muted">
                     {u.restaurant ? <span style={{ fontWeight: 'bold', color: 'var(--color-text)' }}>{u.restaurant.name}</span> : 'Sin local'}
                   </td>
-                  <td style={{ padding: '1rem', textAlign: 'right' }}>
+                  <td style={{ padding: '1rem', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                    <select
+                      onChange={(e) => {
+                        handleLinkRestaurant(u.id, e.target.value);
+                        e.target.value = "";
+                      }}
+                      style={{ fontSize: '0.75rem', padding: '0.25rem', borderRadius: '4px', border: '1px solid var(--color-border)', backgroundColor: '#f9f9f9', width: '120px' }}
+                    >
+                      <option value="">+ Vincular Local</option>
+                      {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                    </select>
+                    
                     <button 
                       onClick={() => handleDelete(u.id)}
                       style={{ color: 'var(--color-red-primary)', fontSize: '0.85rem', textDecoration: 'underline' }}

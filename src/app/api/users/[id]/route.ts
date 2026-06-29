@@ -34,3 +34,33 @@ export async function DELETE(
     return NextResponse.json({ error: 'Error al eliminar usuario' }, { status: 500 });
   }
 }
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== 'SUPERADMIN') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+    const { id } = await params;
+    const userId = parseInt(id);
+    const { restaurantId } = await request.json();
+
+    if (!restaurantId) return NextResponse.json({ error: 'Falta restaurantId' }, { status: 400 });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        managedRestaurants: {
+          connect: { id: parseInt(restaurantId) }
+        }
+      }
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error linking restaurant:', error);
+    return NextResponse.json({ error: 'Error interno' }, { status: 500 });
+  }
+}

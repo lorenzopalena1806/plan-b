@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { SessionProvider, useSession } from 'next-auth/react';
 
-export default function RestaurantSwitcher({ 
+function SwitcherInner({ 
   restaurants, 
   currentId 
 }: { 
@@ -10,9 +11,10 @@ export default function RestaurantSwitcher({
   currentId: number | null 
 }) {
   const router = useRouter();
+  const { update } = useSession();
 
   const handleChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newId = e.target.value;
+    const newId = parseInt(e.target.value);
     try {
       const res = await fetch('/api/users/me/active-restaurant', {
         method: 'POST',
@@ -20,6 +22,8 @@ export default function RestaurantSwitcher({
         body: JSON.stringify({ restaurantId: newId })
       });
       if (res.ok) {
+        // Actualizar la cookie de NextAuth antes de recargar
+        await update({ restaurantId: newId });
         // Recargar la página completa para actualizar la sesión y todos los RSC
         window.location.reload();
       } else {
@@ -58,5 +62,13 @@ export default function RestaurantSwitcher({
         ))}
       </select>
     </div>
+  );
+}
+
+export default function RestaurantSwitcher(props: any) {
+  return (
+    <SessionProvider>
+      <SwitcherInner {...props} />
+    </SessionProvider>
   );
 }
