@@ -63,7 +63,8 @@ export async function POST(request: Request) {
     whatsappUrl,
     mapsUrl,
     shippingFee,
-    restaurantName
+    restaurantName,
+    subtitle
   } = await request.json();
 
   if (restaurantName) {
@@ -94,7 +95,8 @@ export async function POST(request: Request) {
     instagramUrl,
     whatsappUrl,
     mapsUrl,
-    shippingFee: parseFloat(shippingFee) || 0
+    shippingFee: parseFloat(shippingFee) || 0,
+    subtitle
   };
 
   if (config) {

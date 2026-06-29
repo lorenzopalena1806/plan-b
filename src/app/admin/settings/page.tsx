@@ -271,17 +271,6 @@ export default function SettingsPage() {
             </>
           )}
 
-          <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Número de WhatsApp (con código de país)</label>
-            <input 
-              type="text" 
-              value={config?.whatsappNumber || ''} 
-              onChange={e => setConfig({...config, whatsappNumber: e.target.value})}
-              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-              required
-            />
-          </div>
-
           {activeTab === 'design' && (
             <div style={{ paddingTop: '0.5rem' }}>
               <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Identidad Visual</h3>
