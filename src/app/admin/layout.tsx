@@ -27,7 +27,18 @@ export default async function AdminLayout({
   let restaurantName = 'Mi Local';
   let restaurantSlug = '';
   let subscriptionEnd: Date | null = null;
+  let userManagedRestaurants: { id: number, name: string, slug: string }[] = [];
   
+  if (session.user.id) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: parseInt(session.user.id) },
+      include: { managedRestaurants: { select: { id: true, name: true, slug: true } } }
+    });
+    if (dbUser && dbUser.managedRestaurants) {
+      userManagedRestaurants = dbUser.managedRestaurants;
+    }
+  }
+
   if (session.user.restaurantId) {
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: session.user.restaurantId }
@@ -58,7 +69,7 @@ export default async function AdminLayout({
             <img src="/logo.png" alt="Polosandia" style={{ height: '60px', marginRight: '12px', objectFit: 'contain' }} />
           </Link>
           <RestaurantSwitcher 
-            restaurants={session.user.managedRestaurants || [{ id: session.user.restaurantId as number, name: restaurantName, slug: restaurantSlug }]} 
+            restaurants={userManagedRestaurants.length > 0 ? userManagedRestaurants : [{ id: session.user.restaurantId as number, name: restaurantName, slug: restaurantSlug }]} 
             currentId={session.user.restaurantId} 
           />
         </div>
