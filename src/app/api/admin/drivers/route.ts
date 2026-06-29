@@ -16,7 +16,22 @@ export async function GET() {
       include: { user: { select: { username: true } } },
       orderBy: { name: 'asc' }
     });
-    return NextResponse.json(drivers);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const driversWithCounts = await Promise.all(drivers.map(async (driver) => {
+      const tripsToday = await prisma.order.count({
+        where: {
+          driverId: driver.id,
+          status: 'COMPLETED',
+          createdAt: { gte: today }
+        }
+      });
+      return { ...driver, tripsToday };
+    }));
+
+    return NextResponse.json(driversWithCounts);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: 'Error fetching drivers' }, { status: 500 });

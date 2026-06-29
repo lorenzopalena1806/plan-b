@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Driver } from '@prisma/client';
 import Link from 'next/link';
 
+interface DriverWithTrips {
+  id: number;
+  name: string;
+  phone: string;
+  isActive: boolean;
+  user?: { username: string };
+  tripsToday?: number;
+}
+
 export default function DriversPage() {
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [drivers, setDrivers] = useState<DriverWithTrips[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -106,6 +114,9 @@ export default function DriversPage() {
               <div>
                 <h3 className="text-bold">{driver.name}</h3>
                 <div className="text-muted" style={{ fontSize: '0.875rem' }}>📱 {driver.phone}</div>
+                <div style={{ marginTop: '0.5rem', display: 'inline-block', padding: '0.25rem 0.5rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                  🛵 Viajes hoy: {driver.tripsToday || 0}
+                </div>
               </div>
               <span className={driver.isActive ? 'text-green' : 'text-red'} style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>
                 {driver.isActive ? 'ACTIVO' : 'INACTIVO'}

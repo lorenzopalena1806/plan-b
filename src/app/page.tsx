@@ -384,6 +384,16 @@ export default function LandingPage() {
             <h3>Cero Comisiones</h3>
             <p>A diferencia de PedidosYa o Rappi, la tienda es tuya. No pagás porcentajes por venta, maximizando tus márgenes de ganancia.</p>
           </div>
+          <div className="feature-card">
+            <div className="feature-icon">🛵</div>
+            <h3>App para Repartidores</h3>
+            <p>Tus cadetes tienen su propio portal web. Ven los viajes asignados en tiempo real, registran entregas y llevan su propio contador diario.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🏢</div>
+            <h3>Gestión Multilocal</h3>
+            <p>¿Crecés y abrís nuevas sucursales? Administrá múltiples locales desde una única cuenta maestra, cada una con su menú e inventario independiente.</p>
+          </div>
         </div>
       </section>
 
