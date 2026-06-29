@@ -23,6 +23,7 @@ interface Order {
 
 export default function DriverPortal() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [completedTrips, setCompletedTrips] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -34,7 +35,8 @@ export default function DriverPortal() {
         if (data.error) {
           setError(data.error);
         } else {
-          setOrders(data);
+          setOrders(data.orders || []);
+          setCompletedTrips(data.completedTrips || 0);
         }
       } else {
         setError('Error al cargar pedidos');
@@ -78,7 +80,11 @@ export default function DriverPortal() {
     <div style={{ padding: '1rem', maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--color-bg)', minHeight: '100vh' }}>
       <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
         <h1 className="text-red" style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Mis Viajes Activos</h1>
-        <p className="text-muted" style={{ fontSize: '0.875rem' }}>Aquí verás los pedidos que tenés que entregar</p>
+        <p className="text-muted" style={{ fontSize: '0.875rem', marginBottom: '1rem' }}>Aquí verás los pedidos que tenés que entregar</p>
+        
+        <div style={{ display: 'inline-block', padding: '0.5rem 1rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', border: '1px solid #bae6fd' }}>
+          🛵 Viajes entregados hoy: {completedTrips}
+        </div>
       </header>
 
       {orders.length === 0 ? (

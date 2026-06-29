@@ -19,7 +19,7 @@ export async function GET() {
       return NextResponse.json({ orders: [], error: 'No se encontró el perfil de cadete' }, { status: 404 });
     }
 
-    const orders = await prisma.order.findMany({
+    const activeOrders = await prisma.order.findMany({
       where: {
         driverId: driver.id,
         status: {
@@ -34,7 +34,23 @@ export async function GET() {
       }
     });
 
-    return NextResponse.json(orders);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const completedTripsToday = await prisma.order.count({
+      where: {
+        driverId: driver.id,
+        status: 'COMPLETED',
+        updatedAt: {
+          gte: today
+        }
+      }
+    });
+
+    return NextResponse.json({
+      orders: activeOrders,
+      completedTrips: completedTripsToday
+    });
   } catch (error) {
     console.error('Error fetching driver orders:', error);
     return NextResponse.json({ error: 'Error interno' }, { status: 500 });
