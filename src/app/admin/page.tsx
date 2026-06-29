@@ -40,6 +40,23 @@ export default async function AdminDashboard() {
   const historicalSales = allOrders.reduce((sum, order) => sum + order.total, 0);
   const todaysSales = todaysOrders.reduce((sum, order) => sum + order.total, 0);
 
+  const drivers = !isStaff ? await prisma.driver.findMany({
+    where: {
+      restaurantId: session.user.restaurantId,
+      isActive: true
+    },
+    include: {
+      orders: {
+        where: {
+          status: 'COMPLETED',
+          createdAt: {
+            gte: today
+          }
+        }
+      }
+    }
+  }) : [];
+
   return (
     <div className="container" style={{ padding: '2rem 0' }}>
       <header className="flex justify-between items-center" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--color-border)' }}>
@@ -106,6 +123,27 @@ export default async function AdminDashboard() {
               <p className="text-muted" style={{ marginTop: '0.5rem' }}>{allOrders.length} pedidos en total</p>
             </div>
           </Link>
+        </div>
+      )}
+
+      {!isStaff && drivers.length > 0 && (
+        <div style={{ marginTop: '3rem' }}>
+          <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
+            Desempeño de Repartidores (Hoy)
+          </h2>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+            {drivers.map(driver => (
+              <div key={driver.id} className="card flex items-center justify-between" style={{ padding: '1rem' }}>
+                <div>
+                  <div className="text-bold">{driver.name}</div>
+                  <div className="text-muted" style={{ fontSize: '0.85rem' }}>{driver.phone}</div>
+                </div>
+                <div style={{ backgroundColor: '#e0f2fe', color: '#0369a1', padding: '0.5rem 0.75rem', borderRadius: '8px', fontWeight: 'bold' }}>
+                  🛵 {driver.orders.length}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

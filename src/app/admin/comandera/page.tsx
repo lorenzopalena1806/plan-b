@@ -301,7 +301,7 @@ export default function ComanderaPage() {
         </div>
       </header>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', flex: 1, overflow: 'hidden' }}>
+      <div className="grid" style={{ gridTemplateColumns: 'repeat(4, minmax(280px, 1fr))', gap: '1rem', flex: 1, overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.5rem' }}>
         {columns.map(col => {
           let columnOrders = orders.filter(o => {
             if (col.id === 'PENDING') return o.status === 'PENDING';

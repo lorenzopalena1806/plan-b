@@ -13,7 +13,10 @@ export async function GET() {
   try {
     const drivers = await prisma.driver.findMany({
       where: { restaurantId: session.user.restaurantId },
-      include: { user: { select: { username: true } } },
+      include: { 
+        user: { select: { username: true } },
+        restaurant: { select: { name: true } }
+      },
       orderBy: { name: 'asc' }
     });
 

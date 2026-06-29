@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useCartStore } from '@/store/cartStore';
 
-export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shippingFee = 0 }: { whatsappNumber: string, isOpen: boolean, slug: string, bankAlias?: string, shippingFee?: number }) {
+export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shippingFee = 0, categories = [] }: { whatsappNumber: string, isOpen: boolean, slug: string, bankAlias?: string, shippingFee?: number, categories?: any[] }) {
   const { deliveryMethod, customerName, address, customerNotes, setDeliveryMethod, setCustomerName, setAddress, setCustomerNotes, removeItem, clearCart, getItems, getTotal } = useCartStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
@@ -20,7 +20,77 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const items = getItems(slug);
-  const subtotal = getTotal(slug);
+  const rawSubtotal = getTotal(slug);
+
+  // Calculate volume discounts by category
+  let volumeDiscount = 0;
+  const discountDetails: string[] = [];
+
+  const itemsByCategory: Record<number, any[]> = {};
+  items.forEach(item => {
+    if (item.categoryId) {
+      if (!itemsByCategory[item.categoryId]) itemsByCategory[item.categoryId] = [];
+      itemsByCategory[item.categoryId].push(item);
+    }
+  });
+
+  Object.entries(itemsByCategory).forEach(([categoryIdStr, catItems]) => {
+    const categoryId = parseInt(categoryIdStr);
+    const category = categories.find(c => c.id === categoryId);
+    if (!category || !category.discounts || category.discounts.length === 0) return;
+
+    // Total quantity of items in this category
+    const totalQty = catItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Get highest applicable discount
+    const applicableDiscounts = [...category.discounts].sort((a, b) => b.quantity - a.quantity);
+    let remainingQty = totalQty;
+    
+    // Sort items by price (apply discount to the cheapest ones or most expensive ones? Standard is the base price of the item).
+    // Actually, if we just say "6 empanadas = $5000", we assume they all cost the same base price.
+    // If there are different base prices, we should discount the CHEAPEST items first.
+    // Let's flatten the items (1 unit = 1 entry) to sort them
+    let flatItems: { basePrice: number, modifiersPrice: number }[] = [];
+    catItems.forEach(item => {
+      const modPrice = item.modifiers.reduce((s: number, m: any) => s + m.price, 0);
+      for (let i = 0; i < item.quantity; i++) {
+        flatItems.push({ basePrice: item.basePrice, modifiersPrice: modPrice });
+      }
+    });
+    // Sort descending by base price (so we discount the cheapest) Wait, if we discount the cheapest, the customer saves LESS.
+    // Standard promotional logic: the customer gets the discount on the CHEAPEST items. So we sort DESCENDING, meaning the most expensive ones remain at full price.
+    flatItems.sort((a, b) => b.basePrice - a.basePrice);
+
+    let categorySavings = 0;
+    
+    for (const discount of applicableDiscounts) {
+      while (flatItems.length >= discount.quantity) {
+        // We have enough items to apply this discount tier
+        // Pop the cheapest items for the discount
+        let groupBaseTotal = 0;
+        let groupModifiersTotal = 0;
+        for (let i = 0; i < discount.quantity; i++) {
+          const item = flatItems.pop()!;
+          groupBaseTotal += item.basePrice;
+          groupModifiersTotal += item.modifiersPrice;
+        }
+        
+        // The group's original base price was groupBaseTotal. It is now discount.price.
+        // So the saving is groupBaseTotal - discount.price.
+        const saving = groupBaseTotal - discount.price;
+        if (saving > 0) {
+          categorySavings += saving;
+        }
+      }
+    }
+
+    if (categorySavings > 0) {
+      volumeDiscount += categorySavings;
+      discountDetails.push(`Promo ${category.name}: -$${categorySavings.toLocaleString()}`);
+    }
+  });
+
+  const subtotal = rawSubtotal - volumeDiscount;
 
   // Auto-remove coupon if subtotal drops below minimum purchase requirement
   useEffect(() => {
@@ -139,7 +209,7 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           paymentMethod,
           paymentDetails,
           couponCode: appliedCoupon ? appliedCoupon.code : null,
-          discountApplied,
+          discountApplied: discountApplied + volumeDiscount,
           tipAmount
         })
       });
@@ -167,6 +237,17 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
           msg += `  > ${mod.type === 'FREE' ? 'SIN' : 'EXTRA'} ${mod.name}\n`;
         });
       });
+
+      const promoText = discountDetails.length > 0 
+        ? discountDetails.map(d => `*${d}*`).join('%0A') + '%0A' 
+        : '';
+        
+      const totalSection = `*Subtotal:* $${rawSubtotal.toLocaleString()}%0A`
+        + (volumeDiscount > 0 ? `${promoText}` : '')
+        + (deliveryMethod === 'DELIVERY' ? `*Envío:* $${shippingFee.toLocaleString()}%0A` : '')
+        + (discountApplied > 0 ? `*Descuento Cupón:* -$${discountApplied.toLocaleString()}%0A` : '')
+        + (tipAmount > 0 ? `*Propina:* $${tipAmount.toLocaleString()}%0A` : '')
+        + `*TOTAL:* $${finalTotal.toLocaleString()}%0A%0A`;
 
       if (appliedCoupon) {
         msg += `\n*Cupón Aplicado:* ${appliedCoupon.code} (-$${discountApplied.toLocaleString()})\n`;
@@ -265,12 +346,19 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
       </div>
 
       <div style={{ paddingTop: '0.5rem', marginBottom: '1.5rem' }}>
+        <div className="flex justify-between" style={{ marginBottom: '0.5rem' }}>
+          <span>Subtotal:</span>
+          <span className="text-bold">${rawSubtotal.toLocaleString()}</span>
+        </div>
+        
+        {discountDetails.map((detail, idx) => (
+          <div key={idx} className="flex justify-between" style={{ marginBottom: '0.5rem', color: 'var(--color-green)' }}>
+            <span>{detail}</span>
+          </div>
+        ))}
+
         {deliveryMethod === 'DELIVERY' && shippingFee > 0 && (
           <>
-            <div className="flex justify-between text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
-              <span>Subtotal:</span>
-              <span>${subtotal.toLocaleString()}</span>
-            </div>
             <div className="flex justify-between text-muted" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
               <span>Envío a Domicilio:</span>
               <span>+${shippingFee.toLocaleString()}</span>

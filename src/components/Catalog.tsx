@@ -10,7 +10,7 @@ type ProductWithRelations = Product & {
   modifiers: ModifierOption[];
 };
 
-export default function Catalog({ products, banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
+export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
   const [quantity, setQuantity] = useState(1);
@@ -75,6 +75,8 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
       basePrice: selectedProduct.price,
       quantity,
       modifiers: selectedModifiers,
+      categoryId: selectedProduct.categoryId || undefined,
+      categoryName: selectedProduct.category?.name || undefined,
     });
     
     closeModal();
@@ -260,7 +262,7 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
         )}
       </div>
       <div id="cart-section" style={{ paddingBottom: '100px' }}>
-        <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} shippingFee={shippingFee} />
+        <Cart whatsappNumber={whatsappNumber} isOpen={isOpen} slug={slug} bankAlias={bankAlias} shippingFee={shippingFee} categories={categories} />
       </div>
 
       {/* Floating Cart Button (Mobile) */}
@@ -403,8 +405,8 @@ export default function Catalog({ products, banners = [], whatsappNumber, isOpen
                 <button className="btn-outline" onClick={() => setQuantity(quantity + 1)}>+</button>
                 {selectedProduct.allowBulkQuantities && (
                   <div className="flex" style={{ gap: '0.5rem', marginLeft: '0.5rem' }}>
-                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity === 1 ? 6 : quantity + 6)}>+6</button>
-                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity === 1 ? 12 : quantity + 12)}>+12</button>
+                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity + 6)}>+6</button>
+                    <button className="btn-outline" style={{ padding: '0.25rem 0.5rem', fontSize: '0.85rem' }} onClick={() => setQuantity(quantity + 12)}>+12</button>
                   </div>
                 )}
               </div>

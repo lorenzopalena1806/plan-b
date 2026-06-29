@@ -14,6 +14,8 @@ export default function SettingsPage() {
   const [weeklyHours, setWeeklyHours] = useState<any[]>([]);
   const [isSavingHours, setIsSavingHours] = useState(false);
 
+  const [activeTab, setActiveTab] = useState<'general' | 'design' | 'hours' | 'qr'>('general');
+
   useEffect(() => {
     // Fetch general config
     fetch('/api/config')
@@ -130,18 +132,144 @@ export default function SettingsPage() {
 
       <div className="flex-col" style={{ gap: '2rem', display: 'flex' }}>
         
+        {/* Tabs Header */}
+        <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid var(--color-border)', marginBottom: '1rem', overflowX: 'auto' }}>
+          <button 
+            onClick={() => setActiveTab('general')} 
+            style={{ background: 'none', border: 'none', padding: '0.5rem 1rem', fontSize: '1rem', fontWeight: 'bold', borderBottom: activeTab === 'general' ? '3px solid var(--color-red-primary)' : '3px solid transparent', color: activeTab === 'general' ? 'var(--color-red-primary)' : '#666', cursor: 'pointer' }}
+          >
+            General
+          </button>
+          <button 
+            onClick={() => setActiveTab('design')} 
+            style={{ background: 'none', border: 'none', padding: '0.5rem 1rem', fontSize: '1rem', fontWeight: 'bold', borderBottom: activeTab === 'design' ? '3px solid var(--color-red-primary)' : '3px solid transparent', color: activeTab === 'design' ? 'var(--color-red-primary)' : '#666', cursor: 'pointer' }}
+          >
+            Diseño
+          </button>
+          <button 
+            onClick={() => setActiveTab('hours')} 
+            style={{ background: 'none', border: 'none', padding: '0.5rem 1rem', fontSize: '1rem', fontWeight: 'bold', borderBottom: activeTab === 'hours' ? '3px solid var(--color-red-primary)' : '3px solid transparent', color: activeTab === 'hours' ? 'var(--color-red-primary)' : '#666', cursor: 'pointer' }}
+          >
+            Horarios
+          </button>
+          <button 
+            onClick={() => setActiveTab('qr')} 
+            style={{ background: 'none', border: 'none', padding: '0.5rem 1rem', fontSize: '1rem', fontWeight: 'bold', borderBottom: activeTab === 'qr' ? '3px solid var(--color-red-primary)' : '3px solid transparent', color: activeTab === 'qr' ? 'var(--color-red-primary)' : '#666', cursor: 'pointer' }}
+          >
+            Código QR
+          </button>
+        </div>
+
         {/* Main Settings Form */}
         <form onSubmit={handleSave} className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
-          <div>
-            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Nombre del Local</label>
-            <input 
-              type="text" 
-              value={config?.restaurantName || ''} 
-              onChange={e => setConfig({...config, restaurantName: e.target.value})}
-              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-              required
-            />
-          </div>
+          {activeTab === 'general' && (
+            <>
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Nombre del Local</label>
+                <input 
+                  type="text" 
+                  value={config?.restaurantName || ''} 
+                  onChange={e => setConfig({...config, restaurantName: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Subtítulo (ej: Delivery & Takeaway)</label>
+                <input 
+                  type="text" 
+                  value={config?.subtitle || ''} 
+                  onChange={e => setConfig({...config, subtitle: e.target.value})}
+                  placeholder="Delivery & Takeaway"
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                />
+              </div>
+
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Número de WhatsApp (con código de país)</label>
+                <input 
+                  type="text" 
+                  value={config?.whatsappNumber || ''} 
+                  onChange={e => setConfig({...config, whatsappNumber: e.target.value})}
+                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  required
+                />
+              </div>
+
+              {/* Payment Methods Info */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Métodos de Pago</h3>
+                <div>
+                  <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Alias para Transferencias (CBU/CVU/MercadoPago)</label>
+                  <input 
+                    type="text" 
+                    placeholder="ej: mi.local.mp"
+                    value={config?.bankAlias || ''} 
+                    onChange={e => setConfig({...config, bankAlias: e.target.value})}
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  />
+                  <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Si completas este campo, los clientes podrán elegir pagar con Transferencia y se les mostrará este alias al finalizar.</p>
+                </div>
+              </div>
+
+              {/* Shipping Cost */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Costo de Envío</h3>
+                <div>
+                  <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Costo de Envío Fijo ($)</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    step="any"
+                    placeholder="ej: 300"
+                    value={config?.shippingFee || 0} 
+                    onChange={e => setConfig({...config, shippingFee: parseFloat(e.target.value) || 0})}
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  />
+                  <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Este monto se sumará de forma automática al total de la compra cuando el cliente elija la opción de Envío a Domicilio.</p>
+                </div>
+              </div>
+
+              {/* Social Links */}
+              <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
+                <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Enlaces y Redes Sociales</h3>
+                <div className="grid" style={{ gap: '1rem' }}>
+                  <div>
+                    <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Instagram (Opcional)</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://instagram.com/mi.local"
+                      value={config?.instagramUrl || ''} 
+                      onChange={e => setConfig({...config, instagramUrl: e.target.value})}
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de WhatsApp Directo (Opcional)</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://wa.me/5491123456789?text=Hola"
+                      value={config?.whatsappUrl || ''} 
+                      onChange={e => setConfig({...config, whatsappUrl: e.target.value})}
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                    />
+                    <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Si se deja vacío, se usará automáticamente el número de WhatsApp principal.</p>
+                  </div>
+                  <div>
+                    <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Google Maps (Opcional)</label>
+                    <input 
+                      type="url" 
+                      placeholder="https://maps.google.com/?q=..."
+                      value={config?.mapsUrl || ''} 
+                      onChange={e => setConfig({...config, mapsUrl: e.target.value})}
+                      style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           <div>
             <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Número de WhatsApp (con código de país)</label>
@@ -154,9 +282,9 @@ export default function SettingsPage() {
             />
           </div>
 
-          {/* Brand identity: logo, font, card layout */}
-          <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem', marginTop: '0.5rem' }}>
-            <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Identidad Visual</h3>
+          {activeTab === 'design' && (
+            <div style={{ paddingTop: '0.5rem' }}>
+              <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Identidad Visual</h3>
             
             <div className="grid" style={{ gridTemplateColumns: '1fr', gap: '1.5rem' }}>
               <div>
@@ -202,7 +330,7 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          </div>
+
 
           {/* Colors and Theme Customization */}
           <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
@@ -308,100 +436,35 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Payment Methods Info */}
-          <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
-            <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Métodos de Pago</h3>
-            <div>
-              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Alias para Transferencias (CBU/CVU/MercadoPago)</label>
+            </div>
+          )}
+
+          {activeTab === 'hours' && (
+            <label className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer', padding: '1rem', background: 'var(--color-border)', opacity: 0.8, border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}>
               <input 
-                type="text" 
-                placeholder="ej: mi.local.mp"
-                value={config?.bankAlias || ''} 
-                onChange={e => setConfig({...config, bankAlias: e.target.value})}
-                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                type="checkbox" 
+                checked={config?.isOpenOverride || false} 
+                onChange={e => setConfig({...config, isOpenOverride: e.target.checked})}
+                style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
               />
-              <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Si completas este campo, los clientes podrán elegir pagar con Transferencia y se les mostrará este alias al finalizar.</p>
-            </div>
-          </div>
-
-          {/* Shipping Cost */}
-          <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
-            <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Costo de Envío</h3>
-            <div>
-              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Costo de Envío Fijo ($)</label>
-              <input 
-                type="number" 
-                min="0"
-                step="any"
-                placeholder="ej: 300"
-                value={config?.shippingFee || 0} 
-                onChange={e => setConfig({...config, shippingFee: parseFloat(e.target.value) || 0})}
-                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-              />
-              <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Este monto se sumará de forma automática al total de la compra cuando el cliente elija la opción de Envío a Domicilio.</p>
-            </div>
-          </div>
-
-          {/* Social Links */}
-          <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '1.5rem' }}>
-            <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>Enlaces y Redes Sociales</h3>
-            <div className="grid" style={{ gap: '1rem' }}>
               <div>
-                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Instagram (Opcional)</label>
-                <input 
-                  type="url" 
-                  placeholder="https://instagram.com/mi.local"
-                  value={config?.instagramUrl || ''} 
-                  onChange={e => setConfig({...config, instagramUrl: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-                />
+                <div className="text-bold">Forzar estado del local (Siempre Abierto)</div>
+                <div className="text-muted" style={{ fontSize: '0.875rem' }}>
+                  Si se desmarca, el sistema usará los horarios semanales definidos abajo. Si está marcado, el local figura como abierto sin importar la hora.
+                </div>
               </div>
-              <div>
-                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de WhatsApp Directo (Opcional)</label>
-                <input 
-                  type="url" 
-                  placeholder="https://wa.me/5491123456789?text=Hola"
-                  value={config?.whatsappUrl || ''} 
-                  onChange={e => setConfig({...config, whatsappUrl: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-                />
-                <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Si se deja vacío, se usará automáticamente el número de WhatsApp principal.</p>
-              </div>
-              <div>
-                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Enlace de Google Maps (Opcional)</label>
-                <input 
-                  type="url" 
-                  placeholder="https://maps.google.com/?q=..."
-                  value={config?.mapsUrl || ''} 
-                  onChange={e => setConfig({...config, mapsUrl: e.target.value})}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-                />
-              </div>
-            </div>
-          </div>
+            </label>
+          )}
 
-          <label className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer', padding: '1rem', background: 'var(--color-border)', opacity: 0.8, border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}>
-            <input 
-              type="checkbox" 
-              checked={config?.isOpenOverride || false} 
-              onChange={e => setConfig({...config, isOpenOverride: e.target.checked})}
-              style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
-            />
-            <div>
-              <div className="text-bold">Forzar estado del local</div>
-              <div className="text-muted" style={{ fontSize: '0.875rem' }}>
-                Si se desmarca, el local aparecerá "Cerrado" en todo momento (ignora horarios semanales).
-              </div>
-            </div>
-          </label>
-
-          <button type="submit" className="btn-primary" disabled={isSaving}>
-            {isSaving ? 'Guardando...' : 'Guardar Configuración General'}
-          </button>
+          {(activeTab === 'general' || activeTab === 'design' || activeTab === 'hours') && (
+            <button type="submit" className="btn-primary" disabled={isSaving}>
+              {isSaving ? 'Guardando...' : 'Guardar Configuración'}
+            </button>
+          )}
         </form>
 
         {/* QR Code Section */}
-        {config?.restaurantSlug && (
+        {activeTab === 'qr' && config?.restaurantSlug && (
           <div className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
             <div>
               <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Código QR de mi Menú</h3>
@@ -429,7 +492,8 @@ export default function SettingsPage() {
         )}
 
         {/* Weekly Business Hours Form */}
-        <div className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
+        {activeTab === 'hours' && (
+          <div className="card flex-col" style={{ gap: '1.5rem', display: 'flex' }}>
           <div>
             <h3 className="text-bold" style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Horarios por Día (Doble Turno)</h3>
             <p className="text-muted" style={{ fontSize: '0.85rem' }}>
@@ -541,6 +605,7 @@ export default function SettingsPage() {
             </button>
           </div>
         </div>
+        )}
 
       </div>
     </div>

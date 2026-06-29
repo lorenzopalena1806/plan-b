@@ -48,6 +48,7 @@ model Config {
   isOpenOverride Boolean    @default(true) 
   isSuspended    Boolean    @default(false)
   logoUrl        String?
+  subtitle       String?    @default("Delivery & Takeaway")
   themeColor     String?    @default("#e11d48")
   buttonColor    String?    @default("#ffffff")
   bgColor        String?    @default("#ffffff")
@@ -70,6 +71,17 @@ model Category {
   restaurantId Int
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   products     Product[]
+  discounts    CategoryDiscount[]
+}
+
+model CategoryDiscount {
+  id           Int        @id @default(autoincrement())
+  quantity     Int
+  price        Float
+  categoryId   Int
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  
+  @@unique([categoryId, quantity])
 }
 
 model Product {

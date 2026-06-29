@@ -155,6 +155,9 @@ export default function CajaPage() {
         <div className="flex" style={{ gap: '1rem', alignItems: 'center' }}>
           <span className="text-muted text-bold animate-pulse">● Live (30s)</span>
           <button className="btn-outline" onClick={fetchOrders}>Refrescar</button>
+          <Link href="/admin/caja/pos" className="btn-primary" style={{ padding: '0.5rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#2563eb' }}>
+            <span>🛒</span> Nueva Venta Manual
+          </Link>
           <Link href="/admin" className="btn-outline">Ir a Admin</Link>
           <Link href="/admin/comandera" className="btn-outline">Ir a Comandera</Link>
         </div>

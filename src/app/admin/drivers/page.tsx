@@ -9,6 +9,7 @@ interface DriverWithTrips {
   phone: string;
   isActive: boolean;
   user?: { username: string };
+  restaurant?: { name: string } | null;
   tripsToday?: number;
 }
 
@@ -135,8 +136,15 @@ export default function DriversPage() {
               <div>
                 <h3 className="text-bold">{driver.name}</h3>
                 <div className="text-muted" style={{ fontSize: '0.875rem' }}>📱 {driver.phone}</div>
-                <div style={{ marginTop: '0.5rem', display: 'inline-block', padding: '0.25rem 0.5rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                  🛵 Viajes hoy: {driver.tripsToday || 0}
+                <div style={{ marginTop: '0.5rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ padding: '0.25rem 0.5rem', backgroundColor: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                    🛵 Viajes hoy: {driver.tripsToday || 0}
+                  </div>
+                  {driver.restaurant && (
+                    <div style={{ padding: '0.25rem 0.5rem', backgroundColor: '#e0e0e0', color: '#333', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                      📍 {driver.restaurant.name}
+                    </div>
+                  )}
                 </div>
               </div>
               <span className={driver.isActive ? 'text-green' : 'text-red'} style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>

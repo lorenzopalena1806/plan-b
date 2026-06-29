@@ -21,7 +21,8 @@ export async function GET() {
         id: true,
         username: true,
         role: true,
-        rawPassword: true
+        rawPassword: true,
+        restaurant: { select: { name: true } }
       },
       orderBy: { id: 'desc' }
     });

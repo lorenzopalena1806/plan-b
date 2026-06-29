@@ -375,9 +375,19 @@ export default function LandingPage() {
             <p>Control total de tu facturación. Ticket promedio, productos más vendidos, métodos de pago y mucho más en un panel central.</p>
           </div>
           <div className="feature-card">
-            <div className="feature-icon">🎟️</div>
-            <h3>Cupones de Descuento</h3>
-            <p>Fidelizá a tus clientes creando códigos promocionales (ej: BLACKFRIDAY) con descuentos fijos o en porcentajes.</p>
+            <div className="feature-icon">💳</div>
+            <h3>Punto de Venta (POS)</h3>
+            <p>Atendé de forma presencial con el nuevo sistema de carga manual. Ideal para ventas de mostrador y pedidos telefónicos sin salir del sistema.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🎁</div>
+            <h3>Promociones Automáticas</h3>
+            <p>Configurá descuentos inteligentes por volumen (ej: 1 docena de empanadas más barata que por unidad) y cupones de fidelización.</p>
+          </div>
+          <div className="feature-card">
+            <div className="feature-icon">🎨</div>
+            <h3>Identidad de Marca</h3>
+            <p>Personalizá tu menú con tu logo, eslóganes, modo oscuro, paletas de colores exclusivas y tipografías a elección.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon">🚀</div>

@@ -69,9 +69,22 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
       isActive: true
     },
     include: {
-      modifiers: true,
-      category: true,
+      category: {
+        include: {
+          discounts: { orderBy: { quantity: 'desc' } }
+        }
+      },
+      modifiers: true
     },
+    orderBy: [
+      { categoryId: 'asc' },
+      { name: 'asc' }
+    ]
+  });
+
+  const categories = await prisma.category.findMany({
+    where: { restaurantId: restaurant.id },
+    include: { discounts: { orderBy: { quantity: 'desc' } } }
   });
 
   const banners = await prisma.banner.findMany({
@@ -198,7 +211,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
           ) : (
             <h1 className="text-red" style={{ fontSize: '2rem', letterSpacing: '-1px', textTransform: 'uppercase' }}>{restaurant.name}</h1>
           )}
-          <p className="text-muted">Delivery & Takeaway</p>
+          <p className="text-muted">{config.subtitle || 'Delivery & Takeaway'}</p>
 
           {/* Social Buttons + Theme Toggle */}
           <div className="social-buttons-container">
@@ -262,15 +275,16 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
 
         <div className="container" style={{ paddingBottom: '3rem' }}>
           <Catalog 
-            products={products} 
-            banners={banners}
-            whatsappNumber={config.whatsappNumber} 
-            isOpen={isOpen} 
-            slug={slug} 
-            cardLayout={config.cardLayout || 'grid'} 
-            bankAlias={config.bankAlias || ''} 
-            shippingFee={config.shippingFee || 0}
-          />
+          products={products as any} 
+          categories={categories as any}
+          banners={banners}
+          whatsappNumber={config.whatsappNumber}
+          isOpen={isOpen}
+          slug={restaurant.slug}
+          cardLayout={config.cardLayout || 'grid'}
+          bankAlias={config.bankAlias || ''}
+          shippingFee={config.shippingFee || 0}
+        />
         </div>
       </ClientThemeWrapper>
     </ThemeProvider>

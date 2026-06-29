@@ -8,6 +8,7 @@ interface User {
   username: string;
   role: string;
   rawPassword?: string | null;
+  restaurant?: { name: string } | null;
 }
 
 export default function AdminUsersPage() {
@@ -188,7 +189,12 @@ export default function AdminUsersPage() {
                       {u.role === 'ADMIN' ? 'Admin / Dueño' : 'Personal'}
                     </span>
                   </div>
-                  {u.rawPassword && (
+                  {u.restaurant && (
+                    <span className="text-muted" style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.8rem', padding: '0.1rem 0.4rem', background: '#e0e0e0', borderRadius: '4px' }}>
+                      📍 {u.restaurant.name}
+                    </span>
+                  )}
+                  {u.role === 'STAFF' && u.rawPassword && (
                     <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', marginTop: '0.25rem', fontFamily: 'monospace' }}>
                       Clave: {showPassword[u.id] ? u.rawPassword : '••••••'}{' '}
                       <button

@@ -15,6 +15,8 @@ export interface CartItem {
   basePrice: number;
   quantity: number;
   modifiers: CartModifier[];
+  categoryId?: number;
+  categoryName?: string;
   totalPrice: number; // basePrice + modifiers prices * quantity
 }
 
