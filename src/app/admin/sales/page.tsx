@@ -365,12 +365,13 @@ export default function SalesPage() {
                           </span>
                         </div>
                         {order.paymentMethod && (
+                          <div style={{ marginTop: '0.25rem' }}>
                             <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
                               {order.paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'} 
                               {order.paymentDetails && ` (${order.paymentDetails})`}
                             </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </td>
                       <td style={{ padding: '1rem 0.5rem' }}>
                         {order.items.map(item => (
