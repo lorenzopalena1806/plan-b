@@ -50,6 +50,8 @@ export default function SalesPage() {
   const [data, setData] = useState<SalesData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState<'ALL' | 'TODAY'>('ALL');
+  const [paymentFilter, setPaymentFilter] = useState<'ALL' | 'CASH' | 'TRANSFER'>('ALL');
+  const [originFilter, setOriginFilter] = useState<'ALL' | 'WEB' | 'LOCAL'>('ALL');
   const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
@@ -142,10 +144,20 @@ export default function SalesPage() {
   const filteredOrders = data.orders.filter(order => {
     const orderDate = new Date(order.createdAt);
     const matchesFilter = filter === 'ALL' || orderDate >= today;
+    
+    let matchesPayment = true;
+    if (paymentFilter === 'CASH') matchesPayment = order.paymentMethod === 'CASH';
+    if (paymentFilter === 'TRANSFER') matchesPayment = order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia';
+
+    let matchesOrigin = true;
+    if (originFilter === 'WEB') matchesOrigin = !!order.customerPhone;
+    if (originFilter === 'LOCAL') matchesOrigin = !order.customerPhone;
+
     const matchesSearch = order.customerName.toLowerCase().includes(search.toLowerCase()) || 
                           order.id.toString() === search ||
                           (order.address && order.address.toLowerCase().includes(search.toLowerCase()));
-    return matchesFilter && matchesSearch;
+    
+    return matchesFilter && matchesPayment && matchesOrigin && matchesSearch;
   });
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -275,21 +287,47 @@ export default function SalesPage() {
         <div>
           <div className="card" style={{ padding: '1.5rem', borderRadius: 'var(--border-radius-lg)' }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
-              <div className="flex" style={{ gap: '0.5rem' }}>
-                <button 
-                  className={`btn-outline ${filter === 'ALL' ? 'bg-red-light text-red text-bold' : ''}`}
-                  style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: filter === 'ALL' ? 'var(--color-red-primary)' : 'var(--color-border)' }}
-                  onClick={() => setFilter('ALL')}
-                >
-                  Histórico
-                </button>
-                <button 
-                  className={`btn-outline ${filter === 'TODAY' ? 'bg-red-light text-red text-bold' : ''}`}
-                  style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: filter === 'TODAY' ? 'var(--color-red-primary)' : 'var(--color-border)' }}
-                  onClick={() => setFilter('TODAY')}
-                >
-                  Solo Hoy
-                </button>
+              <div className="flex" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', borderRight: '1px solid var(--color-border)', paddingRight: '0.5rem' }}>
+                  <button 
+                    className={`btn-outline ${filter === 'ALL' ? 'bg-red-light text-red text-bold' : ''}`}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: filter === 'ALL' ? 'var(--color-red-primary)' : 'var(--color-border)' }}
+                    onClick={() => setFilter('ALL')}
+                  >
+                    Histórico
+                  </button>
+                  <button 
+                    className={`btn-outline ${filter === 'TODAY' ? 'bg-red-light text-red text-bold' : ''}`}
+                    style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', borderColor: filter === 'TODAY' ? 'var(--color-red-primary)' : 'var(--color-border)' }}
+                    onClick={() => setFilter('TODAY')}
+                  >
+                    Solo Hoy
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', borderRight: '1px solid var(--color-border)', paddingRight: '0.5rem' }}>
+                  <select 
+                    value={paymentFilter}
+                    onChange={(e) => setPaymentFilter(e.target.value as any)}
+                    style={{ padding: '0.5rem', fontSize: '0.875rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+                  >
+                    <option value="ALL">💰 Todos los Pagos</option>
+                    <option value="CASH">💵 Efectivo</option>
+                    <option value="TRANSFER">📱 Transferencia</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <select 
+                    value={originFilter}
+                    onChange={(e) => setOriginFilter(e.target.value as any)}
+                    style={{ padding: '0.5rem', fontSize: '0.875rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+                  >
+                    <option value="ALL">🌍 Todo Origen</option>
+                    <option value="WEB">🌐 Web / Catálogo</option>
+                    <option value="LOCAL">🏪 Local / POS</option>
+                  </select>
+                </div>
               </div>
 
               <input 
