@@ -165,6 +165,8 @@ export default function SalesPage() {
   // Calculate filtered stats (ONLY FOR COMPLETED)
   const completedFiltered = filteredOrders.filter(o => o.status === 'COMPLETED');
   const filteredTotal = completedFiltered.reduce((sum, o) => sum + o.total, 0);
+  const filteredCash = completedFiltered.filter(o => o.paymentMethod === 'CASH').reduce((sum, o) => sum + o.total, 0);
+  const filteredTransfer = completedFiltered.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((sum, o) => sum + o.total, 0);
   const filteredAOV = completedFiltered.length > 0 ? (filteredTotal / completedFiltered.length) : 0;
   const maxQuantity = Math.max(...data.productSales.map(ps => ps.quantity), 1);
 
@@ -200,7 +202,7 @@ export default function SalesPage() {
           <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>Pedidos: {filteredOrders.length}</span>
         </div>
 
-        {/* Card 2: Absolute Sales */}
+        {/* Card 2: Absolute Sales Breakdown */}
         <div className="card" style={{ 
           backgroundColor: 'var(--color-card)', 
           padding: '1.5rem', 
@@ -212,13 +214,17 @@ export default function SalesPage() {
           justifyContent: 'center', 
           minHeight: '130px' 
         }}>
-          <span className="text-muted" style={{ fontSize: '0.875rem', fontWeight: '600' }}>Ventas del Local</span>
-          <h3 className="text-bold" style={{ fontSize: '2.25rem', margin: '0.5rem 0', color: 'var(--color-text)' }}>
-            ${(filter === 'TODAY' ? data.stats.todayEarnings : data.stats.totalEarnings).toLocaleString()}
-          </h3>
-          <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-            {filter === 'TODAY' ? `${data.stats.todayOrdersCount} pedidos hoy` : `${data.stats.totalOrdersCount} pedidos en total`}
-          </span>
+          <span className="text-muted" style={{ fontSize: '0.875rem', fontWeight: '600' }}>Ingresos por Método ({filter === 'TODAY' ? 'Hoy' : 'Histórico'})</span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f0fdf4', padding: '0.5rem', borderRadius: '4px', color: '#166534' }}>
+              <strong style={{ fontSize: '0.85rem' }}>💵 Efectivo:</strong>
+              <span className="text-bold">${filteredCash.toLocaleString()}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#eff6ff', padding: '0.5rem', borderRadius: '4px', color: '#1e40af' }}>
+              <strong style={{ fontSize: '0.85rem' }}>📱 Transferencia:</strong>
+              <span className="text-bold">${filteredTransfer.toLocaleString()}</span>
+            </div>
+          </div>
         </div>
 
         {/* Card 3: Ticket Promedio */}

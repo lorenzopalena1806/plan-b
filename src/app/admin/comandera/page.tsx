@@ -337,9 +337,14 @@ export default function ComanderaPage() {
                     }}>
                       <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
                         <span className="text-bold text-muted">#{order.id}</span>
-                        <span className={`status-badge ${order.deliveryMethod === 'DELIVERY' ? 'bg-red-light text-red' : 'status-ready'}`} style={{ fontSize: '0.7rem' }}>
-                          {order.deliveryMethod}
-                        </span>
+                        <div className="flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
+                          <span className="status-badge bg-gray text-bold" style={{ backgroundColor: '#f3f4f6', color: '#374151', fontSize: '0.7rem' }}>
+                            {order.customerPhone ? '🌐 Web' : '🏪 Local'}
+                          </span>
+                          <span className={`status-badge ${order.deliveryMethod === 'DELIVERY' ? 'bg-red-light text-red' : 'status-ready'}`} style={{ fontSize: '0.7rem' }}>
+                            {order.deliveryMethod}
+                          </span>
+                        </div>
                       </div>
                       
                       <h3 style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>{order.customerName}</h3>

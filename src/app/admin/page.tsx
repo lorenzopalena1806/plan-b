@@ -40,6 +40,12 @@ export default async function AdminDashboard() {
   const historicalSales = allOrders.reduce((sum, order) => sum + order.total, 0);
   const todaysSales = todaysOrders.reduce((sum, order) => sum + order.total, 0);
 
+  const todaysSalesCash = todaysOrders.filter(o => o.paymentMethod === 'CASH').reduce((sum, o) => sum + o.total, 0);
+  const todaysSalesTransfer = todaysOrders.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((sum, o) => sum + o.total, 0);
+
+  const historicalSalesCash = allOrders.filter(o => o.paymentMethod === 'CASH').reduce((sum, o) => sum + o.total, 0);
+  const historicalSalesTransfer = allOrders.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((sum, o) => sum + o.total, 0);
+
   const drivers = !isStaff ? await prisma.driver.findMany({
     where: {
       restaurantId: session.user.restaurantId,
@@ -120,18 +126,34 @@ export default async function AdminDashboard() {
       ) : (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
           <Link href="/admin/sales" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="card text-center hover-card" style={{ padding: '3rem 1rem', cursor: 'pointer' }}>
-              <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas de Hoy (Detalle)</h2>
-              <p className="text-bold text-red" style={{ fontSize: '3rem' }}>${todaysSales.toLocaleString()}</p>
-              <p className="text-muted" style={{ marginTop: '0.5rem' }}>{todaysOrders.length} pedidos completados</p>
+            <div className="card text-center hover-card" style={{ padding: '2rem 1rem', cursor: 'pointer' }}>
+              <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas de Hoy</h2>
+              <p className="text-bold text-red" style={{ fontSize: '2.5rem' }}>${todaysSales.toLocaleString()}</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+                <div style={{ background: '#f0fdf4', padding: '0.5rem 1rem', borderRadius: '4px', color: '#166534' }}>
+                  <strong>💵 Efectivo:</strong> ${todaysSalesCash.toLocaleString()}
+                </div>
+                <div style={{ background: '#eff6ff', padding: '0.5rem 1rem', borderRadius: '4px', color: '#1e40af' }}>
+                  <strong>📱 Transferencia:</strong> ${todaysSalesTransfer.toLocaleString()}
+                </div>
+              </div>
+              <p className="text-muted" style={{ marginTop: '1rem' }}>{todaysOrders.length} pedidos completados</p>
             </div>
           </Link>
 
           <Link href="/admin/sales" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="card text-center hover-card" style={{ padding: '3rem 1rem', cursor: 'pointer' }}>
-              <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas Históricas (Detalle)</h2>
-              <p className="text-bold" style={{ fontSize: '3rem' }}>${historicalSales.toLocaleString()}</p>
-              <p className="text-muted" style={{ marginTop: '0.5rem' }}>{allOrders.length} pedidos en total</p>
+            <div className="card text-center hover-card" style={{ padding: '2rem 1rem', cursor: 'pointer' }}>
+              <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas Históricas</h2>
+              <p className="text-bold" style={{ fontSize: '2.5rem' }}>${historicalSales.toLocaleString()}</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
+                <div style={{ background: '#f0fdf4', padding: '0.5rem 1rem', borderRadius: '4px', color: '#166534' }}>
+                  <strong>💵 Efectivo:</strong> ${historicalSalesCash.toLocaleString()}
+                </div>
+                <div style={{ background: '#eff6ff', padding: '0.5rem 1rem', borderRadius: '4px', color: '#1e40af' }}>
+                  <strong>📱 Transferencia:</strong> ${historicalSalesTransfer.toLocaleString()}
+                </div>
+              </div>
+              <p className="text-muted" style={{ marginTop: '1rem' }}>{allOrders.length} pedidos en total</p>
             </div>
           </Link>
         </div>

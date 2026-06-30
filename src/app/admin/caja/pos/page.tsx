@@ -222,13 +222,18 @@ export default function POSPage() {
       return;
     }
 
+    if (!customerName.trim()) {
+      alert("Debes ingresar el nombre del cliente.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const res = await fetch('/api/admin/orders/pos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          customerName: customerName.trim() || 'Cliente Mostrador',
+          customerName: customerName.trim(),
           deliveryMethod: 'TAKEAWAY',
           customerNotes: customerNotes.trim() || null,
           paymentMethod,
@@ -354,10 +359,11 @@ export default function POSPage() {
           <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Ticket de Venta</h2>
           <input
             type="text"
-            placeholder="Nombre del cliente (opcional)"
+            placeholder="Nombre del cliente (Obligatorio)"
             value={customerName}
             onChange={e => setCustomerName(e.target.value)}
             style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '0.5rem' }}
+            required
           />
           <textarea
             placeholder="Nota general del pedido (opcional)"
