@@ -23,13 +23,14 @@ interface CartItem {
   basePrice: number;
   quantity: number;
   totalPrice: number;
+  categoryId: number | null;
   modifiers?: any[];
   notes?: string;
 }
 
 export default function POSPage() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<{id: number, name: string}[]>([]);
+  const [categories, setCategories] = useState<{id: number, name: string, discounts?: any[]}[]>([]);
   const [activeCategory, setActiveCategory] = useState<number | 'PROMOS' | null>(null);
   
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -121,6 +122,7 @@ export default function POSPage() {
         basePrice: priceToAdd,
         quantity: quantity,
         totalPrice: priceToAdd * quantity,
+        categoryId: selectedProduct.categoryId,
         modifiers: selectedModifiers,
         notes: itemNote.trim()
       }]);
@@ -147,7 +149,71 @@ export default function POSPage() {
     setCart(newCart);
   };
 
-  const total = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  const rawTotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+
+  // Calculate volume discounts
+  let volumeDiscount = 0;
+  const discountDetails: string[] = [];
+
+  const itemsByCategory: Record<number, any[]> = {};
+  cart.forEach(item => {
+    if (item.categoryId) {
+      if (!itemsByCategory[item.categoryId]) itemsByCategory[item.categoryId] = [];
+      itemsByCategory[item.categoryId].push(item);
+    }
+  });
+
+  Object.entries(itemsByCategory).forEach(([categoryIdStr, catItems]) => {
+    const categoryId = parseInt(categoryIdStr);
+    const category = categories.find(c => c.id === categoryId);
+    if (!category || !category.discounts || category.discounts.length === 0) return;
+
+    const totalQty = catItems.reduce((sum, item) => sum + item.quantity, 0);
+    const applicableDiscounts = [...category.discounts].sort((a: any, b: any) => b.quantity - a.quantity);
+    
+    let flatItems: { basePrice: number, modifiersPrice: number }[] = [];
+    catItems.forEach(item => {
+      const modPrice = (item.modifiers || []).reduce((s: number, m: any) => s + m.price, 0);
+      for (let i = 0; i < item.quantity; i++) {
+        flatItems.push({ basePrice: item.basePrice - modPrice, modifiersPrice: modPrice }); // basePrice is already base+modifiers, wait.
+      }
+    });
+    
+    // In POSPage CartItem, basePrice IS the price of the item + modifiers.
+    // Let's recalculate properly. The base item price without modifiers is item.basePrice - modPrice.
+    flatItems = [];
+    catItems.forEach(item => {
+      const modPrice = (item.modifiers || []).reduce((s: number, m: any) => s + m.price, 0);
+      const originalItemPrice = item.basePrice - modPrice;
+      for (let i = 0; i < item.quantity; i++) {
+        flatItems.push({ basePrice: originalItemPrice, modifiersPrice: modPrice });
+      }
+    });
+
+    flatItems.sort((a, b) => b.basePrice - a.basePrice);
+
+    let categorySavings = 0;
+    for (const discount of applicableDiscounts) {
+      while (flatItems.length >= discount.quantity) {
+        let groupBaseTotal = 0;
+        for (let i = 0; i < discount.quantity; i++) {
+          const item = flatItems.pop()!;
+          groupBaseTotal += item.basePrice;
+        }
+        const saving = groupBaseTotal - discount.price;
+        if (saving > 0) {
+          categorySavings += saving;
+        }
+      }
+    }
+
+    if (categorySavings > 0) {
+      volumeDiscount += categorySavings;
+      discountDetails.push(`Promo ${category.name}: -$${categorySavings.toLocaleString()}`);
+    }
+  });
+
+  const total = rawTotal - volumeDiscount;
 
   const handleSubmit = async (status: 'PENDING' | 'COMPLETED') => {
     if (cart.length === 0) {
@@ -338,6 +404,15 @@ export default function POSPage() {
         </div>
 
         <div style={{ padding: '1rem', borderTop: '2px dashed #ccc', background: '#fafafa' }}>
+          {discountDetails.length > 0 && (
+            <div style={{ marginBottom: '0.5rem' }}>
+              {discountDetails.map((detail, idx) => (
+                <div key={idx} style={{ color: 'var(--color-green)', fontWeight: 'bold', fontSize: '0.9rem', textAlign: 'right' }}>
+                  {detail}
+                </div>
+              ))}
+            </div>
+          )}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', fontSize: '1.5rem' }}>
             <span>Total:</span>
             <span className="text-bold">${total.toLocaleString()}</span>
