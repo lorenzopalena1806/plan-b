@@ -149,8 +149,8 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
   const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 
   let isOpen = true;
-  if (!config.isOpenOverride) {
-    isOpen = false;
+  if (config.isOpenOverride) {
+    isOpen = true;
   } else {
     // Check weekly double shift hours
     isOpen = checkIsOpen(businessHours, todayDay, currentTimeStr);
