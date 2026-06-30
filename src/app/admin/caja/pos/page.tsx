@@ -12,6 +12,8 @@ interface Product {
   isPromo: boolean;
   categoryId: number | null;
   category: { id: number; name: string } | null;
+  modifiers?: any[];
+  allowBulkQuantities?: boolean;
 }
 
 interface CartItem {
@@ -21,6 +23,8 @@ interface CartItem {
   basePrice: number;
   quantity: number;
   totalPrice: number;
+  modifiers?: any[];
+  notes?: string;
 }
 
 export default function POSPage() {
@@ -30,9 +34,16 @@ export default function POSPage() {
   
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState('');
+  const [customerNotes, setCustomerNotes] = useState('');
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Modal state
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedModifiers, setSelectedModifiers] = useState<any[]>([]);
+  const [quantity, setQuantity] = useState(1);
+  const [itemNote, setItemNote] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -65,23 +76,56 @@ export default function POSPage() {
     }
   };
 
-  const addToCart = (product: Product) => {
-    const existingIndex = cart.findIndex(i => i.productId === product.id);
+  const openModal = (product: Product) => {
+    setSelectedProduct(product);
+    setSelectedModifiers([]);
+    setQuantity(1);
+    setItemNote('');
+  };
+
+  const closeModal = () => {
+    setSelectedProduct(null);
+  };
+
+  const toggleModifier = (mod: any) => {
+    if (selectedModifiers.some(m => m.id === mod.id)) {
+      setSelectedModifiers(selectedModifiers.filter(m => m.id !== mod.id));
+    } else {
+      setSelectedModifiers([...selectedModifiers, mod]);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!selectedProduct) return;
+    
+    // Check if exactly the same item (same product, modifiers, and note) exists
+    const modifiersJson = JSON.stringify(selectedModifiers);
+    const existingIndex = cart.findIndex(i => 
+      i.productId === selectedProduct.id && 
+      JSON.stringify(i.modifiers || []) === modifiersJson &&
+      (i.notes || '') === itemNote.trim()
+    );
+
+    const priceToAdd = selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0);
+
     if (existingIndex >= 0) {
       const newCart = [...cart];
-      newCart[existingIndex].quantity += 1;
+      newCart[existingIndex].quantity += quantity;
       newCart[existingIndex].totalPrice = newCart[existingIndex].quantity * newCart[existingIndex].basePrice;
       setCart(newCart);
     } else {
       setCart([...cart, {
         cartItemId: Math.random().toString(36).substring(2, 9),
-        productId: product.id,
-        name: product.name,
-        basePrice: product.price,
-        quantity: 1,
-        totalPrice: product.price
+        productId: selectedProduct.id,
+        name: selectedProduct.name,
+        basePrice: priceToAdd,
+        quantity: quantity,
+        totalPrice: priceToAdd * quantity,
+        modifiers: selectedModifiers,
+        notes: itemNote.trim()
       }]);
     }
+    closeModal();
   };
 
   const removeFromCart = (cartItemId: string) => {
@@ -119,6 +163,7 @@ export default function POSPage() {
         body: JSON.stringify({
           customerName: customerName.trim() || 'Cliente Mostrador',
           deliveryMethod: 'TAKEAWAY',
+          customerNotes: customerNotes.trim() || null,
           status,
           total,
           items: cart
@@ -202,7 +247,7 @@ export default function POSPage() {
             {filteredProducts.map(product => (
               <button
                 key={product.id}
-                onClick={() => addToCart(product)}
+                onClick={() => openModal(product)}
                 style={{
                   background: '#fff',
                   border: '1px solid #e4e4e7',
@@ -244,7 +289,13 @@ export default function POSPage() {
             placeholder="Nombre del cliente (opcional)"
             value={customerName}
             onChange={e => setCustomerName(e.target.value)}
-            style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '0.5rem' }}
+          />
+          <textarea
+            placeholder="Nota general del pedido (opcional)"
+            value={customerNotes}
+            onChange={e => setCustomerNotes(e.target.value)}
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', resize: 'none', height: '60px' }}
           />
         </div>
 
@@ -260,6 +311,16 @@ export default function POSPage() {
                   <div style={{ flex: 1 }}>
                     <div className="text-bold" style={{ fontSize: '0.9rem' }}>{item.name}</div>
                     <div style={{ fontSize: '0.8rem', color: '#666' }}>${item.basePrice.toLocaleString()} c/u</div>
+                    {item.modifiers && item.modifiers.length > 0 && (
+                      <div style={{ fontSize: '0.75rem', color: '#666', fontStyle: 'italic' }}>
+                        + {item.modifiers.map(m => m.name).join(', ')}
+                      </div>
+                    )}
+                    {item.notes && (
+                      <div style={{ fontSize: '0.75rem', color: '#666', fontStyle: 'italic' }}>
+                        Nota: {item.notes}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button onClick={() => updateQuantity(item.cartItemId, -1)} style={{ width: '24px', height: '24px', border: 'none', background: '#fff', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>-</button>
@@ -302,6 +363,69 @@ export default function POSPage() {
           </div>
         </div>
       </div>
+
+      {/* MODAL DE PRODUCTO */}
+      {selectedProduct && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+              <h2 className="text-bold" style={{ fontSize: '1.25rem' }}>{selectedProduct.name}</h2>
+              <button onClick={closeModal} style={{ background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer', lineHeight: 1 }}>×</button>
+            </div>
+            
+            <p className="text-muted" style={{ marginBottom: '1rem' }}>${selectedProduct.price.toLocaleString()}</p>
+            
+            {selectedProduct.description && (
+              <p style={{ marginBottom: '1.5rem', fontSize: '0.9rem' }}>{selectedProduct.description}</p>
+            )}
+
+            {selectedProduct.modifiers && selectedProduct.modifiers.length > 0 && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h3 className="text-bold" style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>Opciones / Agregados</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {selectedProduct.modifiers.map(mod => (
+                    <label key={mod.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input 
+                        type="checkbox" 
+                        checked={selectedModifiers.some(m => m.id === mod.id)}
+                        onChange={() => toggleModifier(mod)}
+                      />
+                      <span>{mod.name} (+${mod.price})</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h3 className="text-bold" style={{ marginBottom: '0.5rem', fontSize: '1rem' }}>Aclaraciones (Opcional)</h3>
+              <textarea 
+                placeholder="Ej: Sin sal, aderezo aparte..."
+                value={itemNote}
+                onChange={e => setItemNote(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', resize: 'none', height: '60px' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <span className="text-bold">Cantidad:</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '1.25rem' }}>-</button>
+                <span className="text-bold" style={{ fontSize: '1.25rem' }}>{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '1.25rem' }}>+</button>
+              </div>
+            </div>
+
+            <button 
+              className="btn-primary" 
+              style={{ width: '100%', padding: '1rem', fontWeight: 'bold' }}
+              onClick={handleAddToCart}
+            >
+              Agregar al Ticket - ${( (selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0)) * quantity ).toLocaleString()}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
