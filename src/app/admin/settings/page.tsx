@@ -431,25 +431,7 @@ export default function SettingsPage() {
 
             </div>
           )}
-
-          {activeTab === 'hours' && (
-            <label className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer', padding: '1rem', background: 'var(--color-border)', opacity: 0.8, border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}>
-              <input 
-                type="checkbox" 
-                checked={config?.isOpenOverride || false} 
-                onChange={e => setConfig({...config, isOpenOverride: e.target.checked})}
-                style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
-              />
-              <div>
-                <div className="text-bold">Forzar estado del local (Siempre Abierto)</div>
-                <div className="text-muted" style={{ fontSize: '0.875rem' }}>
-                  Si se desmarca, el sistema usará los horarios semanales definidos abajo. Si está marcado, el local figura como abierto sin importar la hora.
-                </div>
-              </div>
-            </label>
-          )}
-
-          {(activeTab === 'general' || activeTab === 'design' || activeTab === 'hours') && (
+          {(activeTab === 'general' || activeTab === 'design') && (
             <button type="submit" className="btn-primary" disabled={isSaving}>
               {isSaving ? 'Guardando...' : 'Guardar Configuración'}
             </button>

@@ -147,14 +147,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
   const currentHour = argentinaDate.getHours();
   const currentMinute = argentinaDate.getMinutes();
   const currentTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
-
-  let isOpen = true;
-  if (config.isOpenOverride) {
-    isOpen = true;
-  } else {
-    // Check weekly double shift hours
-    isOpen = checkIsOpen(businessHours, todayDay, currentTimeStr);
-  }
+  let isOpen = checkIsOpen(businessHours, todayDay, currentTimeStr);
 
   const themeColor = config.themeColor || '#e11d48';
   const buttonColor = config.buttonColor || '#ffffff';
