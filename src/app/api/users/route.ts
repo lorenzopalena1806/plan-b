@@ -46,6 +46,9 @@ export async function POST(request: Request) {
         rawPassword: password,
         role: role || 'ADMIN',
         restaurantId: restaurantId ? parseInt(restaurantId) : null,
+        managedRestaurants: restaurantId ? {
+          connect: { id: parseInt(restaurantId) }
+        } : undefined,
       },
     });
 

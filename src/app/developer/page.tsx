@@ -121,6 +121,26 @@ export default function DeveloperDashboard() {
     }
   };
 
+  const handleDeleteRestaurant = async (id: number) => {
+    const confirm = window.confirm('¡ATENCIÓN! ¿Estás absolutamente seguro de que quieres eliminar este local por completo? Se perderán todos sus datos y no se podrá deshacer.');
+    if (!confirm) return;
+    
+    try {
+      const res = await fetch(`/api/restaurants/${id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setRestaurants(restaurants.filter(r => r.id !== id));
+        alert('Local eliminado correctamente.');
+      } else {
+        const data = await res.json();
+        alert(data.error || 'Error al eliminar el local.');
+      }
+    } catch (err) {
+      alert('Error de conexión.');
+    }
+  };
+
   const handleUpdateSubscription = async (id: number, dateStr: string) => {
     try {
       const localIso = dateStr ? `${dateStr}T00:00:00.000Z` : null;
@@ -550,19 +570,35 @@ export default function DeveloperDashboard() {
                     {(() => {
                       const isSuspended = rest.configs && rest.configs.length > 0 ? rest.configs[0].isSuspended : false;
                       return (
-                        <button 
-                          onClick={() => toggleSuspend(rest.id, isSuspended)}
-                          className={isSuspended ? "btn-primary" : "btn-outline"}
-                          style={{ 
-                            padding: '0.5rem 1rem', 
-                            fontSize: '0.85rem',
-                            backgroundColor: isSuspended ? '#721c24' : 'transparent',
-                            borderColor: '#721c24',
-                            color: isSuspended ? 'white' : '#721c24'
-                          }}
-                        >
-                          {isSuspended ? 'Restaurar' : 'Suspender'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                          <button 
+                            onClick={() => toggleSuspend(rest.id, isSuspended)}
+                            className={isSuspended ? "btn-primary" : "btn-outline"}
+                            style={{ 
+                              padding: '0.5rem 1rem', 
+                              fontSize: '0.85rem',
+                              backgroundColor: isSuspended ? '#721c24' : 'transparent',
+                              borderColor: '#721c24',
+                              color: isSuspended ? 'white' : '#721c24'
+                            }}
+                          >
+                            {isSuspended ? 'Restaurar' : 'Suspender'}
+                          </button>
+                          
+                          <button 
+                            onClick={() => handleDeleteRestaurant(rest.id)}
+                            className="btn-primary"
+                            style={{ 
+                              padding: '0.5rem 1rem', 
+                              fontSize: '0.85rem',
+                              backgroundColor: 'var(--color-red-primary)',
+                              borderColor: 'var(--color-red-primary)',
+                              color: 'white'
+                            }}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
                       );
                     })()}
                   </td>

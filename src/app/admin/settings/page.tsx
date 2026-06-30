@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 const DAY_NAMES = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -13,6 +14,8 @@ export default function SettingsPage() {
   // Weekly hours state
   const [weeklyHours, setWeeklyHours] = useState<any[]>([]);
   const [isSavingHours, setIsSavingHours] = useState(false);
+
+  const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<'general' | 'design' | 'hours' | 'qr'>('general');
 
@@ -46,6 +49,7 @@ export default function SettingsPage() {
         body: JSON.stringify(config)
       });
       if (res.ok) {
+        router.refresh();
         alert('Configuración guardada exitosamente');
       } else {
         alert('Error al guardar la configuración');
