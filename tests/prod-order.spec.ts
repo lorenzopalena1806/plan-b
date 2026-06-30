@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test('Realizar 4 pedidos complejos en paralelo en producción', async ({ browser }) => {
+test('Realizar 4 pedidos complejos en paralelo en producción', async ({ browser }: { browser: any }) => {
   const numOrders = 4;
   
   // Creamos 4 contextos diferentes para que corran en paralelo
@@ -74,7 +74,7 @@ test('Realizar 4 pedidos complejos en paralelo en producción', async ({ browser
     
     // Esperamos a que la petición inicie y termine
     const [request] = await Promise.all([
-      page.waitForRequest(req => req.url().includes('api/public/') && req.method() === 'POST'),
+      page.waitForRequest((req: any) => req.url().includes('api/public/') && req.method() === 'POST'),
       btnConfirmar.click()
     ]);
     
