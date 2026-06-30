@@ -14,6 +14,7 @@ interface OrderItem {
 interface Order {
   id: number;
   customerName: string;
+  customerPhone?: string | null;
   deliveryMethod: string;
   address: string | null;
   total: number;
@@ -354,12 +355,16 @@ export default function SalesPage() {
                         )}
                       </td>
                       <td style={{ padding: '1rem 0.5rem' }}>
-                        <div className="text-bold">{order.customerName}</div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginTop: '0.25rem' }}>
-                          <span style={{ fontSize: '0.75rem' }} className={order.deliveryMethod === 'DELIVERY' ? 'text-red' : 'text-green'}>
-                            {order.deliveryMethod === 'DELIVERY' ? `🏍️ ${order.address || 'Delivery'}` : '🛍️ Retiro'}
+                        <div className="text-bold" style={{ marginBottom: '0.25rem', fontSize: '1rem' }}>{order.customerName}</div>
+                        <div className="flex" style={{ gap: '0.5rem', marginBottom: '0.25rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <span className="status-badge bg-gray text-bold" style={{ backgroundColor: '#f3f4f6', color: '#374151', fontSize: '0.7rem' }}>
+                            {order.customerPhone ? '🌐 Web' : '🏪 Local'}
                           </span>
-                          {order.paymentMethod && (
+                          <span style={{ fontSize: '0.75rem', color: order.deliveryMethod === 'DELIVERY' ? 'var(--color-red-primary)' : 'var(--color-green)' }}>
+                            {order.deliveryMethod === 'DELIVERY' ? '🛵 Envío' : '🛍️ Retiro'}
+                          </span>
+                        </div>
+                        {order.paymentMethod && (
                             <span style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
                               {order.paymentMethod === 'CASH' ? '💵 Efectivo' : '📱 Transferencia'} 
                               {order.paymentDetails && ` (${order.paymentDetails})`}
