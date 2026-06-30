@@ -36,6 +36,7 @@ export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState('');
   const [customerNotes, setCustomerNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -230,6 +231,7 @@ export default function POSPage() {
           customerName: customerName.trim() || 'Cliente Mostrador',
           deliveryMethod: 'TAKEAWAY',
           customerNotes: customerNotes.trim() || null,
+          paymentMethod,
           status,
           total,
           items: cart
@@ -418,15 +420,41 @@ export default function POSPage() {
             <span className="text-bold">${total.toLocaleString()}</span>
           </div>
 
+          <div style={{ marginBottom: '1rem' }}>
+            <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>Método de Pago</h3>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setPaymentMethod('CASH')}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  borderRadius: '4px',
+                  border: paymentMethod === 'CASH' ? '2px solid var(--color-green)' : '1px solid #ccc',
+                  background: paymentMethod === 'CASH' ? '#f0fdf4' : '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                💵 Efectivo
+              </button>
+              <button
+                onClick={() => setPaymentMethod('TRANSFER')}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  borderRadius: '4px',
+                  border: paymentMethod === 'TRANSFER' ? '2px solid var(--color-green)' : '1px solid #ccc',
+                  background: paymentMethod === 'TRANSFER' ? '#f0fdf4' : '#fff',
+                  fontWeight: 'bold',
+                  cursor: 'pointer'
+                }}
+              >
+                📱 Transferencia
+              </button>
+            </div>
+          </div>
+
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button 
-              className="btn-outline" 
-              style={{ flex: 1, padding: '1rem', fontWeight: 'bold' }}
-              onClick={() => handleSubmit('COMPLETED')}
-              disabled={isSubmitting || cart.length === 0}
-            >
-              Cobrar y Entregar
-            </button>
             <button 
               className="btn-primary" 
               style={{ flex: 1, padding: '1rem', fontWeight: 'bold' }}
