@@ -67,6 +67,9 @@ export default async function AdminDashboard() {
         <div className="flex" style={{ gap: '1rem', flexWrap: 'wrap' }}>
           {!isStaff && (
             <>
+              <Link href="/admin/caja/pos" className="btn-primary" style={{ background: '#2563eb', color: 'white', border: 'none' }}>🛒 Punto de Venta</Link>
+              <Link href="/admin/caja" className="btn-outline">Caja</Link>
+              <Link href="/admin/comandera" className="btn-outline">Comandera</Link>
               <Link href="/admin/categories" className="btn-outline">Categorías</Link>
               <Link href="/admin/modifiers" className="btn-outline">Modificadores</Link>
               <Link href="/admin/users" className="btn-outline">Usuarios / Personal</Link>
@@ -103,6 +106,14 @@ export default async function AdminDashboard() {
               <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍔</span>
               <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Control de Catálogo</h2>
               <p className="text-muted" style={{ fontSize: '0.875rem' }}>Pausa platos o combos agotados para que no aparezcan en la carta pública.</p>
+            </div>
+          </Link>
+
+          <Link href="/admin/caja/pos" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <div className="card text-center hover-card flex flex-col justify-center" style={{ padding: '3rem 1.5rem', cursor: 'pointer', borderTop: '5px solid #2563eb', minHeight: '220px' }}>
+              <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛒</span>
+              <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Punto de Venta</h2>
+              <p className="text-muted" style={{ fontSize: '0.875rem' }}>Carga pedidos presenciales o telefónicos manualmente.</p>
             </div>
           </Link>
         </div>
