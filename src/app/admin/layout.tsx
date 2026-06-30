@@ -74,7 +74,6 @@ export default async function AdminLayout({
           />
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <Link href="/admin/products" style={linkStyle('/admin/products')}>🍔 Catálogo</Link>
           <Link href="/admin/settings" style={linkStyle('/admin/settings')}>⚙️ Configuración</Link>
           <Link href="/admin/caja" style={linkStyle('/admin/caja')}>💵 Caja</Link>
           <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>👨‍🍳 Comandera</Link>

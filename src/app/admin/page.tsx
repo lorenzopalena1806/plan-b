@@ -73,9 +73,7 @@ export default async function AdminDashboard() {
         <div className="flex" style={{ gap: '1rem', flexWrap: 'wrap' }}>
           {!isStaff && (
             <>
-              <Link href="/admin/caja/pos" className="btn-primary" style={{ background: '#2563eb', color: 'white', border: 'none' }}>🛒 Punto de Venta</Link>
-              <Link href="/admin/caja" className="btn-outline">Caja</Link>
-              <Link href="/admin/comandera" className="btn-outline">Comandera</Link>
+              <Link href="/admin/products" className="btn-outline">Productos / Catálogo</Link>
               <Link href="/admin/categories" className="btn-outline">Categorías</Link>
               <Link href="/admin/modifiers" className="btn-outline">Modificadores</Link>
               <Link href="/admin/users" className="btn-outline">Usuarios / Personal</Link>
@@ -84,6 +82,7 @@ export default async function AdminDashboard() {
               <Link href="/admin/sales" className="btn-outline">Historial de Ventas</Link>
               <Link href="/admin/coupons" className="btn-outline">Cupones</Link>
               <Link href="/admin/billing" className="btn-outline">Facturación</Link>
+              <Link href="/admin/caja/pos" className="btn-outline">Punto de Venta</Link>
             </>
           )}
         </div>
