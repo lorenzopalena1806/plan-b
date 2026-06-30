@@ -41,6 +41,10 @@ export default function ProductsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterCategory, setFilterCategory] = useState('ALL');
+
   // Form states
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -190,6 +194,12 @@ export default function ProductsPage() {
     }
   };
 
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = filterCategory === 'ALL' || (p.category?.id.toString() === filterCategory);
+    return matchesSearch && matchesCategory;
+  });
+
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando catálogo...</div>;
 
   return (
@@ -299,9 +309,38 @@ export default function ProductsPage() {
         </form>
       )}
 
+      {/* Products Filter */}
+      {!isAdding && !editingProduct && products.length > 0 && (
+        <div className="card flex items-center" style={{ gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: '250px' }}>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Buscar Producto</label>
+            <input 
+              type="text" 
+              placeholder="Ej: Hamburguesa, Pizza..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="form-input"
+            />
+          </div>
+          <div style={{ minWidth: '200px' }}>
+            <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Filtrar por Categoría</label>
+            <select 
+              value={filterCategory} 
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="form-input"
+            >
+              <option value="ALL">Todas las Categorías</option>
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       {/* Products list grid */}
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.5rem' }}>
-        {products.map(product => (
+        {filteredProducts.map(product => (
           <div key={product.id} className="card flex flex-col" style={{ overflow: 'hidden', padding: 0 }}>
             {product.imageUrl && (
               <img src={product.imageUrl} alt={product.name} style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
