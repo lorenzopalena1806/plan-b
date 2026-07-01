@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
 
@@ -51,14 +52,37 @@ export default function LoginPage() {
           </div>
           <div>
             <label htmlFor="password" className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Contraseña</label>
-            <input 
-              id="password"
-              type="password" 
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-              required
-            />
+            <div style={{ position: 'relative' }}>
+              <input 
+                id="password"
+                type={showPassword ? "text" : "password"} 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', paddingRight: '2.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '0.75rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'var(--color-text-light)'
+                }}
+                title={showPassword ? "Ocultar contraseña" : "Ver contraseña"}
+              >
+                {showPassword ? '👁️‍🗨️' : '👁️'}
+              </button>
+            </div>
           </div>
           <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }}>Ingresar</button>
         </form>
