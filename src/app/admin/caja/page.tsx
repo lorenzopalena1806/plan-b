@@ -109,7 +109,7 @@ export default function CajaPage() {
     const html = `
       <div class="text-center mb-4">
         <h1 class="text-xl mb-1">TICKET DE PEDIDO</h1>
-        <div class="text-lg font-bold">Orden #${order.id}</div>
+        <div class="text-lg font-bold">Orden #${order.dailyNumber || order.id}</div>
         <div>${new Date(order.createdAt).toLocaleString()}</div>
       </div>
       
@@ -170,7 +170,7 @@ export default function CajaPage() {
         {awaitingOrders.map(order => (
           <div key={order.id} className="card" style={{ borderLeft: `4px solid ${order.deliveryMethod === 'DELIVERY' ? 'var(--color-red-primary)' : 'var(--color-green)'}` }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
-              <span className="text-bold text-muted">#{order.id} - {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+              <span className="text-bold text-muted">#{order.dailyNumber || order.id} - {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
               <div className="flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
                 <span className="status-badge bg-gray text-bold" style={{ backgroundColor: '#f3f4f6', color: '#374151' }}>
                   {order.customerPhone ? '🌐 Web' : '🏪 Local'}
@@ -235,8 +235,8 @@ export default function CajaPage() {
                 <a 
                   href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
                     order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia'
-                    ? `Hola ${order.customerName}, recibimos tu pedido #${order.id}.\n\nPara prepararlo necesitamos que realices el pago de *$${order.total.toLocaleString()}* a nuestro alias: *${config?.bankAlias || 'N/A'}*.\n\n🚨 *IMPORTANTE: EL PEDIDO NO SE PREPARARÁ HASTA QUE ENVÍES EL COMPROBANTE POR ACÁ.* 🚨`
-                    : `Hola ${order.customerName}, recibimos tu pedido #${order.id} por un total de *$${order.total.toLocaleString()}*. ¡Ya lo estamos preparando!`
+                    ? `Hola ${order.customerName}, recibimos tu pedido #${order.dailyNumber || order.id}.\n\nPara prepararlo necesitamos que realices el pago de *$${order.total.toLocaleString()}* a nuestro alias: *${config?.bankAlias || 'N/A'}*.\n\n🚨 *IMPORTANTE: EL PEDIDO NO SE PREPARARÁ HASTA QUE ENVÍES EL COMPROBANTE POR ACÁ.* 🚨`
+                    : `Hola ${order.customerName}, recibimos tu pedido #${order.dailyNumber || order.id} por un total de *$${order.total.toLocaleString()}*. ¡Ya lo estamos preparando!`
                   )}`}
                   target="_blank"
                   rel="noreferrer"

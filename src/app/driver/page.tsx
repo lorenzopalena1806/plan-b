@@ -11,6 +11,7 @@ interface OrderItem {
 
 interface Order {
   id: number;
+  dailyNumber?: number | null;
   customerName: string;
   customerPhone: string | null;
   address: string | null;
@@ -124,7 +125,7 @@ export default function DriverPortal() {
           {orders.map(order => (
             <div key={order.id} className="card" style={{ borderLeft: '4px solid var(--color-red-primary)', padding: '1rem' }}>
               <div className="flex justify-between items-center" style={{ marginBottom: '0.75rem' }}>
-                <span className="text-bold" style={{ fontSize: '1.25rem' }}>Pedido #{order.id}</span>
+                <span className="text-bold" style={{ fontSize: '1.25rem' }}>Pedido #{order.dailyNumber || order.id}</span>
                 <span className="status-badge bg-red-light text-red">En Camino</span>
               </div>
               
@@ -225,7 +226,7 @@ export default function DriverPortal() {
                   {historyOrders.map((order: any) => (
                     <div key={order.id} style={{ border: '1px solid var(--color-border)', borderRadius: '8px', padding: '1rem', backgroundColor: '#fff' }}>
                       <div className="flex justify-between items-center" style={{ marginBottom: '0.5rem' }}>
-                        <span className="text-bold">#{order.id} - {order.customerName}</span>
+                        <span className="text-bold">#{order.dailyNumber || order.id} - {order.customerName}</span>
                         <span style={{ fontSize: '0.85rem', color: '#666' }}>
                           {new Date(order.createdAt).toLocaleString('es-AR', {
                             day: '2-digit', month: '2-digit',

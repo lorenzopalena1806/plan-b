@@ -12,9 +12,21 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const todayCount = await prisma.order.count({
+      where: {
+        restaurantId: session.user.restaurantId,
+        createdAt: { gte: startOfDay }
+      }
+    });
+    const dailyNumber = todayCount + 1;
+
     // Create the order directly as PENDING (en cocina)
     const order = await prisma.order.create({
       data: {
+        dailyNumber,
         customerName: data.customerName || 'Cliente Mostrador',
         customerPhone: data.customerPhone || null,
         deliveryMethod: data.deliveryMethod || 'TAKEAWAY',

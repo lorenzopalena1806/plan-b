@@ -31,8 +31,20 @@ export async function POST(
       tipAmount
     } = data;
 
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const todayCount = await prisma.order.count({
+      where: {
+        restaurantId: restaurant.id,
+        createdAt: { gte: startOfDay }
+      }
+    });
+    const dailyNumber = todayCount + 1;
+
     const newOrder = await prisma.order.create({
       data: {
+        dailyNumber,
         customerName,
         customerPhone,
         deliveryMethod,

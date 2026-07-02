@@ -114,6 +114,7 @@ model ModifierOption {
 
 model Order {
   id             Int         @id @default(autoincrement())
+  dailyNumber    Int?        // Número secuencial del día para ese local específico
   customerName   String
   customerPhone  String?
   deliveryMethod String      

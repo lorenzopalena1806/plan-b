@@ -243,7 +243,7 @@ export default function ComanderaPage() {
     const html = `
       <div class="text-center border-b mb-4">
         <h1 class="text-2xl font-bold mb-1">TICKET PREPARACIÓN</h1>
-        <div class="text-xl font-bold">Orden #${order.id}</div>
+        <div class="text-xl font-bold">Orden #${order.dailyNumber || order.id}</div>
         <div>${new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
         ${order.deliveryMethod === 'DELIVERY' 
           ? '<div class="text-lg font-bold mt-4" style="background:#000; color:#fff; padding:5px;">ENVÍO</div>' 
@@ -289,7 +289,7 @@ export default function ComanderaPage() {
     const html = `
       <div class="text-center mb-4">
         <h1 class="text-xl mb-1">TICKET DE PEDIDO</h1>
-        <div class="text-lg font-bold">Orden #${order.id}</div>
+        <div class="text-lg font-bold">Orden #${order.dailyNumber || order.id}</div>
         <div>${new Date(order.createdAt).toLocaleString()}</div>
       </div>
       
@@ -400,7 +400,7 @@ export default function ComanderaPage() {
                       gap: '0.5rem'
                     }}>
                       <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
-                        <span className="text-bold text-muted">#{order.id}</span>
+                        <span className="text-bold text-muted">#{order.dailyNumber || order.id}</span>
                         <div className="flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
                           <span className="status-badge bg-gray text-bold" style={{ backgroundColor: '#f3f4f6', color: '#374151', fontSize: '0.7rem' }}>
                             {order.customerPhone ? '🌐 Web' : '🏪 Local'}
