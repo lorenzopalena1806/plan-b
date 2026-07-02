@@ -70,7 +70,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="container" style={{ padding: '2rem 0' }}>
-      <header className="flex justify-between items-center" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--color-border)' }}>
+      <header className="flex mobile-header-stack justify-between items-center" style={{ marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '1px solid var(--color-border)' }}>
         <div>
           <h1>{isStaff ? 'Panel de Trabajo' : 'Panel de Administrador'}</h1>
           <p className="text-muted">{isStaff ? 'Accesos rápidos para la operación diaria' : 'Métricas generales y administración'}</p>
@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
       </header>
 
       {isStaff ? (
-        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginTop: '1rem' }}>
+        <div className="grid grid-mobile-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginTop: '1rem' }}>
           <Link href="/admin/comandera" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="card text-center hover-card flex flex-col justify-center" style={{ padding: '3rem 1.5rem', cursor: 'pointer', borderTop: '5px solid var(--color-red-primary)', minHeight: '220px' }}>
               <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>{businessType === 'RESTAURANT' ? '👨‍🍳' : '📦'}</span>
@@ -144,7 +144,7 @@ export default async function AdminDashboard() {
           </Link>
         </div>
       ) : (
-        <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
+        <div className="grid grid-mobile-1" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
           <Link href="/admin/sales" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="card text-center hover-card" style={{ padding: '2rem 1rem', cursor: 'pointer' }}>
               <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas de Hoy</h2>
@@ -184,7 +184,7 @@ export default async function AdminDashboard() {
           <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '1rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem' }}>
             Desempeño de Repartidores (Hoy)
           </h2>
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
+          <div className="grid grid-mobile-1" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
             {drivers.map(driver => (
               <div key={driver.id} className="card flex items-center justify-between" style={{ padding: '1rem' }}>
                 <div>

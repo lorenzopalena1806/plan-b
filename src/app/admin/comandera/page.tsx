@@ -93,6 +93,7 @@ export default function ComanderaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [hideAssigned, setHideAssigned] = useState(false);
+  const [activeTab, setActiveTab] = useState('PENDING');
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
   const chimeAudioUrlRef = useRef<string>('');
 
@@ -335,10 +336,10 @@ export default function ComanderaPage() {
 
   return (
     <div style={{ padding: '1rem', height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="mobile-header-stack" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1 className="text-red">Área de Preparación</h1>
-        <div className="flex" style={{ gap: '1rem', alignItems: 'center' }}>
-          <span className="text-muted text-bold animate-pulse">● Live (30s)</span>
+        <div className="flex" style={{ gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className="text-muted text-bold animate-pulse hide-on-mobile">● Live (30s)</span>
           <button 
             className="btn-outline" 
             onClick={triggerChime}
@@ -365,7 +366,20 @@ export default function ComanderaPage() {
         </div>
       </header>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(4, minmax(280px, 1fr))', gap: '1rem', flex: 1, overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.5rem' }}>
+      {/* Mobile Tabs */}
+      <div className="mobile-tabs-container hide-on-desktop">
+        {columns.map(col => (
+          <button
+            key={col.id}
+            className={`mobile-tab-btn ${activeTab === col.id ? 'active' : ''}`}
+            onClick={() => setActiveTab(col.id)}
+          >
+            {col.title}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-mobile-1" style={{ gridTemplateColumns: 'repeat(4, minmax(280px, 1fr))', gap: '1rem', flex: 1, overflowX: 'auto', overflowY: 'hidden', paddingBottom: '0.5rem' }}>
         {columns.map(col => {
           let columnOrders = orders.filter(o => {
             if (col.id === 'PENDING') return o.status === 'PENDING';
@@ -381,7 +395,7 @@ export default function ComanderaPage() {
           }
 
           return (
-            <div key={col.id} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '0.75rem', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+            <div key={col.id} className={`comandera-column ${activeTab === col.id ? 'active' : ''}`} style={{ background: '#f8f9fa', borderRadius: 'var(--border-radius-lg)', padding: '0.75rem', display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
               <h2 style={{ fontSize: '1.15rem', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '2px solid var(--color-border)' }}>
                 {col.title} ({columnOrders.length})
               </h2>

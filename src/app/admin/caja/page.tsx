@@ -150,10 +150,10 @@ export default function CajaPage() {
 
   return (
     <div className="container" style={{ padding: '2rem 0' }}>
-      <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
+      <header className="mobile-header-stack" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
         <h1 className="text-red">Caja / Cobranza</h1>
-        <div className="flex" style={{ gap: '1rem', alignItems: 'center' }}>
-          <span className="text-muted text-bold animate-pulse">● Live (30s)</span>
+        <div className="flex" style={{ gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className="text-muted text-bold animate-pulse hide-on-mobile">● Live (30s)</span>
           <button className="btn-outline" onClick={fetchOrders}>Refrescar</button>
           <Link href="/admin/caja/pos" className="btn-primary" style={{ padding: '0.5rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#2563eb' }}>
             <span>🛒</span> Nueva Venta Manual
@@ -166,7 +166,7 @@ export default function CajaPage() {
       <h2 style={{ marginBottom: '1.5rem' }}>Pedidos Por Confirmar ({awaitingOrders.length})</h2>
       <p className="text-muted" style={{ marginBottom: '2rem' }}>Los pedidos que aparecen aquí ya fueron realizados por los clientes. Revisa tu WhatsApp para confirmar el pago y luego acéptalos para prepararlos.</p>
 
-      <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
+      <div className="grid grid-mobile-1" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
         {awaitingOrders.map(order => (
           <div key={order.id} className="card" style={{ borderLeft: `4px solid ${order.deliveryMethod === 'DELIVERY' ? 'var(--color-red-primary)' : 'var(--color-green)'}` }}>
             <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>

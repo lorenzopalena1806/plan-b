@@ -75,7 +75,7 @@ export default async function AdminLayout({
             currentId={session.user.restaurantId} 
           />
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div className="hide-on-mobile" style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link href="/admin/settings" style={linkStyle('/admin/settings')}>⚙️ Configuración</Link>
           <Link href="/admin/caja" style={linkStyle('/admin/caja')}>
             {businessType === 'RESTAURANT' ? '💵 Caja' : '🛒 Caja / Pedidos'}
@@ -113,10 +113,31 @@ export default async function AdminLayout({
           <Link href="/api/auth/signout" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }}>Cerrar Sesión</Link>
         </div>
       </nav>
-      <main style={{ flex: 1, backgroundColor: 'var(--color-bg)' }}>
+      <main className="admin-main-content" style={{ flex: 1, backgroundColor: 'var(--color-bg)' }}>
         {children}
       </main>
-      <footer style={{ 
+
+      {/* Mobile Bottom Navigation */}
+      <div className="bottom-nav hide-on-desktop">
+        <Link href="/admin" className="bottom-nav-item">
+          <span className="bottom-nav-icon">📊</span>
+          <span>Inicio</span>
+        </Link>
+        <Link href="/admin/caja" className="bottom-nav-item">
+          <span className="bottom-nav-icon">{businessType === 'RESTAURANT' ? '💵' : '🛒'}</span>
+          <span>Caja</span>
+        </Link>
+        <Link href="/admin/comandera" className="bottom-nav-item">
+          <span className="bottom-nav-icon">{businessType === 'RESTAURANT' ? '👨‍🍳' : '📦'}</span>
+          <span>Armado</span>
+        </Link>
+        <Link href="/admin/settings" className="bottom-nav-item">
+          <span className="bottom-nav-icon">⚙️</span>
+          <span>Config</span>
+        </Link>
+      </div>
+
+      <footer className="hide-on-mobile" style={{ 
         backgroundColor: 'white', 
         borderTop: '1px solid var(--color-border)', 
         padding: '1rem', 
