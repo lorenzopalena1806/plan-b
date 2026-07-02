@@ -242,7 +242,7 @@ export default function ComanderaPage() {
 
     const html = `
       <div class="text-center border-b mb-4">
-        <h1 class="text-2xl font-bold mb-1">COMANDA</h1>
+        <h1 class="text-2xl font-bold mb-1">TICKET PREPARACIÓN</h1>
         <div class="text-xl font-bold">Orden #${order.id}</div>
         <div>${new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
         ${order.deliveryMethod === 'DELIVERY' 
