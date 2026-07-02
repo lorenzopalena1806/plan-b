@@ -134,7 +134,21 @@ export default function ComanderaPage() {
   useEffect(() => {
     fetchOrders();
     fetch('/api/admin/drivers').then(res => res.json()).then(data => setDrivers(data.filter((d: any) => d.isActive))).catch(console.error);
-    const interval = setInterval(fetchOrders, 30000); // Poll every 30 seconds
+    
+    // Polling intelligently: only fetch if the tab is visible
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchOrders();
+      }
+    }, 30000);
+
+    // Instantly fetch when the user comes back to the tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchOrders();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
     // Auto-unlock AudioContext on first page interaction
     const unlock = () => {

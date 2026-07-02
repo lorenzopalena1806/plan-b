@@ -29,8 +29,26 @@ export default function CajaPage() {
   useEffect(() => {
     fetchOrders();
     fetch('/api/config').then(res => res.json()).then(data => setConfig(data)).catch(console.error);
-    const interval = setInterval(fetchOrders, 30000); // Poll every 30 seconds
-    return () => clearInterval(interval);
+    
+    // Polling intelligently: only fetch if the tab is visible
+    const interval = setInterval(() => {
+      if (!document.hidden) {
+        fetchOrders();
+      }
+    }, 30000); 
+
+    // Instantly fetch when the user comes back to the tab
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchOrders();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const confirmOrder = async (id: number) => {
