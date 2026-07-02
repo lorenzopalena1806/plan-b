@@ -80,9 +80,9 @@ export default async function AdminLayout({
           <Link href="/admin/caja" style={linkStyle('/admin/caja')}>
             {businessType === 'RESTAURANT' ? '💵 Caja' : '🛒 Caja / Pedidos'}
           </Link>
-          {businessType === 'RESTAURANT' && (
-            <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>👨‍🍳 Comandera</Link>
-          )}
+          <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>
+            {businessType === 'RESTAURANT' ? '👨‍🍳 Comandera' : '📦 Armado de Pedidos'}
+          </Link>
           {subscriptionEnd && (
             <span style={{ 
               fontSize: '0.8rem', 

@@ -336,7 +336,7 @@ export default function ComanderaPage() {
   return (
     <div style={{ padding: '1rem', height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
       <header style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="text-red">Comandera</h1>
+        <h1 className="text-red">Área de Preparación</h1>
         <div className="flex" style={{ gap: '1rem', alignItems: 'center' }}>
           <span className="text-muted text-bold animate-pulse">● Live (30s)</span>
           <button 
@@ -516,9 +516,9 @@ export default function ComanderaPage() {
                         {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724', flex: 1, fontSize: '0.85rem', padding: '0.5rem' }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}
                         {col.id === 'PICKUP' && <button className="btn-primary" onClick={() => updateOrderStatus(order.id, 'COMPLETED')} style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }}>Entregar al Cliente</button>}
                         {['PENDING', 'PREPARING'].includes(col.id) ? (
-                          <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Comanda Cocina">🧑‍🍳🖨️</button>
+                          <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Ticket de Preparación">🧑‍🍳🖨️</button>
                         ) : (
-                          <button className="btn-outline" onClick={() => handlePrintTicket(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Ticket Cliente">🧾🖨️</button>
+                          <button className="btn-outline" onClick={() => handlePrintTicket(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Remito Cliente">🧾🖨️</button>
                         )}
                       </div>
                     </div>

@@ -34,7 +34,7 @@ export default function CajaPage() {
   }, []);
 
   const confirmOrder = async (id: number) => {
-    if (!confirm('¿Has verificado el pago por WhatsApp y confirmas enviar este pedido a cocina?')) return;
+    if (!confirm('¿Estás seguro de que el cliente pagó?')) return;
 
     try {
       // Optimistic update
@@ -164,7 +164,7 @@ export default function CajaPage() {
       </header>
 
       <h2 style={{ marginBottom: '1.5rem' }}>Pedidos Por Confirmar ({awaitingOrders.length})</h2>
-      <p className="text-muted" style={{ marginBottom: '2rem' }}>Los pedidos que aparecen aquí ya fueron realizados por los clientes. Revisa tu WhatsApp para confirmar el pago y luego acéptalos para enviarlos a cocina.</p>
+      <p className="text-muted" style={{ marginBottom: '2rem' }}>Los pedidos que aparecen aquí ya fueron realizados por los clientes. Revisa tu WhatsApp para confirmar el pago y luego acéptalos para prepararlos.</p>
 
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
         {awaitingOrders.map(order => (
@@ -235,8 +235,8 @@ export default function CajaPage() {
                 <a 
                   href={`https://wa.me/${order.customerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(
                     order.paymentMethod === 'TRANSFER' || order.paymentMethod === 'Transferencia'
-                    ? `Hola ${order.customerName}, recibimos tu pedido #${order.id}.\n\nPara enviarlo a cocina necesitamos que realices el pago de *$${order.total.toLocaleString()}* a nuestro alias: *${config?.bankAlias || 'N/A'}*.\n\n🚨 *IMPORTANTE: EL PEDIDO NO SE PREPARARÁ HASTA QUE ENVÍES EL COMPROBANTE POR ACÁ.* 🚨`
-                    : `Hola ${order.customerName}, recibimos tu pedido #${order.id} por un total de *$${order.total.toLocaleString()}*. ¡Ya lo enviamos a cocina!`
+                    ? `Hola ${order.customerName}, recibimos tu pedido #${order.id}.\n\nPara prepararlo necesitamos que realices el pago de *$${order.total.toLocaleString()}* a nuestro alias: *${config?.bankAlias || 'N/A'}*.\n\n🚨 *IMPORTANTE: EL PEDIDO NO SE PREPARARÁ HASTA QUE ENVÍES EL COMPROBANTE POR ACÁ.* 🚨`
+                    : `Hola ${order.customerName}, recibimos tu pedido #${order.id} por un total de *$${order.total.toLocaleString()}*. ¡Ya lo estamos preparando!`
                   )}`}
                   target="_blank"
                   rel="noreferrer"
