@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import RestaurantSwitcher from './components/RestaurantSwitcher';
+import MobileMenu from './components/MobileMenu';
 
 export default async function AdminLayout({
   children,
@@ -112,30 +113,16 @@ export default async function AdminLayout({
           )}
           <Link href="/api/auth/signout" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }}>Cerrar Sesión</Link>
         </div>
+        <MobileMenu 
+          businessType={businessType} 
+          role={session.user.role} 
+          subscriptionEnd={subscriptionEnd?.toISOString()} 
+          userName={session.user.name} 
+        />
       </nav>
       <main className="admin-main-content" style={{ flex: 1, backgroundColor: 'var(--color-bg)' }}>
         {children}
       </main>
-
-      {/* Mobile Bottom Navigation */}
-      <div className="bottom-nav hide-on-desktop">
-        <Link href="/admin" className="bottom-nav-item">
-          <span className="bottom-nav-icon">📊</span>
-          <span>Inicio</span>
-        </Link>
-        <Link href="/admin/caja" className="bottom-nav-item">
-          <span className="bottom-nav-icon">{businessType === 'RESTAURANT' ? '💵' : '🛒'}</span>
-          <span>Caja</span>
-        </Link>
-        <Link href="/admin/comandera" className="bottom-nav-item">
-          <span className="bottom-nav-icon">{businessType === 'RESTAURANT' ? '👨‍🍳' : '📦'}</span>
-          <span>Armado</span>
-        </Link>
-        <Link href="/admin/settings" className="bottom-nav-item">
-          <span className="bottom-nav-icon">⚙️</span>
-          <span>Config</span>
-        </Link>
-      </div>
 
       <footer className="hide-on-mobile" style={{ 
         backgroundColor: 'white', 
