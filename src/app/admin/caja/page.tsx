@@ -229,7 +229,6 @@ export default function CajaPage() {
               <div className="flex" style={{ gap: '0.5rem' }}>
                 <button className="btn-primary" style={{ flex: 2 }} onClick={() => confirmOrder(order.id)}>✅ Confirmar Pago</button>
                 <button className="btn-outline" style={{ flex: 1, borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }} onClick={() => rejectOrder(order.id)}>❌ Rechazar</button>
-                <button className="btn-outline" style={{ flex: 0, padding: '0.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Ticket" onClick={() => handlePrintTicket(order)}>🖨️</button>
               </div>
               
               {order.customerPhone && (

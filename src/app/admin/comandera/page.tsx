@@ -260,6 +260,70 @@ export default function ComanderaPage() {
     printTicket(html);
   };
 
+  const handlePrintTicket = (order: OrderWithItems) => {
+    let itemsHtml = '';
+    order.items.forEach(item => {
+      let modifiers = [];
+      let rawNote = '';
+      if (item.notes) {
+        try {
+          const parsed = JSON.parse(item.notes);
+          if (Array.isArray(parsed)) modifiers = parsed;
+          else rawNote = item.notes;
+        } catch (e) {
+          rawNote = item.notes;
+        }
+      }
+      itemsHtml += `
+        <tr>
+          <td class="w-qty">${item.quantity}x</td>
+          <td>
+            ${item.productName}
+            ${modifiers.length > 0 ? `<br><small class="comanda-notes">${modifiers.map((m:any) => m.name).join(', ')}</small>` : ''}
+            ${rawNote ? `<br><small class="comanda-notes">${rawNote}</small>` : ''}
+          </td>
+        </tr>
+      `;
+    });
+
+    const html = `
+      <div class="text-center mb-4">
+        <h1 class="text-xl mb-1">TICKET DE PEDIDO</h1>
+        <div class="text-lg font-bold">Orden #${order.id}</div>
+        <div>${new Date(order.createdAt).toLocaleString()}</div>
+      </div>
+      
+      <div class="border-b mb-2">
+        <div><strong>Cliente:</strong> ${order.customerName}</div>
+        ${order.address ? `<div><strong>Dirección:</strong> ${order.address}</div>` : ''}
+        <div><strong>Método:</strong> ${order.deliveryMethod === 'DELIVERY' ? 'Envío' : 'Retiro por local'}</div>
+        ${order.customerNotes ? `<div class="mt-4"><strong>Nota:</strong> ${order.customerNotes}</div>` : ''}
+      </div>
+
+      <table class="mb-4">
+        <thead>
+          <tr class="border-b">
+            <th class="w-qty">Cant</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHtml}
+        </tbody>
+      </table>
+
+      <div class="border-t pt-2 mt-4 text-right">
+        <div class="text-2xl font-bold">TOTAL: $${order.total.toLocaleString()}</div>
+      </div>
+      
+      <div class="text-center mt-4 border-t pt-2">
+        <small>¡Gracias por su compra!</small>
+      </div>
+    `;
+
+    printTicket(html);
+  };
+
   const columns = [
     { id: 'PENDING', title: 'Pendiente' },
     { id: 'PREPARING', title: 'En Preparación' },
@@ -451,7 +515,11 @@ export default function ComanderaPage() {
                         {col.id === 'PENDING' && <button className="btn-primary" style={{ background: '#004085', flex: 1, fontSize: '0.85rem', padding: '0.5rem' }} onClick={() => updateOrderStatus(order.id, 'PREPARING')}>A Preparación</button>}
                         {col.id === 'PREPARING' && <button className="btn-primary" style={{ background: '#155724', flex: 1, fontSize: '0.85rem', padding: '0.5rem' }} onClick={() => updateOrderStatus(order.id, 'READY')}>Marcar Listo</button>}
                         {col.id === 'PICKUP' && <button className="btn-primary" onClick={() => updateOrderStatus(order.id, 'COMPLETED')} style={{ flex: 1, fontSize: '0.85rem', padding: '0.5rem' }}>Entregar al Cliente</button>}
-                        <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Comanda">🖨️</button>
+                        {['PENDING', 'PREPARING'].includes(col.id) ? (
+                          <button className="btn-outline" onClick={() => handlePrintComanda(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Comanda Cocina">🧑‍🍳🖨️</button>
+                        ) : (
+                          <button className="btn-outline" onClick={() => handlePrintTicket(order)} style={{ flex: 0, padding: '0.4rem', display: 'flex', justifyContent: 'center', alignItems: 'center' }} title="Imprimir Ticket Cliente">🧾🖨️</button>
+                        )}
                       </div>
                     </div>
                   );
