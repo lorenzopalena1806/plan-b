@@ -25,6 +25,11 @@ export default async function AdminDashboard() {
 
   const isStaff = session.user.role === 'STAFF';
 
+  const restaurant = await prisma.restaurant.findUnique({
+    where: { id: session.user.restaurantId }
+  });
+  const businessType = restaurant?.businessType || 'RESTAURANT';
+
   const allOrders = !isStaff ? await prisma.order.findMany({
     where: {
       status: 'COMPLETED',
@@ -90,27 +95,39 @@ export default async function AdminDashboard() {
 
       {isStaff ? (
         <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem', marginTop: '1rem' }}>
-          <Link href="/admin/comandera" style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div className="card text-center hover-card flex flex-col justify-center" style={{ padding: '3rem 1.5rem', cursor: 'pointer', borderTop: '5px solid var(--color-red-primary)', minHeight: '220px' }}>
-              <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>👨‍🍳</span>
-              <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Comandera</h2>
-              <p className="text-muted" style={{ fontSize: '0.875rem' }}>Visualiza los pedidos confirmados y controla la cocina en tiempo real.</p>
-            </div>
-          </Link>
+          {businessType === 'RESTAURANT' && (
+            <Link href="/admin/comandera" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <div className="card text-center hover-card flex flex-col justify-center" style={{ padding: '3rem 1.5rem', cursor: 'pointer', borderTop: '5px solid var(--color-red-primary)', minHeight: '220px' }}>
+                <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>👨‍🍳</span>
+                <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Comandera</h2>
+                <p className="text-muted" style={{ fontSize: '0.875rem' }}>Visualiza los pedidos confirmados y controla la cocina en tiempo real.</p>
+              </div>
+            </Link>
+          )}
 
           <Link href="/admin/caja" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="card text-center hover-card flex flex-col justify-center" style={{ padding: '3rem 1.5rem', cursor: 'pointer', borderTop: '5px solid var(--color-green)', minHeight: '220px' }}>
-              <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>💵</span>
-              <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Caja / Cobranza</h2>
-              <p className="text-muted" style={{ fontSize: '0.875rem' }}>Confirma pagos recibidos por WhatsApp y aprueba comandas entrantes.</p>
+              <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>{businessType === 'RESTAURANT' ? '💵' : '🛒'}</span>
+              <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+                {businessType === 'RESTAURANT' ? 'Caja / Cobranza' : 'Caja / Pedidos'}
+              </h2>
+              <p className="text-muted" style={{ fontSize: '0.875rem' }}>
+                {businessType === 'RESTAURANT' 
+                  ? 'Confirma pagos recibidos por WhatsApp y aprueba comandas entrantes.'
+                  : 'Gestiona los pedidos entrantes y confirma pagos recibidos.'}
+              </p>
             </div>
           </Link>
 
           <Link href="/admin/products" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="card text-center hover-card flex flex-col justify-center" style={{ padding: '3rem 1.5rem', cursor: 'pointer', borderTop: '5px solid #6b7280', minHeight: '220px' }}>
-              <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>🍔</span>
+              <span style={{ fontSize: '3rem', marginBottom: '1rem' }}>{businessType === 'RESTAURANT' ? '🍔' : '📦'}</span>
               <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Control de Catálogo</h2>
-              <p className="text-muted" style={{ fontSize: '0.875rem' }}>Pausa platos o combos agotados para que no aparezcan en la carta pública.</p>
+              <p className="text-muted" style={{ fontSize: '0.875rem' }}>
+                {businessType === 'RESTAURANT'
+                  ? 'Pausa platos o combos agotados para que no aparezcan en la carta pública.'
+                  : 'Pausa productos sin stock para que no aparezcan en la tienda pública.'}
+              </p>
             </div>
           </Link>
 

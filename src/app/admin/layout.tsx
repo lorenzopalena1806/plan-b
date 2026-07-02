@@ -27,6 +27,7 @@ export default async function AdminLayout({
   let restaurantName = 'Mi Local';
   let restaurantSlug = '';
   let subscriptionEnd: Date | null = null;
+  let businessType = 'RESTAURANT';
   let userManagedRestaurants: { id: number, name: string, slug: string }[] = [];
   
   if (session.user.id) {
@@ -47,6 +48,7 @@ export default async function AdminLayout({
       restaurantName = restaurant.name;
       restaurantSlug = restaurant.slug;
       subscriptionEnd = restaurant.subscriptionEnd;
+      businessType = restaurant.businessType;
     }
   }
 
@@ -75,8 +77,12 @@ export default async function AdminLayout({
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
           <Link href="/admin/settings" style={linkStyle('/admin/settings')}>⚙️ Configuración</Link>
-          <Link href="/admin/caja" style={linkStyle('/admin/caja')}>💵 Caja</Link>
-          <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>👨‍🍳 Comandera</Link>
+          <Link href="/admin/caja" style={linkStyle('/admin/caja')}>
+            {businessType === 'RESTAURANT' ? '💵 Caja' : '🛒 Caja / Pedidos'}
+          </Link>
+          {businessType === 'RESTAURANT' && (
+            <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>👨‍🍳 Comandera</Link>
+          )}
           {subscriptionEnd && (
             <span style={{ 
               fontSize: '0.8rem', 
