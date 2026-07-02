@@ -7,6 +7,7 @@ interface Restaurant {
   name: string;
   slug: string;
   createdAt: string;
+  businessType: string;
   subscriptionEnd?: string | null;
   configs?: { isSuspended: boolean }[];
 }
@@ -15,6 +16,7 @@ export default function DeveloperDashboard() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
+  const [businessType, setBusinessType] = useState('RESTAURANT');
   const [supportContact, setSupportContact] = useState('');
   const [isSavingSupport, setIsSavingSupport] = useState(false);
   const [error, setError] = useState('');
@@ -83,12 +85,13 @@ export default function DeveloperDashboard() {
       const res = await fetch('/api/restaurants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug }),
+        body: JSON.stringify({ name, slug, businessType }),
       });
 
       if (res.ok) {
         setName('');
         setSlug('');
+        setBusinessType('RESTAURANT');
         fetchRestaurants();
       } else {
         const data = await res.json();
@@ -330,6 +333,22 @@ export default function DeveloperDashboard() {
               </p>
             </div>
             
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Rubro (Tipo de Negocio)</label>
+              <select
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
+              >
+                <option value="RESTAURANT">🍔 Restaurante / Comidas</option>
+                <option value="GROCERY">🍎 Verdulería / Almacén</option>
+                <option value="PHARMACY">💊 Farmacia</option>
+                <option value="BUTCHER">🥩 Carnicería</option>
+                <option value="KIOSK">🍬 Kiosco / Minimarket</option>
+                <option value="OTHER">📦 Otro</option>
+              </select>
+            </div>
+            
             <button type="submit" className="btn-primary" style={{ width: 'max-content', marginTop: '0.5rem' }}>
               Crear Local
             </button>
@@ -510,6 +529,7 @@ export default function DeveloperDashboard() {
               <th style={{ padding: '1rem' }}>ID</th>
               <th style={{ padding: '1rem' }}>Nombre</th>
               <th style={{ padding: '1rem' }}>Slug (URL)</th>
+              <th style={{ padding: '1rem' }}>Rubro</th>
               <th style={{ padding: '1rem' }}>Fecha</th>
               <th style={{ padding: '1rem' }}>Suscripción Vence</th>
               <th style={{ padding: '1rem', textAlign: 'right' }}>Estado / Acciones</th>
@@ -528,6 +548,11 @@ export default function DeveloperDashboard() {
                   <td style={{ padding: '1rem' }}>{rest.id}</td>
                   <td style={{ padding: '1rem', fontWeight: 'bold' }}>{rest.name}</td>
                   <td style={{ padding: '1rem' }} className="text-red font-mono">/{rest.slug}</td>
+                  <td style={{ padding: '1rem' }}>
+                    <span className="status-badge" style={{ backgroundColor: '#f3f4f6', color: '#374151', fontSize: '0.75rem' }}>
+                      {rest.businessType || 'RESTAURANT'}
+                    </span>
+                  </td>
                   <td style={{ padding: '1rem' }} className="text-muted">
                     {new Date(rest.createdAt).toLocaleDateString()}
                   </td>

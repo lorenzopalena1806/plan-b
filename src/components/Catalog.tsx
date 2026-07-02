@@ -10,7 +10,7 @@ type ProductWithRelations = Product & {
   modifiers: ModifierOption[];
 };
 
-export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
+export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0, businessType = 'RESTAURANT' }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number, businessType?: string }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
   const [quantity, setQuantity] = useState(1);
@@ -27,9 +27,10 @@ export default function Catalog({ products, categories = [], banners = [], whats
 
   // Determine if there are promos
   const hasPromos = products.some(p => p.isPromo);
+  const promoTabName = businessType === 'RESTAURANT' ? 'Promos' : 'Ofertas';
 
   // Combine into a list of tabs
-  const categoriesList = [...(hasPromos ? ['Promos'] : []), ...regularCategories];
+  const categoriesList = [...(hasPromos ? [promoTabName] : []), ...regularCategories];
 
   // Set default active category once categories are loaded
   useEffect(() => {
@@ -95,7 +96,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
       return true;
     }
 
-    if (activeCategory === 'Promos') {
+    if (activeCategory === promoTabName) {
       return p.isPromo;
     }
     return p.category?.name === activeCategory;
@@ -118,7 +119,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
           <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
           <input 
             type="text" 
-            placeholder="Buscar productos, ingredientes..." 
+            placeholder={businessType === 'RESTAURANT' ? "Buscar productos, ingredientes..." : "Buscar productos, marcas, detalles..."}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--color-border)', outlineColor: 'var(--color-primary)' }}
@@ -185,7 +186,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
                 className={`category-tab ${activeCategory === catName ? 'active' : ''}`}
                 onClick={() => setActiveCategory(catName)}
               >
-                {catName === 'Promos' ? '⭐ Promociones' : catName}
+                {catName === promoTabName ? `⭐ ${promoTabName}` : catName}
               </button>
             ))}
           </nav>
@@ -195,7 +196,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
         {activeCategory && (
           <div style={{ marginBottom: '3rem' }}>
             <h2 style={{ marginBottom: '1.5rem', borderBottom: '2px solid var(--color-red-light)', paddingBottom: '0.5rem', display: 'inline-block' }}>
-              {searchTerm.trim() !== '' ? `Búsqueda: "${searchTerm}"` : (activeCategory === 'Promos' ? 'Promociones Destacadas' : activeCategory)}
+              {searchTerm.trim() !== '' ? `Búsqueda: "${searchTerm}"` : (activeCategory === promoTabName ? 'Ofertas Destacadas' : activeCategory)}
             </h2>
             
             <div className="grid" style={{ 
@@ -358,7 +359,9 @@ export default function Catalog({ products, categories = [], banners = [], whats
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
               {selectedProduct.modifiers.filter(m => m.type === 'FREE').length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ marginBottom: '1rem', color: 'var(--color-red-primary)', fontWeight: 'bold' }}>Modificadores Gratuitos</h4>
+                  <h4 style={{ marginBottom: '1rem', color: 'var(--color-red-primary)', fontWeight: 'bold' }}>
+                    {businessType === 'RESTAURANT' ? 'Modificadores Gratuitos' : 'Opciones (Gratis)'}
+                  </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'FREE').map(mod => (
                       <label key={mod.id} className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer' }}>
@@ -377,7 +380,9 @@ export default function Catalog({ products, categories = [], banners = [], whats
 
               {selectedProduct.modifiers.filter(m => m.type === 'PAID').length > 0 && (
                 <div>
-                  <h4 style={{ marginBottom: '1rem', color: 'var(--color-green)', fontWeight: 'bold' }}>Extras Pagos</h4>
+                  <h4 style={{ marginBottom: '1rem', color: 'var(--color-green)', fontWeight: 'bold' }}>
+                    {businessType === 'RESTAURANT' ? 'Extras Pagos' : 'Adicionales / Variantes'}
+                  </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'PAID').map(mod => (
                       <label key={mod.id} className="flex justify-between items-center" style={{ gap: '0.75rem', cursor: 'pointer' }}>

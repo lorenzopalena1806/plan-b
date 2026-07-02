@@ -268,16 +268,17 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
 
         <div className="container" style={{ paddingBottom: '3rem' }}>
           <Catalog 
-          products={products as any} 
-          categories={categories as any}
-          banners={banners}
-          whatsappNumber={config.whatsappNumber}
-          isOpen={isOpen}
-          slug={restaurant.slug}
-          cardLayout={config.cardLayout || 'grid'}
-          bankAlias={config.bankAlias || ''}
-          shippingFee={config.shippingFee || 0}
-        />
+            products={products as any} 
+            categories={categories as any}
+            banners={banners}
+            whatsappNumber={config.whatsappNumber}
+            isOpen={isOpen}
+            slug={restaurant.slug}
+            cardLayout={config.cardLayout || 'grid'}
+            bankAlias={config.bankAlias || ''}
+            shippingFee={config.shippingFee || 0}
+            businessType={restaurant.businessType}
+          />
         </div>
       </ClientThemeWrapper>
     </ThemeProvider>

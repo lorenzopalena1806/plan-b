@@ -27,7 +27,7 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json();
-    const { name, slug } = data;
+    const { name, slug, businessType } = data;
 
     if (!name || !slug) {
       return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 });
@@ -37,6 +37,7 @@ export async function POST(request: Request) {
       data: { 
         name, 
         slug,
+        businessType: businessType || 'RESTAURANT',
         configs: {
           create: {
             whatsappNumber: '',

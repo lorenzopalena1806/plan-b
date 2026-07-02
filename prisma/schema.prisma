@@ -13,6 +13,7 @@ model Restaurant {
   slug            String    @unique
   subscriptionEnd DateTime?
   createdAt       DateTime  @default(now())
+  businessType    String    @default("RESTAURANT") // RESTAURANT, GROCERY, PHARMACY, ETC.
   
   users           User[]
   configs         Config[]
