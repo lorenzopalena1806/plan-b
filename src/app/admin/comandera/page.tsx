@@ -428,7 +428,7 @@ export default function ComanderaPage() {
                       gap: '0.5rem'
                     }}>
                       <div className="flex justify-between items-center" style={{ marginBottom: '0.25rem' }}>
-                        <span className="text-bold text-muted">#{order.dailyNumber || order.id}</span>
+                        <span className="text-bold text-muted">#{order.dailyNumber || order.id} ⏰ {new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                         <div className="flex" style={{ gap: '0.5rem', alignItems: 'center' }}>
                           <span className="status-badge bg-gray text-bold" style={{ backgroundColor: '#f3f4f6', color: '#374151', fontSize: '0.7rem' }}>
                             {order.customerPhone ? '🌐 Web' : '🏪 Local'}
