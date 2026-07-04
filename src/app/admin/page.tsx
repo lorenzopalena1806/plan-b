@@ -88,6 +88,8 @@ export default async function AdminDashboard() {
               <Link href="/admin/coupons" className="btn-outline">Cupones</Link>
               <Link href="/admin/billing" className="btn-outline">Facturación</Link>
               <Link href="/admin/caja/pos" className="btn-outline">Punto de Venta</Link>
+              <Link href="/admin/salon" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Salón / Mesas</Link>
+              <Link href="/admin/inventory" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Inventario y Stock</Link>
             </>
           )}
         </div>
