@@ -236,6 +236,11 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
         item.modifiers.forEach(mod => {
           msg += `  > ${mod.type === 'FREE' ? 'SIN' : 'EXTRA'} ${mod.name}\n`;
         });
+        if (item.variants && item.variants.length > 0) {
+          item.variants.forEach(v => {
+            msg += `  > ${v.groupName}: ${v.name}\n`;
+          });
+        }
       });
 
       const promoText = discountDetails.length > 0 
@@ -291,6 +296,11 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
               {item.modifiers.map(mod => (
                 <div key={mod.id} className={mod.type === 'FREE' ? 'text-red' : 'text-green'} style={{ paddingLeft: '1.5rem', fontSize: '0.75rem' }}>
                   {mod.type === 'FREE' ? 'Sin ' : 'Extra '}{mod.name}
+                </div>
+              ))}
+              {item.variants && item.variants.length > 0 && item.variants.map((v, idx) => (
+                <div key={idx} style={{ paddingLeft: '1.5rem', fontSize: '0.75rem', color: 'var(--color-text-light)' }}>
+                  {v.groupName}: <strong style={{ color: 'var(--color-text)' }}>{v.name}</strong>
                 </div>
               ))}
             </div>

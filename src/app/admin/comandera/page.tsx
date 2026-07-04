@@ -490,12 +490,19 @@ export default function ComanderaPage() {
                           <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
                             {order.items.filter((i:any) => stationFilter === 'ALL' || i.station === stationFilter).map(item => {
                               let modifiers = [];
+                              let variants = [];
                               let rawNote = '';
                               if (item.notes) {
                                 try {
                                   const parsed = JSON.parse(item.notes);
-                                  if (Array.isArray(parsed)) modifiers = parsed;
-                                  else rawNote = item.notes;
+                                  if (Array.isArray(parsed)) {
+                                    modifiers = parsed;
+                                  } else if (parsed && typeof parsed === 'object') {
+                                    if (parsed.modifiers) modifiers = parsed.modifiers;
+                                    if (parsed.variants) variants = parsed.variants;
+                                  } else {
+                                    rawNote = item.notes;
+                                  }
                                 } catch (e) {
                                   rawNote = item.notes;
                                 }
@@ -506,7 +513,12 @@ export default function ComanderaPage() {
                                   <div className="text-bold" style={{ fontSize: '0.9rem' }}>{item.quantity}x {item.productName}</div>
                                   {modifiers.length > 0 && (
                                     <div className="text-muted" style={{ fontSize: '0.8rem' }}>
-                                      {modifiers.map((mod: any) => mod.name).join(', ')}
+                                      {modifiers.map((mod: any) => `${mod.type === 'FREE' ? 'SIN' : 'EXTRA'} ${mod.name}`).join(', ')}
+                                    </div>
+                                  )}
+                                  {variants.length > 0 && (
+                                    <div className="text-muted" style={{ fontSize: '0.8rem' }}>
+                                      {variants.map((v: any) => `${v.groupName}: ${v.name}`).join(', ')}
                                     </div>
                                   )}
                                   {rawNote && (

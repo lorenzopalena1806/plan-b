@@ -95,6 +95,7 @@ model Product {
   description  String?
   price        Float
   imageUrl     String?
+  images       String[]         @default([]) // Carousel images
   categoryId   Int?
   category     Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isPromo      Boolean          @default(false)
@@ -105,6 +106,24 @@ model Product {
   restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   station      String?          @default("GENERAL") // e.g. "COCINA", "BARRA"
   recipes      RecipeItem[]
+  variantGroups VariantGroup[]
+}
+
+model VariantGroup {
+  id           Int           @id @default(autoincrement())
+  name         String        // e.g. "Talle", "Color"
+  productId    Int
+  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variants     VariantItem[]
+}
+
+model VariantItem {
+  id           Int           @id @default(autoincrement())
+  name         String        // e.g. "S", "M", "Rojo"
+  priceAdjustment Float      @default(0)
+  stock        Int           @default(0) // Control de stock individual por variante
+  groupId      Int
+  group        VariantGroup  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }
 
 model ModifierOption {

@@ -71,7 +71,9 @@ export async function POST(
             productName: item.name,
             quantity: item.quantity,
             priceAtPurchase: item.basePrice,
-            notes: item.modifiers && item.modifiers.length > 0 ? JSON.stringify(item.modifiers) : null
+            notes: (item.modifiers && item.modifiers.length > 0) || (item.variants && item.variants.length > 0) 
+              ? JSON.stringify({ modifiers: item.modifiers || [], variants: item.variants || [] }) 
+              : null
           })),
         },
       },
@@ -91,6 +93,17 @@ export async function POST(
             where: { id: recipe.ingredientId },
             data: { currentStock: { decrement: totalUsed } }
           });
+        }
+        
+        if (item.variants && item.variants.length > 0) {
+          for (const variant of item.variants) {
+            if (variant.id) {
+              await prisma.variantItem.update({
+                where: { id: parseInt(variant.id) },
+                data: { stock: { decrement: item.quantity } }
+              });
+            }
+          }
         }
       }
     } catch (e) {

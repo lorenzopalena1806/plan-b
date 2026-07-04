@@ -412,11 +412,46 @@ export default function SalesPage() {
                         )}
                       </td>
                       <td style={{ padding: '1rem 0.5rem' }}>
-                        {order.items.map(item => (
-                          <div key={item.id} style={{ marginBottom: '0.25rem' }}>
-                            <span className="text-bold" style={{ color: 'var(--color-text)' }}>{item.quantity}x</span> {item.productName}
-                          </div>
-                        ))}
+                        {order.items.map(item => {
+                          let modifiers = [];
+                          let variants = [];
+                          let rawNote = '';
+                          if (item.notes) {
+                            try {
+                              const parsed = JSON.parse(item.notes);
+                              if (Array.isArray(parsed)) {
+                                modifiers = parsed;
+                              } else if (parsed && typeof parsed === 'object') {
+                                if (parsed.modifiers) modifiers = parsed.modifiers;
+                                if (parsed.variants) variants = parsed.variants;
+                              } else {
+                                rawNote = item.notes;
+                              }
+                            } catch (e) {
+                              rawNote = item.notes;
+                            }
+                          }
+                          return (
+                            <div key={item.id} style={{ marginBottom: '0.25rem' }}>
+                              <span className="text-bold" style={{ color: 'var(--color-text)' }}>{item.quantity}x</span> {item.productName}
+                              {modifiers.length > 0 && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', paddingLeft: '1rem' }}>
+                                  {modifiers.map((mod: any) => `${mod.type === 'FREE' ? 'SIN' : 'EXTRA'} ${mod.name}`).join(', ')}
+                                </div>
+                              )}
+                              {variants.length > 0 && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', paddingLeft: '1rem' }}>
+                                  {variants.map((v: any) => `${v.groupName}: ${v.name}`).join(', ')}
+                                </div>
+                              )}
+                              {rawNote && (
+                                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', paddingLeft: '1rem' }}>
+                                  {rawNote}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </td>
                       <td style={{ padding: '1rem 0.5rem', maxWidth: '150px', wordBreak: 'break-word' }}>
                         {order.customerNotes ? (

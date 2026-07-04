@@ -8,15 +8,19 @@ import Cart from './Cart';
 type ProductWithRelations = Product & {
   category: Category | null;
   modifiers: ModifierOption[];
+  variantGroups?: { id: number, name: string, variants: { id: number, name: string, priceAdjustment: number, stock: number }[] }[];
+  images?: string[];
 };
 
 export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0, businessType = 'RESTAURANT' }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number, businessType?: string }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
+  const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [currentProductImageIndex, setCurrentProductImageIndex] = useState(0);
 
   const { addItem, getItems, getTotal } = useCartStore();
   const cartItemsCount = getItems(slug).reduce((sum, item) => sum + item.quantity, 0);
@@ -52,6 +56,8 @@ export default function Catalog({ products, categories = [], banners = [], whats
   const openModal = (product: ProductWithRelations) => {
     setSelectedProduct(product);
     setSelectedModifiers([]);
+    setSelectedVariants({});
+    setCurrentProductImageIndex(0);
     setQuantity(1);
   };
 
@@ -70,12 +76,25 @@ export default function Catalog({ products, categories = [], banners = [], whats
   const handleAddToCart = () => {
     if (!selectedProduct) return;
     
+    // Check if all variant groups are selected
+    if (selectedProduct.variantGroups) {
+      for (const group of selectedProduct.variantGroups) {
+        if (!selectedVariants[group.id]) {
+          alert(`Por favor, selecciona una opción para: ${group.name}`);
+          return;
+        }
+      }
+    }
+
+    const variantsArray = Object.values(selectedVariants);
+    
     addItem(slug, {
       productId: selectedProduct.id,
       name: selectedProduct.name,
       basePrice: selectedProduct.price,
       quantity,
       modifiers: selectedModifiers,
+      variants: variantsArray,
       categoryId: selectedProduct.categoryId || undefined,
       categoryName: selectedProduct.category?.name || undefined,
     });
@@ -338,25 +357,123 @@ export default function Catalog({ products, categories = [], banners = [], whats
             >
               ✕
             </button>
-            {selectedProduct.imageUrl && (
-              <img 
-                src={selectedProduct.imageUrl} 
-                alt={selectedProduct.name} 
-                style={{ 
-                  width: '100%', 
-                  height: '220px', 
-                  objectFit: 'cover', 
-                  borderRadius: 'var(--border-radius-md)', 
-                  marginBottom: '1rem',
-                  border: '1px solid var(--color-border)' 
-                }} 
-              />
+            {/* Product Image Carousel */}
+            {(selectedProduct.imageUrl || (selectedProduct.images && selectedProduct.images.length > 0)) && (
+              <div style={{ position: 'relative', marginBottom: '1rem', width: '100%', height: '220px', borderRadius: 'var(--border-radius-md)', overflow: 'hidden', backgroundColor: '#f5f5f5' }}>
+                <div style={{
+                  display: 'flex',
+                  transition: 'transform 0.3s ease-in-out',
+                  transform: `translateX(-${currentProductImageIndex * 100}%)`,
+                  height: '100%'
+                }}>
+                  {selectedProduct.imageUrl && (
+                    <img 
+                      src={selectedProduct.imageUrl} 
+                      alt={selectedProduct.name} 
+                      style={{ width: '100%', flexShrink: 0, height: '100%', objectFit: 'cover' }} 
+                    />
+                  )}
+                  {selectedProduct.images && selectedProduct.images.map((img, idx) => (
+                    <img 
+                      key={idx}
+                      src={img} 
+                      alt={`${selectedProduct.name} - Imagen ${idx + 1}`} 
+                      style={{ width: '100%', flexShrink: 0, height: '100%', objectFit: 'cover' }} 
+                    />
+                  ))}
+                </div>
+                
+                {/* Carousel Controls */}
+                {((selectedProduct.imageUrl ? 1 : 0) + (selectedProduct.images?.length || 0) > 1) && (
+                  <>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentProductImageIndex(prev => prev > 0 ? prev - 1 : prev);
+                      }}
+                      style={{
+                        position: 'absolute', top: '50%', left: '10px', transform: 'translateY(-50%)',
+                        background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '30px', height: '30px',
+                        cursor: 'pointer', zIndex: 5, display: currentProductImageIndex > 0 ? 'block' : 'none'
+                      }}
+                    >
+                      ❮
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const totalImages = (selectedProduct.imageUrl ? 1 : 0) + (selectedProduct.images?.length || 0);
+                        setCurrentProductImageIndex(prev => prev < totalImages - 1 ? prev + 1 : prev);
+                      }}
+                      style={{
+                        position: 'absolute', top: '50%', right: '10px', transform: 'translateY(-50%)',
+                        background: 'rgba(255,255,255,0.8)', border: 'none', borderRadius: '50%', width: '30px', height: '30px',
+                        cursor: 'pointer', zIndex: 5, display: currentProductImageIndex < ((selectedProduct.imageUrl ? 1 : 0) + (selectedProduct.images?.length || 0) - 1) ? 'block' : 'none'
+                      }}
+                    >
+                      ❯
+                    </button>
+                    <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: '8px' }}>
+                      {Array.from({ length: (selectedProduct.imageUrl ? 1 : 0) + (selectedProduct.images?.length || 0) }).map((_, idx) => (
+                        <div key={idx} style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: idx === currentProductImageIndex ? '#000' : 'rgba(0,0,0,0.3)' }} />
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             )}
             
             <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem', fontWeight: 'bold' }}>{selectedProduct.name}</h2>
             <p className="text-muted" style={{ marginBottom: '1.5rem', fontSize: '0.95rem' }}>{selectedProduct.description}</p>
             
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
+              {selectedProduct.variantGroups && selectedProduct.variantGroups.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  {selectedProduct.variantGroups.map(group => (
+                    <div key={group.id} style={{ marginBottom: '1.25rem' }}>
+                      <h4 style={{ marginBottom: '0.75rem', fontWeight: 'bold', fontSize: '1.05rem', color: '#1a1a1a' }}>
+                        Selecciona tu {group.name} <span style={{ color: 'var(--color-red-primary)' }}>*</span>
+                      </h4>
+                      <div className="flex flex-wrap" style={{ gap: '0.75rem' }}>
+                        {group.variants.map(variant => {
+                          const isSelected = selectedVariants[group.id]?.id === variant.id;
+                          const isOutOfStock = variant.stock <= 0;
+                          return (
+                            <button
+                              key={variant.id}
+                              disabled={isOutOfStock}
+                              onClick={() => setSelectedVariants({ ...selectedVariants, [group.id]: { groupId: group.id, groupName: group.name, id: variant.id, name: variant.name, priceAdjustment: variant.priceAdjustment } })}
+                              style={{
+                                padding: '0.5rem 1rem',
+                                border: isSelected ? '2px solid var(--color-red-primary)' : '1px solid var(--color-border)',
+                                borderRadius: 'var(--border-radius-sm)',
+                                backgroundColor: isSelected ? 'rgba(225, 29, 72, 0.05)' : isOutOfStock ? '#f5f5f5' : 'white',
+                                color: isOutOfStock ? '#a0aec0' : 'inherit',
+                                cursor: isOutOfStock ? 'not-allowed' : 'pointer',
+                                fontWeight: isSelected ? 'bold' : 'normal',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                minWidth: '60px'
+                              }}
+                            >
+                              <span>{variant.name}</span>
+                              {variant.priceAdjustment > 0 && (
+                                <span style={{ fontSize: '0.75rem', color: isSelected ? 'var(--color-red-primary)' : 'var(--color-text-light)' }}>
+                                  +${variant.priceAdjustment}
+                                </span>
+                              )}
+                              {isOutOfStock && (
+                                <span style={{ fontSize: '0.7rem', color: '#e53e3e' }}>Sin stock</span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               {selectedProduct.modifiers.filter(m => m.type === 'FREE').length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ marginBottom: '1rem', color: 'var(--color-red-primary)', fontWeight: 'bold' }}>
@@ -415,8 +532,13 @@ export default function Catalog({ products, categories = [], banners = [], whats
                   </div>
                 )}
               </div>
-              <button className="btn-primary" style={{ width: 'auto' }} onClick={handleAddToCart}>
-                Agregar ${( (selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0)) * quantity ).toLocaleString()}
+              <button 
+                className="btn-primary" 
+                style={{ width: 'auto', opacity: (!selectedProduct.variantGroups || selectedProduct.variantGroups.every(g => selectedVariants[g.id])) ? 1 : 0.5 }} 
+                disabled={selectedProduct.variantGroups && !selectedProduct.variantGroups.every(g => selectedVariants[g.id])}
+                onClick={handleAddToCart}
+              >
+                Agregar ${( (selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0) + Object.values(selectedVariants).reduce((sum: number, v: any) => sum + (v.priceAdjustment || 0), 0)) * quantity ).toLocaleString()}
               </button>
             </div>
           </div>

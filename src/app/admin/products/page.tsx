@@ -30,6 +30,8 @@ interface Product {
   station: string;
   modifiers: ModifierOption[];
   recipes?: { ingredientId: number, quantityUsed: number, ingredient?: any }[];
+  images?: string[];
+  variantGroups?: { id?: number, name: string, variants: { id?: number, name: string, priceAdjustment: number, stock: number }[] }[];
 }
 
 export default function ProductsPage() {
@@ -60,6 +62,8 @@ export default function ProductsPage() {
   const [allowBulkQuantities, setAllowBulkQuantities] = useState(false);
   const [station, setStation] = useState('GENERAL');
   const [recipeItems, setRecipeItems] = useState<{ingredientId: number, quantityUsed: number}[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [variantGroups, setVariantGroups] = useState<{ id?: number, name: string, variants: { id?: number, name: string, priceAdjustment: number, stock: number }[] }[]>([]);
 
   useEffect(() => {
     fetchInitialData();
@@ -128,6 +132,8 @@ export default function ProductsPage() {
     setAllowBulkQuantities(product.allowBulkQuantities || false);
     setStation(product.station || 'GENERAL');
     setRecipeItems(product.recipes ? product.recipes.map(r => ({ ingredientId: r.ingredientId, quantityUsed: r.quantityUsed })) : []);
+    setImages(product.images || []);
+    setVariantGroups(product.variantGroups || []);
     setIsAdding(true);
     // Scroll to form smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -147,6 +153,8 @@ export default function ProductsPage() {
     setAllowBulkQuantities(false);
     setStation('GENERAL');
     setRecipeItems([]);
+    setImages([]);
+    setVariantGroups([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,7 +173,9 @@ export default function ProductsPage() {
         isActive,
         allowBulkQuantities,
         station,
-        recipeItems
+        recipeItems,
+        images,
+        variantGroups
       };
 
       const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
@@ -378,6 +388,120 @@ export default function ProductsPage() {
                   style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
                 />
               </div>
+            </div>
+              <div style={{ marginTop: '1rem' }}>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>URLs de Imágenes del Carrusel (Tiendas de Ropa)</label>
+                <div className="flex flex-col" style={{ gap: '0.5rem', marginBottom: '1rem' }}>
+                  {images.map((img, idx) => (
+                    <div key={idx} className="flex items-center" style={{ gap: '0.5rem' }}>
+                      <input 
+                        type="url" 
+                        value={img}
+                        onChange={(e) => {
+                          const newImgs = [...images];
+                          newImgs[idx] = e.target.value;
+                          setImages(newImgs);
+                        }}
+                        placeholder="https://ejemplo.com/foto2.jpg"
+                        style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                      />
+                      <button type="button" onClick={() => {
+                        const newImgs = [...images];
+                        newImgs.splice(idx, 1);
+                        setImages(newImgs);
+                      }} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+                    </div>
+                  ))}
+                  <button type="button" className="btn-outline" onClick={() => setImages([...images, ''])} style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', alignSelf: 'flex-start' }}>
+                    + Agregar Imagen al Carrusel
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Variant Groups Fields (Tiendas de Ropa) */}
+            <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f5f5f5' }}>
+              <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid #ccc', paddingBottom: '0.25rem' }}>Variantes (Talles / Colores)</h3>
+              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>Especial para tiendas de ropa. Agrega grupos como "Talle" o "Color". El cliente deberá elegir uno obligatoriamente.</p>
+              
+              {variantGroups.map((group, gIdx) => (
+                <div key={gIdx} style={{ background: 'white', padding: '1rem', borderRadius: 'var(--border-radius-sm)', marginBottom: '1rem', border: '1px solid #ddd' }}>
+                  <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
+                    <input 
+                      type="text"
+                      value={group.name}
+                      onChange={(e) => {
+                        const newGroups = [...variantGroups];
+                        newGroups[gIdx].name = e.target.value;
+                        setVariantGroups(newGroups);
+                      }}
+                      placeholder="Nombre del Grupo (ej. Talle)"
+                      style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', fontWeight: 'bold', width: '250px' }}
+                    />
+                    <button type="button" onClick={() => {
+                      const newGroups = [...variantGroups];
+                      newGroups.splice(gIdx, 1);
+                      setVariantGroups(newGroups);
+                    }} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>Eliminar Grupo</button>
+                  </div>
+                  
+                  <div className="flex flex-col" style={{ gap: '0.5rem' }}>
+                    {group.variants.map((v, vIdx) => (
+                      <div key={vIdx} className="flex items-center flex-wrap" style={{ gap: '0.5rem' }}>
+                        <input 
+                          type="text" 
+                          value={v.name}
+                          onChange={(e) => {
+                            const newGroups = [...variantGroups];
+                            newGroups[gIdx].variants[vIdx].name = e.target.value;
+                            setVariantGroups(newGroups);
+                          }}
+                          placeholder="Opción (ej. M)"
+                          style={{ flex: 1, minWidth: '100px', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                        />
+                        <input 
+                          type="number" 
+                          value={v.priceAdjustment}
+                          onChange={(e) => {
+                            const newGroups = [...variantGroups];
+                            newGroups[gIdx].variants[vIdx].priceAdjustment = parseFloat(e.target.value) || 0;
+                            setVariantGroups(newGroups);
+                          }}
+                          placeholder="Ajuste Precio ($)"
+                          style={{ width: '120px', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                        />
+                        <input 
+                          type="number" 
+                          value={v.stock}
+                          onChange={(e) => {
+                            const newGroups = [...variantGroups];
+                            newGroups[gIdx].variants[vIdx].stock = parseInt(e.target.value) || 0;
+                            setVariantGroups(newGroups);
+                          }}
+                          placeholder="Stock"
+                          style={{ width: '100px', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                        />
+                        <button type="button" onClick={() => {
+                          const newGroups = [...variantGroups];
+                          newGroups[gIdx].variants.splice(vIdx, 1);
+                          setVariantGroups(newGroups);
+                        }} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
+                      </div>
+                    ))}
+                    <button type="button" className="btn-outline" onClick={() => {
+                      const newGroups = [...variantGroups];
+                      newGroups[gIdx].variants.push({ name: '', priceAdjustment: 0, stock: 0 });
+                      setVariantGroups(newGroups);
+                    }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', alignSelf: 'flex-start' }}>
+                      + Agregar Opción
+                    </button>
+                  </div>
+                </div>
+              ))}
+              
+              <button type="button" className="btn-outline" onClick={() => setVariantGroups([...variantGroups, { name: '', variants: [] }])} style={{ padding: '0.5rem', fontSize: '0.9rem' }}>
+                + Crear Grupo de Variantes
+              </button>
             </div>
           </div>
 

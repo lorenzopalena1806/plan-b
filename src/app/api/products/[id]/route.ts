@@ -15,7 +15,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { name, description, price, imageUrl, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station } = data;
+    const { name, description, price, imageUrl, images, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station, variantGroups } = data;
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: parseInt(id) }
@@ -31,6 +31,7 @@ export async function PUT(
         description: description !== undefined ? description : undefined,
         price: price !== undefined ? parseFloat(price) : undefined,
         imageUrl: imageUrl !== undefined ? imageUrl : undefined,
+        images: images !== undefined ? images : undefined,
         categoryId: categoryId !== undefined ? (categoryId ? (isNaN(parseInt(categoryId)) ? null : parseInt(categoryId)) : null) : undefined,
         isPromo: isPromo !== undefined ? Boolean(isPromo) : undefined,
         isActive: isActive !== undefined ? Boolean(isActive) : undefined,
@@ -57,6 +58,31 @@ export async function PUT(
             quantityUsed: parseFloat(r.quantityUsed)
           }))
         });
+      }
+    }
+
+    if (variantGroups !== undefined) {
+      // Clear existing variant groups (variants cascade on delete)
+      await prisma.variantGroup.deleteMany({
+        where: { productId: parseInt(id) }
+      });
+      // Insert new ones
+      if (variantGroups.length > 0) {
+        for (const g of variantGroups) {
+          await prisma.variantGroup.create({
+            data: {
+              productId: parseInt(id),
+              name: g.name,
+              variants: {
+                create: g.variants.map((v: any) => ({
+                  name: v.name,
+                  priceAdjustment: parseFloat(v.priceAdjustment) || 0,
+                  stock: parseInt(v.stock) || 0
+                }))
+              }
+            }
+          });
+        }
       }
     }
 

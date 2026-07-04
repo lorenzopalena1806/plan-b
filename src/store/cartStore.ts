@@ -15,6 +15,7 @@ export interface CartItem {
   basePrice: number;
   quantity: number;
   modifiers: CartModifier[];
+  variants?: any[];
   categoryId?: number;
   categoryName?: string;
   totalPrice: number; // basePrice + modifiers prices * quantity
@@ -54,7 +55,8 @@ export const useCartStore = create<CartState>()(
       
       addItem: (slug, item) => set((state) => {
         const modifiersPrice = item.modifiers.reduce((sum, mod) => sum + mod.price, 0);
-        const itemTotalPrice = (item.basePrice + modifiersPrice) * item.quantity;
+        const variantsPrice = item.variants ? item.variants.reduce((sum, v) => sum + (v.priceAdjustment || 0), 0) : 0;
+        const itemTotalPrice = (item.basePrice + modifiersPrice + variantsPrice) * item.quantity;
         const cartItemId = Math.random().toString(36).substr(2, 9);
         const currentItems = state.carts[slug] || [];
         
@@ -84,10 +86,11 @@ export const useCartStore = create<CartState>()(
             [slug]: currentItems.map((i) => {
               if (i.cartItemId === cartItemId) {
                 const modifiersPrice = i.modifiers.reduce((sum, mod) => sum + mod.price, 0);
+                const variantsPrice = i.variants ? i.variants.reduce((sum, v) => sum + (v.priceAdjustment || 0), 0) : 0;
                 return {
                   ...i,
                   quantity,
-                  totalPrice: (i.basePrice + modifiersPrice) * quantity,
+                  totalPrice: (i.basePrice + modifiersPrice + variantsPrice) * quantity,
                 };
               }
               return i;
