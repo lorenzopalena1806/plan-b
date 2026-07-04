@@ -64,6 +64,7 @@ export default function ProductsPage() {
   const [recipeItems, setRecipeItems] = useState<{ingredientId: number, quantityUsed: number}[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [variantGroups, setVariantGroups] = useState<{ id?: number, name: string, variants: { id?: number, name: string, priceAdjustment: number, stock: number }[] }[]>([]);
+  const [businessType, setBusinessType] = useState('RESTAURANT');
 
   useEffect(() => {
     fetchInitialData();
@@ -71,11 +72,12 @@ export default function ProductsPage() {
 
   const fetchInitialData = async () => {
     try {
-      const [resProd, resCat, resMod, resIng] = await Promise.all([
+      const [resProd, resCat, resMod, resIng, resConf] = await Promise.all([
         fetch('/api/products'),
         fetch('/api/categories'),
         fetch('/api/modifiers'),
-        fetch('/api/admin/ingredients')
+        fetch('/api/admin/ingredients'),
+        fetch('/api/config')
       ]);
 
       if (resProd.ok && resCat.ok && resMod.ok && resIng.ok) {
@@ -83,6 +85,10 @@ export default function ProductsPage() {
         setCategories(await resCat.json());
         setModifiers(await resMod.json());
         setIngredients(await resIng.json());
+        if (resConf.ok) {
+          const conf = await resConf.json();
+          setBusinessType(conf.businessType || 'RESTAURANT');
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -266,16 +272,19 @@ export default function ProductsPage() {
               </select>
             </div>
             
-            <div>
-              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Estación de Preparación</label>
-              <select value={station} onChange={e => setStation(e.target.value)} required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', height: '38px' }}>
-                <option value="GENERAL">General</option>
-                <option value="COCINA">Cocina</option>
-                <option value="BARRA">Barra</option>
-              </select>
-            </div>
+            {businessType !== 'CLOTHING' && (
+              <div>
+                <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Estación de Preparación</label>
+                <select value={station} onChange={e => setStation(e.target.value)} required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', height: '38px' }}>
+                  <option value="GENERAL">General</option>
+                  <option value="COCINA">Cocina</option>
+                  <option value="BARRA">Barra</option>
+                </select>
+              </div>
+            )}
 
-            <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
+            {businessType !== 'CLOTHING' && (
+              <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
               <h3 className="text-bold" style={{ marginBottom: '1rem', fontSize: '1rem' }}>Receta y Costos (Control de Stock)</h3>
               <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Agrega los ingredientes que componen este producto para descontar stock automáticamente al vender.</p>
               
@@ -357,6 +366,7 @@ export default function ProductsPage() {
                 </div>
               </div>
             </div>
+            )}
             <div className="flex flex-col" style={{ gap: '0.75rem', paddingTop: '1rem' }}>
               <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
                 <input type="checkbox" checked={isPromo} onChange={e => setIsPromo(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
@@ -504,8 +514,8 @@ export default function ProductsPage() {
             </div>
           </div>
 
-          {/* Modifier selection checklist */}
-          <div style={{ marginBottom: '1.5rem' }}>
+          {businessType !== 'CLOTHING' && (
+            <div style={{ marginBottom: '1.5rem' }}>
             <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.25rem' }}>Seleccionar Modificadores Aplicables</h3>
             <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>Marca qué opciones pueden quitarse o agregarse a este producto al ser comprado</p>
             <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.5rem' }}>
@@ -527,6 +537,7 @@ export default function ProductsPage() {
               )}
             </div>
           </div>
+          )}
 
           <div className="flex" style={{ gap: '1rem' }}>
             <button type="submit" className="btn-primary" disabled={isSubmitting || isUploading}>
@@ -592,17 +603,20 @@ export default function ProductsPage() {
               <div className="text-bold text-muted" style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>
                 Categoría: {product.category?.name || 'General'}
               </div>
-              
               <div style={{ marginBottom: '1.5rem', fontSize: '0.875rem', marginTop: 'auto' }}>
-                <div className="text-bold" style={{ marginBottom: '0.25rem' }}>Modificadores ({product.modifiers.length}):</div>
-                <ul style={{ paddingLeft: '1rem', margin: 0, listStyleType: 'circle' }}>
-                  {product.modifiers.map(mod => (
-                    <li key={mod.id} className={mod.type === 'FREE' ? 'text-red' : 'text-green'}>
-                      {mod.name} {mod.description ? `(${mod.description})` : ''} {mod.type === 'PAID' ? `(+$${mod.price})` : '(Gratis)'}
-                    </li>
-                  ))}
-                  {product.modifiers.length === 0 && <span style={{ color: '#aaa', fontSize: '0.75rem' }}>Ninguno</span>}
-                </ul>
+                {businessType !== 'CLOTHING' && (
+                  <>
+                    <div className="text-bold" style={{ marginBottom: '0.25rem' }}>Modificadores ({product.modifiers.length}):</div>
+                    <ul style={{ paddingLeft: '1rem', margin: 0, listStyleType: 'circle' }}>
+                      {product.modifiers.map(mod => (
+                        <li key={mod.id} className={mod.type === 'FREE' ? 'text-red' : 'text-green'}>
+                          {mod.name} {mod.description ? `(${mod.description})` : ''} {mod.type === 'PAID' ? `(+$${mod.price})` : '(Gratis)'}
+                        </li>
+                      ))}
+                      {product.modifiers.length === 0 && <span style={{ color: '#aaa', fontSize: '0.75rem' }}>Ninguno</span>}
+                    </ul>
+                  </>
+                )}
               </div>
 
               <div className="flex" style={{ gap: '0.5rem', marginTop: '1rem', flexDirection: 'column' }}>

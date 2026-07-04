@@ -81,8 +81,14 @@ export default async function AdminLayout({
           <Link href="/admin/caja" style={linkStyle('/admin/caja')}>
             {businessType === 'RESTAURANT' ? '💵 Caja' : '🛒 Caja / Pedidos'}
           </Link>
-          <Link href="/admin/salon" style={linkStyle('/admin/salon')}>🪑 Salón</Link>
-          <Link href="/admin/inventory" style={linkStyle('/admin/inventory')}>📦 Inventario</Link>
+          
+          {businessType !== 'CLOTHING' && (
+            <>
+              <Link href="/admin/salon" style={linkStyle('/admin/salon')}>🪑 Salón</Link>
+              <Link href="/admin/inventory" style={linkStyle('/admin/inventory')}>📦 Inventario</Link>
+            </>
+          )}
+
           <Link href="/admin/comandera" style={linkStyle('/admin/comandera')}>
             {businessType === 'RESTAURANT' ? '👨‍🍳 Comandera' : '📦 Armado de Pedidos'}
           </Link>
