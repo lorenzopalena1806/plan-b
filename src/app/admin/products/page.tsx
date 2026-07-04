@@ -27,13 +27,16 @@ interface Product {
   isPromo: boolean;
   isActive: boolean;
   allowBulkQuantities: boolean;
+  station: string;
   modifiers: ModifierOption[];
+  recipes?: { ingredientId: number, quantityUsed: number, ingredient?: any }[];
 }
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [modifiers, setModifiers] = useState<ModifierOption[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
   
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -55,6 +58,8 @@ export default function ProductsPage() {
   const [isPromo, setIsPromo] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [allowBulkQuantities, setAllowBulkQuantities] = useState(false);
+  const [station, setStation] = useState('GENERAL');
+  const [recipeItems, setRecipeItems] = useState<{ingredientId: number, quantityUsed: number}[]>([]);
 
   useEffect(() => {
     fetchInitialData();
@@ -62,16 +67,18 @@ export default function ProductsPage() {
 
   const fetchInitialData = async () => {
     try {
-      const [resProd, resCat, resMod] = await Promise.all([
+      const [resProd, resCat, resMod, resIng] = await Promise.all([
         fetch('/api/products'),
         fetch('/api/categories'),
-        fetch('/api/modifiers')
+        fetch('/api/modifiers'),
+        fetch('/api/admin/ingredients')
       ]);
 
-      if (resProd.ok && resCat.ok && resMod.ok) {
+      if (resProd.ok && resCat.ok && resMod.ok && resIng.ok) {
         setProducts(await resProd.json());
         setCategories(await resCat.json());
         setModifiers(await resMod.json());
+        setIngredients(await resIng.json());
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -119,6 +126,8 @@ export default function ProductsPage() {
     setIsPromo(product.isPromo);
     setIsActive(product.isActive !== undefined ? product.isActive : true);
     setAllowBulkQuantities(product.allowBulkQuantities || false);
+    setStation(product.station || 'GENERAL');
+    setRecipeItems(product.recipes ? product.recipes.map(r => ({ ingredientId: r.ingredientId, quantityUsed: r.quantityUsed })) : []);
     setIsAdding(true);
     // Scroll to form smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -136,6 +145,8 @@ export default function ProductsPage() {
     setIsPromo(false);
     setIsActive(true);
     setAllowBulkQuantities(false);
+    setStation('GENERAL');
+    setRecipeItems([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -152,7 +163,9 @@ export default function ProductsPage() {
         modifierIds: selectedModifierIds,
         isPromo,
         isActive,
-        allowBulkQuantities
+        allowBulkQuantities,
+        station,
+        recipeItems
       };
 
       const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
@@ -241,6 +254,98 @@ export default function ProductsPage() {
                   <option key={cat.id} value={cat.id}>{cat.name}</option>
                 ))}
               </select>
+            </div>
+            
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Estación de Preparación</label>
+              <select value={station} onChange={e => setStation(e.target.value)} required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', height: '38px' }}>
+                <option value="GENERAL">General</option>
+                <option value="COCINA">Cocina</option>
+                <option value="BARRA">Barra</option>
+              </select>
+            </div>
+
+            <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
+              <h3 className="text-bold" style={{ marginBottom: '1rem', fontSize: '1rem' }}>Receta y Costos (Control de Stock)</h3>
+              <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Agrega los ingredientes que componen este producto para descontar stock automáticamente al vender.</p>
+              
+              {recipeItems.map((rItem, idx) => {
+                const ing = ingredients.find(i => i.id === rItem.ingredientId);
+                return (
+                  <div key={idx} style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem', alignItems: 'center' }}>
+                    <select 
+                      value={rItem.ingredientId} 
+                      onChange={e => {
+                        const newItems = [...recipeItems];
+                        newItems[idx].ingredientId = parseInt(e.target.value);
+                        setRecipeItems(newItems);
+                      }}
+                      style={{ flex: 2, padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                    >
+                      <option value={0}>-- Seleccionar Ingrediente --</option>
+                      {ingredients.map(i => <option key={i.id} value={i.id}>{i.name} ({i.stockUnit}) - ${i.unitCost}/{i.stockUnit}</option>)}
+                    </select>
+                    
+                    <input 
+                      type="number" 
+                      step="0.001"
+                      value={rItem.quantityUsed}
+                      onChange={e => {
+                        const newItems = [...recipeItems];
+                        newItems[idx].quantityUsed = parseFloat(e.target.value) || 0;
+                        setRecipeItems(newItems);
+                      }}
+                      placeholder="Cantidad usada"
+                      style={{ flex: 1, padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
+                    />
+                    <span style={{ width: '40px' }}>{ing?.stockUnit || ''}</span>
+                    
+                    <span className="text-muted" style={{ width: '100px', textAlign: 'right' }}>
+                      ${((ing?.unitCost || 0) * rItem.quantityUsed).toFixed(2)}
+                    </span>
+
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        const newItems = [...recipeItems];
+                        newItems.splice(idx, 1);
+                        setRecipeItems(newItems);
+                      }}
+                      style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                );
+              })}
+              
+              <button 
+                type="button" 
+                className="btn-outline" 
+                onClick={() => setRecipeItems([...recipeItems, { ingredientId: 0, quantityUsed: 0 }])}
+                style={{ marginTop: '0.5rem', padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
+              >
+                + Agregar Ingrediente
+              </button>
+
+              <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px dashed #ccc', textAlign: 'right' }}>
+                <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                  Costo Total de Receta: <strong style={{ color: '#000' }}>
+                    ${recipeItems.reduce((sum, r) => {
+                      const ing = ingredients.find(i => i.id === r.ingredientId);
+                      return sum + ((ing?.unitCost || 0) * r.quantityUsed);
+                    }, 0).toFixed(2)}
+                  </strong>
+                </div>
+                <div style={{ fontSize: '0.9rem', color: '#666', marginTop: '0.25rem' }}>
+                  Ganancia Bruta: <strong style={{ color: 'var(--color-green)' }}>
+                    ${(price - recipeItems.reduce((sum, r) => {
+                      const ing = ingredients.find(i => i.id === r.ingredientId);
+                      return sum + ((ing?.unitCost || 0) * r.quantityUsed);
+                    }, 0)).toFixed(2)}
+                  </strong>
+                </div>
+              </div>
             </div>
             <div className="flex flex-col" style={{ gap: '0.75rem', paddingTop: '1rem' }}>
               <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>

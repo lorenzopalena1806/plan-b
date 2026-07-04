@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface Product {
   id: number;
@@ -28,15 +29,24 @@ interface CartItem {
   notes?: string;
 }
 
-export default function POSPage() {
+function POSContent() {
+  const searchParams = useSearchParams();
+  const tableIdStr = searchParams.get('tableId');
+  const tableId = tableIdStr ? parseInt(tableIdStr) : null;
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{id: number, name: string, discounts?: any[]}[]>([]);
   const [activeCategory, setActiveCategory] = useState<number | 'PROMOS' | null>(null);
   
   const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [deliveryMethod, setDeliveryMethod] = useState<'TAKEAWAY' | 'DELIVERY' | 'SALON'>(tableId ? 'SALON' : 'TAKEAWAY');
+  const [isSearchingCustomer, setIsSearchingCustomer] = useState(false);
   const [customerNotes, setCustomerNotes] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'TRANSFER'>('CASH');
+  const [cashTendered, setCashTendered] = useState<string>('');
   
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -216,6 +226,30 @@ export default function POSPage() {
 
   const total = rawTotal - volumeDiscount;
 
+  const handlePhoneChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setCustomerPhone(val);
+    if (val.length >= 8) {
+      setIsSearchingCustomer(true);
+      try {
+        const res = await fetch(`/api/customers/search?phone=${val}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.found && data.customer) {
+            setCustomerName(data.customer.name || '');
+            if (data.customer.address) {
+              setAddress(data.customer.address);
+            }
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearchingCustomer(false);
+      }
+    }
+  };
+
   const handleSubmit = async (status: 'PENDING' | 'COMPLETED') => {
     if (cart.length === 0) {
       alert("El carrito está vacío");
@@ -234,11 +268,14 @@ export default function POSPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           customerName: customerName.trim(),
-          deliveryMethod: 'TAKEAWAY',
+          customerPhone: customerPhone.trim() || null,
+          deliveryMethod,
+          address: deliveryMethod === 'DELIVERY' ? address.trim() : null,
           customerNotes: customerNotes.trim() || null,
           paymentMethod,
           status,
           total,
+          tableId,
           items: cart
         })
       });
@@ -357,6 +394,33 @@ export default function POSPage() {
       <div style={{ display: 'flex', flexDirection: 'column', background: '#fff', borderLeft: '1px solid #e4e4e7', height: '100%' }}>
         <div style={{ padding: '1rem', borderBottom: '1px solid #e4e4e7', background: '#fafafa' }}>
           <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Ticket de Venta</h2>
+          
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <button
+              onClick={() => setDeliveryMethod('TAKEAWAY')}
+              style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: deliveryMethod === 'TAKEAWAY' ? '2px solid var(--color-red-primary)' : '1px solid #ccc', background: deliveryMethod === 'TAKEAWAY' ? '#fff1f2' : '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              🏪 Mostrador
+            </button>
+            <button
+              onClick={() => setDeliveryMethod('DELIVERY')}
+              style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: deliveryMethod === 'DELIVERY' ? '2px solid var(--color-red-primary)' : '1px solid #ccc', background: deliveryMethod === 'DELIVERY' ? '#fff1f2' : '#fff', fontWeight: 'bold', cursor: 'pointer' }}
+            >
+              🛵 Delivery
+            </button>
+          </div>
+
+          <div style={{ position: 'relative' }}>
+            <input
+              type="tel"
+              placeholder="Teléfono del cliente (Ej: 351...)"
+              value={customerPhone}
+              onChange={handlePhoneChange}
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '0.5rem' }}
+            />
+            {isSearchingCustomer && <span style={{ position: 'absolute', right: '10px', top: '10px', fontSize: '0.8rem', color: '#666' }}>Buscando...</span>}
+          </div>
+
           <input
             type="text"
             placeholder="Nombre del cliente (Obligatorio)"
@@ -365,6 +429,18 @@ export default function POSPage() {
             style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '0.5rem' }}
             required
           />
+
+          {deliveryMethod === 'DELIVERY' && (
+            <input
+              type="text"
+              placeholder="Dirección de envío (Obligatorio)"
+              value={address}
+              onChange={e => setAddress(e.target.value)}
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', marginBottom: '0.5rem' }}
+              required
+            />
+          )}
+
           <textarea
             placeholder="Nota general del pedido (opcional)"
             value={customerNotes}
@@ -458,6 +534,35 @@ export default function POSPage() {
                 📱 Transferencia
               </button>
             </div>
+            
+            {paymentMethod === 'CASH' && (
+              <div style={{ marginTop: '1rem', padding: '1rem', background: '#e0f2fe', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <label className="text-bold" style={{ color: '#0369a1', minWidth: '80px' }}>Paga con: $</label>
+                  <input
+                    type="number"
+                    min={total}
+                    value={cashTendered}
+                    onChange={e => setCashTendered(e.target.value)}
+                    placeholder="Ej: 5000"
+                    style={{ flex: 1, padding: '0.5rem', borderRadius: '4px', border: '1px solid #7dd3fc', fontSize: '1.1rem', fontWeight: 'bold' }}
+                  />
+                </div>
+                {Number(cashTendered) > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                    <span className="text-bold" style={{ color: '#0369a1' }}>Vuelto a entregar:</span>
+                    <span className="text-bold" style={{ color: Number(cashTendered) >= total ? 'var(--color-green)' : 'var(--color-red-primary)', fontSize: '1.25rem' }}>
+                      ${Math.max(0, Number(cashTendered) - total).toLocaleString()}
+                    </span>
+                  </div>
+                )}
+                {Number(cashTendered) > 0 && Number(cashTendered) < total && (
+                  <div style={{ color: 'var(--color-red-primary)', fontSize: '0.8rem', marginTop: '0.25rem', textAlign: 'right' }}>
+                    Falta dinero
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -536,5 +641,13 @@ export default function POSPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function POSPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Cargando POS...</div>}>
+      <POSContent />
+    </Suspense>
   );
 }

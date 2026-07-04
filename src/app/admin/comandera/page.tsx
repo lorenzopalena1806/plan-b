@@ -94,6 +94,7 @@ export default function ComanderaPage() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [hideAssigned, setHideAssigned] = useState(false);
   const [activeTab, setActiveTab] = useState('PENDING');
+  const [stationFilter, setStationFilter] = useState<'ALL' | 'COCINA' | 'BARRA'>('ALL');
   const knownOrderIdsRef = useRef<Set<number>>(new Set());
   const chimeAudioUrlRef = useRef<string>('');
 
@@ -234,7 +235,14 @@ export default function ComanderaPage() {
 
   const handlePrintComanda = (order: OrderWithItems) => {
     let itemsHtml = '';
-    order.items.forEach(item => {
+    const filteredItems = stationFilter === 'ALL' ? order.items : order.items.filter((i:any) => i.station === stationFilter);
+    
+    if (filteredItems.length === 0) {
+      alert(`No hay productos de ${stationFilter} en este pedido.`);
+      return;
+    }
+
+    filteredItems.forEach(item => {
       let modifiers = [];
       let rawNote = '';
       if (item.notes) {
@@ -351,7 +359,14 @@ export default function ComanderaPage() {
   return (
     <div style={{ padding: '1rem', height: 'calc(100vh - 140px)', display: 'flex', flexDirection: 'column' }}>
       <header className="mobile-header-stack" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1 className="text-red">Área de Preparación</h1>
+        <div>
+          <h1 className="text-red" style={{ marginBottom: '0.5rem' }}>Área de Preparación</h1>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button onClick={() => setStationFilter('ALL')} className={`btn-outline ${stationFilter === 'ALL' ? 'btn-primary' : ''}`} style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}>Todas</button>
+            <button onClick={() => setStationFilter('COCINA')} className={`btn-outline ${stationFilter === 'COCINA' ? 'btn-primary' : ''}`} style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}>Cocina</button>
+            <button onClick={() => setStationFilter('BARRA')} className={`btn-outline ${stationFilter === 'BARRA' ? 'btn-primary' : ''}`} style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}>Barra</button>
+          </div>
+        </div>
         <div className="flex" style={{ gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <span className="text-muted text-bold animate-pulse hide-on-mobile">● Live (30s)</span>
           <button 
@@ -406,6 +421,11 @@ export default function ComanderaPage() {
           // Si es delivery y se ocultan los asignados
           if (col.id === 'DELIVERY' && hideAssigned) {
             columnOrders = columnOrders.filter(o => !o.driverId);
+          }
+
+          // Filtrar por estación seleccionada
+          if (stationFilter !== 'ALL') {
+            columnOrders = columnOrders.filter(o => o.items.some((i:any) => i.station === stationFilter));
           }
 
           return (
@@ -468,7 +488,7 @@ export default function ComanderaPage() {
                           )}
                           
                           <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '0.25rem' }}>
-                            {order.items.map(item => {
+                            {order.items.filter((i:any) => stationFilter === 'ALL' || i.station === stationFilter).map(item => {
                               let modifiers = [];
                               let rawNote = '';
                               if (item.notes) {

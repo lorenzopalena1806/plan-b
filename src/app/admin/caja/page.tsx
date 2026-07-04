@@ -12,6 +12,18 @@ export default function CajaPage() {
   const [config, setConfig] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Shift Management State
+  const [shift, setShift] = useState<any>(null);
+  const [showOpenModal, setShowOpenModal] = useState(false);
+  const [initialBalance, setInitialBalance] = useState('');
+  
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [actualBalance, setActualBalance] = useState('');
+  
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [expenseDescription, setExpenseDescription] = useState('');
+
   const fetchOrders = async () => {
     try {
       const res = await fetch(`/api/orders?t=${Date.now()}`);
@@ -21,6 +33,24 @@ export default function CajaPage() {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
+    }
+  };
+
+  const fetchShift = async () => {
+    try {
+      const res = await fetch('/api/admin/shifts');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.open) {
+          setShift(data.shift);
+          setShowOpenModal(false);
+        } else {
+          setShift(null);
+          setShowOpenModal(true);
+        }
+      }
+    } catch (e) {
+      console.error(e);
     } finally {
       setIsLoading(false);
     }
@@ -28,6 +58,7 @@ export default function CajaPage() {
 
   useEffect(() => {
     fetchOrders();
+    fetchShift();
     fetch('/api/config').then(res => res.json()).then(data => setConfig(data)).catch(console.error);
     
     // Polling intelligently: only fetch if the tab is visible
@@ -166,6 +197,88 @@ export default function CajaPage() {
 
   const awaitingOrders = orders.filter(o => o.status === 'AWAITING_CONFIRMATION');
 
+  const handleOpenShift = async () => {
+    try {
+      const res = await fetch('/api/admin/shifts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'OPEN', initialBalance })
+      });
+      if (res.ok) {
+        fetchShift();
+      } else {
+        alert('Error al abrir caja');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleCloseShift = async () => {
+    if (!shift) return;
+    try {
+      const res = await fetch('/api/admin/shifts/close', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shiftId: shift.id, actualBalance: parseFloat(actualBalance) })
+      });
+      if (res.ok) {
+        alert('Caja cerrada con éxito');
+        setShowCloseModal(false);
+        fetchShift(); // Re-fetch to trigger "Open Caja" modal
+      } else {
+        alert('Error al cerrar caja');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleAddExpense = async () => {
+    try {
+      const res = await fetch('/api/admin/shifts/expenses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: expenseAmount, description: expenseDescription })
+      });
+      if (res.ok) {
+        setShowExpenseModal(false);
+        setExpenseAmount('');
+        setExpenseDescription('');
+        fetchShift(); // To update shift.expenses array
+        alert('Egreso cargado');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSendReport = async () => {
+    if (!shift) {
+      alert('No hay un turno cargado.');
+      return;
+    }
+    const email = prompt('¿A qué email quieres enviar el reporte del turno actual?', 'admin@polosandia.com');
+    if (!email) return;
+
+    try {
+      const res = await fetch('/api/admin/shifts/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ shiftId: shift.id, email })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || 'Reporte enviado.');
+      } else {
+        alert(data.error || 'Error al enviar reporte.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error de conexión');
+    }
+  };
+
   return (
     <div className="container" style={{ padding: '2rem 0' }}>
       <header className="mobile-header-stack" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
@@ -176,6 +289,9 @@ export default function CajaPage() {
           <Link href="/admin/caja/pos" className="btn-primary" style={{ padding: '0.5rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#2563eb' }}>
             <span>🛒</span> Nueva Venta Manual
           </Link>
+          <button className="btn-outline" onClick={() => setShowExpenseModal(true)} style={{ color: 'var(--color-red-primary)', borderColor: 'var(--color-red-primary)' }}>- Egreso</button>
+          <button className="btn-outline" onClick={() => setShowCloseModal(true)}>Cerrar Caja</button>
+          <button className="btn-outline" onClick={handleSendReport}>📧 Enviar Reporte</button>
           <Link href="/admin" className="btn-outline">Ir a Admin</Link>
           <Link href="/admin/comandera" className="btn-outline">Ir a Comandera</Link>
         </div>
@@ -274,6 +390,77 @@ export default function CajaPage() {
           </div>
         )}
       </div>
+
+      {/* SHIFT MODALS */}
+      {showOpenModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px' }}>
+            <h2 className="text-bold" style={{ marginBottom: '1rem', color: 'var(--color-red-primary)' }}>⚠️ Apertura de Caja</h2>
+            <p style={{ marginBottom: '1rem' }}>No tienes ningún turno de caja abierto. Debes abrir uno para comenzar a operar.</p>
+            <div style={{ marginBottom: '1rem' }}>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Saldo Inicial (Efectivo en caja)</label>
+              <input type="number" value={initialBalance} onChange={e => setInitialBalance(e.target.value)} placeholder="Ej: 5000" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+            <button className="btn-primary" onClick={handleOpenShift} style={{ width: '100%', padding: '1rem', fontWeight: 'bold' }}>Abrir Caja</button>
+          </div>
+        </div>
+      )}
+
+      {showCloseModal && shift && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px' }}>
+            <h2 className="text-bold" style={{ marginBottom: '1rem' }}>Cierre de Caja (Arqueo)</h2>
+            <div style={{ background: '#f4f4f5', padding: '1rem', borderRadius: '8px', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span>Saldo Inicial:</span>
+                <strong>${shift.initialBalance}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--color-green)' }}>
+                <span>Ventas (Efectivo):</span>
+                <strong>+${shift.orders.filter((o:any)=>o.paymentMethod==='CASH').reduce((s:number,o:any)=>s+o.total,0)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: 'var(--color-red-primary)' }}>
+                <span>Egresos (Caja Chica):</span>
+                <strong>-${shift.expenses.reduce((s:number,e:any)=>s+e.amount,0)}</strong>
+              </div>
+              <hr style={{ margin: '0.5rem 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.2rem' }}>
+                <span>Total Esperado:</span>
+                <strong>${shift.initialBalance + shift.orders.filter((o:any)=>o.paymentMethod==='CASH').reduce((s:number,o:any)=>s+o.total,0) - shift.expenses.reduce((s:number,e:any)=>s+e.amount,0)}</strong>
+              </div>
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Efectivo Real (Contado en caja)</label>
+              <input type="number" value={actualBalance} onChange={e => setActualBalance(e.target.value)} placeholder="Monto total en billetes" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button className="btn-outline" onClick={() => setShowCloseModal(false)} style={{ flex: 1 }}>Cancelar</button>
+              <button className="btn-primary" onClick={handleCloseShift} style={{ flex: 1, background: 'var(--color-red-primary)' }}>Confirmar Cierre</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExpenseModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', padding: '2rem', borderRadius: '12px', width: '90%', maxWidth: '400px' }}>
+            <h2 className="text-bold" style={{ marginBottom: '1rem' }}>Cargar Egreso (Caja Chica)</h2>
+            <div style={{ marginBottom: '1rem' }}>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Monto a retirar ($)</label>
+              <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} placeholder="Ej: 1500" style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Motivo</label>
+              <input type="text" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} placeholder="Ej: Pan, Hielo, Proveedor..." style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button className="btn-outline" onClick={() => setShowExpenseModal(false)} style={{ flex: 1 }}>Cancelar</button>
+              <button className="btn-primary" onClick={handleAddExpense} style={{ flex: 1 }}>Guardar Egreso</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

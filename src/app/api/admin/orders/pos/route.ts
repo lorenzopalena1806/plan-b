@@ -23,6 +23,14 @@ export async function POST(request: Request) {
     });
     const dailyNumber = todayCount + 1;
 
+    // Find open shift to link
+    const openShift = await prisma.cashShift.findFirst({
+      where: {
+        restaurantId: session.user.restaurantId,
+        status: 'OPEN'
+      }
+    });
+
     // Create the order directly as PENDING (en cocina)
     const order = await prisma.order.create({
       data: {
@@ -37,6 +45,8 @@ export async function POST(request: Request) {
         paymentMethod: data.paymentMethod || 'CASH',
         paymentDetails: data.paymentDetails || null,
         restaurantId: session.user.restaurantId,
+        shiftId: openShift ? openShift.id : null,
+        tableId: data.tableId ? parseInt(data.tableId) : null,
         items: {
           create: data.items.map((item: any) => ({
             productId: item.productId,
@@ -51,6 +61,50 @@ export async function POST(request: Request) {
         items: true
       }
     });
+
+    // Deduct stock for recipes
+    try {
+      for (const item of data.items) {
+        if (!item.productId) continue;
+        
+        const productRecipes = await prisma.recipeItem.findMany({
+          where: { productId: item.productId }
+        });
+        
+        for (const recipe of productRecipes) {
+          const totalUsed = recipe.quantityUsed * item.quantity;
+          await prisma.ingredient.update({
+            where: { id: recipe.ingredientId },
+            data: { currentStock: { decrement: totalUsed } }
+          });
+        }
+      }
+    } catch (e) {
+      console.error('Error deducting stock:', e);
+      // We don't fail the order if stock deduction fails, but we log it.
+    }
+
+    // Save customer to CRM if phone is provided
+    if (data.customerPhone && data.customerPhone.trim().length >= 8) {
+      await prisma.customer.upsert({
+        where: {
+          restaurantId_phone: {
+            restaurantId: session.user.restaurantId,
+            phone: data.customerPhone.trim(),
+          }
+        },
+        update: {
+          name: data.customerName.trim(),
+          address: data.address ? data.address.trim() : undefined,
+        },
+        create: {
+          restaurantId: session.user.restaurantId,
+          phone: data.customerPhone.trim(),
+          name: data.customerName.trim() || 'Cliente Frecuente',
+          address: data.address ? data.address.trim() : null,
+        }
+      });
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

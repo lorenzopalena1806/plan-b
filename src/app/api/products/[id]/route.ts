@@ -15,7 +15,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { name, description, price, imageUrl, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds } = data;
+    const { name, description, price, imageUrl, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station } = data;
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: parseInt(id) }
@@ -38,9 +38,27 @@ export async function PUT(
         modifiers: modifierIds !== undefined ? {
           set: [],
           connect: modifierIds?.map((mId: number) => ({ id: mId })) || []
-        } : undefined
+        } : undefined,
+        station: station !== undefined ? station : undefined,
       },
     });
+
+    if (recipeItems !== undefined) {
+      // Clear existing recipes for this product
+      await prisma.recipeItem.deleteMany({
+        where: { productId: parseInt(id) }
+      });
+      // Insert new ones
+      if (recipeItems.length > 0) {
+        await prisma.recipeItem.createMany({
+          data: recipeItems.map((r: any) => ({
+            productId: parseInt(id),
+            ingredientId: parseInt(r.ingredientId),
+            quantityUsed: parseFloat(r.quantityUsed)
+          }))
+        });
+      }
+    }
 
     return NextResponse.json(updatedProduct);
   } catch (error) {

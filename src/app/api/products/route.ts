@@ -16,6 +16,7 @@ export async function GET() {
     include: {
       category: true,
       modifiers: true,
+      recipes: { include: { ingredient: true } }
     },
     orderBy: { id: 'desc' },
   });
@@ -31,7 +32,7 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json();
-    const { name, description, price, imageUrl, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds } = data;
+    const { name, description, price, imageUrl, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station } = data;
 
     const product = await prisma.product.create({
       data: {
@@ -46,6 +47,13 @@ export async function POST(request: Request) {
         restaurantId: session.user.restaurantId,
         modifiers: modifierIds && modifierIds.length > 0 ? {
           connect: modifierIds.map((id: number) => ({ id }))
+        } : undefined,
+        station: station || "GENERAL",
+        recipes: recipeItems && recipeItems.length > 0 ? {
+          create: recipeItems.map((r: any) => ({
+            ingredientId: parseInt(r.ingredientId),
+            quantityUsed: parseFloat(r.quantityUsed)
+          }))
         } : undefined
       },
     });
