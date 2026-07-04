@@ -260,7 +260,7 @@ export default function ProductsPage() {
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Descripción / Ingredientes</label>
-              <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Ej: Carne de lomo, lechuga, tomate, mayonesa casera..." style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }} />
+              <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder={businessType === 'CLOTHING' ? "Ej: Remera de algodón manga corta, corte regular..." : "Ej: Carne de lomo, lechuga, tomate, mayonesa casera..."} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }} />
             </div>
             <div>
               <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Categoría</label>
@@ -376,10 +376,12 @@ export default function ProductsPage() {
                 <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
                 <span>¿Producto Disponible? (Si se desmarca, se ocultará en la carta pública)</span>
               </label>
-              <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
-                <input type="checkbox" checked={allowBulkQuantities} onChange={e => setAllowBulkQuantities(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
-                <span>Permitir agregar cantidades por docena (+1, +6, +12)</span>
-              </label>
+              {businessType !== 'CLOTHING' && (
+                <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
+                  <input type="checkbox" checked={allowBulkQuantities} onChange={e => setAllowBulkQuantities(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
+                  <span>Permitir agregar cantidades por docena (+1, +6, +12)</span>
+                </label>
+              )}
             </div>
 
             {/* Product Image Fields */}
