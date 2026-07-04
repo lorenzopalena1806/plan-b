@@ -385,10 +385,9 @@ export default function ProductsPage() {
                   placeholder="https://ejemplo.com/hamburguesa.jpg"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
                 />
               </div>
-            </div>
+
               <div style={{ marginTop: '1rem' }}>
                 <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>URLs de Imágenes del Carrusel (Tiendas de Ropa)</label>
                 <div className="flex flex-col" style={{ gap: '0.5rem', marginBottom: '1rem' }}>
