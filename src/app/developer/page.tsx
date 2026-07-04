@@ -345,6 +345,7 @@ export default function DeveloperDashboard() {
                 <option value="PHARMACY">💊 Farmacia</option>
                 <option value="BUTCHER">🥩 Carnicería</option>
                 <option value="KIOSK">🍬 Kiosco / Minimarket</option>
+                <option value="CLOTHING">👗 Tienda de Ropa</option>
                 <option value="OTHER">📦 Otro</option>
               </select>
             </div>
@@ -550,7 +551,13 @@ export default function DeveloperDashboard() {
                   <td style={{ padding: '1rem' }} className="text-red font-mono">/{rest.slug}</td>
                   <td style={{ padding: '1rem' }}>
                     <span className="status-badge" style={{ backgroundColor: '#f3f4f6', color: '#374151', fontSize: '0.75rem' }}>
-                      {rest.businessType || 'RESTAURANT'}
+                      {rest.businessType === 'RESTAURANT' ? '🍔 Comidas' : 
+                       rest.businessType === 'GROCERY' ? '🍎 Almacén' : 
+                       rest.businessType === 'PHARMACY' ? '💊 Farmacia' : 
+                       rest.businessType === 'BUTCHER' ? '🥩 Carnicería' : 
+                       rest.businessType === 'KIOSK' ? '🍬 Kiosco' : 
+                       rest.businessType === 'CLOTHING' ? '👗 Tienda de Ropa' :
+                       '📦 Otro'}
                     </span>
                   </td>
                   <td style={{ padding: '1rem' }} className="text-muted">
