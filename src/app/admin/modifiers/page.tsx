@@ -7,6 +7,7 @@ interface Ingredient {
   id: number;
   name: string;
   stockUnit: string;
+  unitCost: number;
 }
 
 interface ModifierRecipeItem {
@@ -165,6 +166,16 @@ export default function ModifiersPage() {
     setRecipeItems(newItems);
   };
 
+  const totalCost = recipeItems.reduce((acc, item) => {
+    const ing = availableIngredients.find(i => i.id === item.ingredientId);
+    if (ing && ing.unitCost) {
+      return acc + (ing.unitCost * item.quantityUsed);
+    }
+    return acc;
+  }, 0);
+
+  const profit = price - totalCost;
+
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando...</div>;
 
   return (
@@ -212,8 +223,16 @@ export default function ModifiersPage() {
                   onChange={e => setPrice(Number(e.target.value))}
                   required
                   min="0"
-                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                  style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', marginBottom: '0.5rem' }}
                 />
+                {totalCost > 0 && (
+                  <div style={{ fontSize: '0.8rem' }}>
+                    <div style={{ color: 'var(--color-text-light)' }}>Costo ingredientes: ${totalCost.toFixed(2)}</div>
+                    <div style={{ color: profit > 0 ? 'var(--color-green)' : 'var(--color-red-primary)', fontWeight: 'bold' }}>
+                      Ganancia neta: ${profit.toFixed(2)}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -326,11 +345,23 @@ export default function ModifiersPage() {
                     {mod.description}
                   </div>
                 )}
-                {mod.recipes && mod.recipes.length > 0 && (
-                  <div className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--color-primary)' }}>
-                    Receta: {mod.recipes.map(r => `${r.quantityUsed} ${r.ingredient?.stockUnit || ''} ${r.ingredient?.name || ''}`).join(', ')}
-                  </div>
-                )}
+                {mod.recipes && mod.recipes.length > 0 && (() => {
+                  const itemCost = mod.recipes.reduce((acc, r) => acc + (r.ingredient?.unitCost || 0) * r.quantityUsed, 0);
+                  const itemProfit = mod.price - itemCost;
+                  return (
+                    <div style={{ marginTop: '0.25rem' }}>
+                      <div className="text-muted" style={{ fontSize: '0.8rem', color: 'var(--color-primary)' }}>
+                        Receta: {mod.recipes.map(r => `${r.quantityUsed} ${r.ingredient?.stockUnit || ''} ${r.ingredient?.name || ''}`).join(', ')}
+                      </div>
+                      {mod.type === 'PAID' && itemCost > 0 && (
+                        <div style={{ fontSize: '0.8rem', display: 'flex', gap: '0.75rem', marginTop: '0.125rem' }}>
+                          <span className="text-muted">Costo: ${itemCost.toFixed(2)}</span>
+                          <span style={{ color: itemProfit > 0 ? 'var(--color-green)' : 'var(--color-red-primary)', fontWeight: 'bold' }}>Ganancia: ${itemProfit.toFixed(2)}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
               <div className="flex" style={{ gap: '1rem' }}>
                 <button
