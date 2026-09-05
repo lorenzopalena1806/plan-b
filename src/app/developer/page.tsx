@@ -16,7 +16,6 @@ export default function DeveloperDashboard() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [businessType, setBusinessType] = useState('RESTAURANT');
   const [supportContact, setSupportContact] = useState('');
   const [isSavingSupport, setIsSavingSupport] = useState(false);
   const [error, setError] = useState('');
@@ -85,13 +84,12 @@ export default function DeveloperDashboard() {
       const res = await fetch('/api/restaurants', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, slug, businessType }),
+        body: JSON.stringify({ name, slug }),
       });
 
       if (res.ok) {
         setName('');
         setSlug('');
-        setBusinessType('RESTAURANT');
         fetchRestaurants();
       } else {
         const data = await res.json();
@@ -333,23 +331,7 @@ export default function DeveloperDashboard() {
               </p>
             </div>
             
-            <div>
-              <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem' }}>Rubro (Tipo de Negocio)</label>
-              <select
-                value={businessType}
-                onChange={(e) => setBusinessType(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', border: '1px solid var(--color-border)', borderRadius: '4px' }}
-              >
-                <option value="RESTAURANT">🍔 Restaurante / Comidas</option>
-                <option value="GROCERY">🍎 Verdulería / Almacén</option>
-                <option value="PHARMACY">💊 Farmacia</option>
-                <option value="BUTCHER">🥩 Carnicería</option>
-                <option value="KIOSK">🍬 Kiosco / Minimarket</option>
-                <option value="CLOTHING">👗 Tienda de Ropa</option>
-                <option value="OTHER">📦 Otro</option>
-              </select>
-            </div>
-            
+
             <button type="submit" className="btn-primary" style={{ width: 'max-content', marginTop: '0.5rem' }}>
               Crear Local
             </button>

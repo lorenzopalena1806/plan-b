@@ -8,14 +8,12 @@ import Cart from './Cart';
 type ProductWithRelations = Product & {
   category: Category | null;
   modifiers: ModifierOption[];
-  variantGroups?: { id: number, name: string, variants: { id: number, name: string, priceAdjustment: number, stock: number }[] }[];
   images?: string[];
 };
 
-export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0, businessType = 'RESTAURANT' }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number, businessType?: string }) {
+export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
   const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
-  const [selectedVariants, setSelectedVariants] = useState<Record<number, any>>({});
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,7 +29,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
 
   // Determine if there are promos
   const hasPromos = products.some(p => p.isPromo);
-  const promoTabName = businessType === 'RESTAURANT' ? 'Promos' : 'Ofertas';
+  const promoTabName = 'Promos';
 
   // Combine into a list of tabs
   const categoriesList = [...(hasPromos ? [promoTabName] : []), ...regularCategories];
@@ -56,7 +54,6 @@ export default function Catalog({ products, categories = [], banners = [], whats
   const openModal = (product: ProductWithRelations) => {
     setSelectedProduct(product);
     setSelectedModifiers([]);
-    setSelectedVariants({});
     setCurrentProductImageIndex(0);
     setQuantity(1);
   };
@@ -76,25 +73,13 @@ export default function Catalog({ products, categories = [], banners = [], whats
   const handleAddToCart = () => {
     if (!selectedProduct) return;
     
-    // Check if all variant groups are selected
-    if (selectedProduct.variantGroups) {
-      for (const group of selectedProduct.variantGroups) {
-        if (!selectedVariants[group.id]) {
-          alert(`Por favor, selecciona una opción para: ${group.name}`);
-          return;
-        }
-      }
-    }
-
-    const variantsArray = Object.values(selectedVariants);
-    
     addItem(slug, {
       productId: selectedProduct.id,
       name: selectedProduct.name,
       basePrice: selectedProduct.price,
       quantity,
       modifiers: selectedModifiers,
-      variants: variantsArray,
+      variants: [],
       categoryId: selectedProduct.categoryId || undefined,
       categoryName: selectedProduct.category?.name || undefined,
     });
@@ -138,7 +123,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
           <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
           <input 
             type="text" 
-            placeholder={businessType === 'RESTAURANT' ? "Buscar productos, ingredientes..." : "Buscar productos, marcas, detalles..."}
+            placeholder="Buscar productos, ingredientes..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--color-border)', outlineColor: 'var(--color-primary)' }}
@@ -427,57 +412,10 @@ export default function Catalog({ products, categories = [], banners = [], whats
             <p className="text-muted" style={{ marginBottom: '1.5rem', fontSize: '0.95rem' }}>{selectedProduct.description}</p>
             
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
-              {selectedProduct.variantGroups && selectedProduct.variantGroups.length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  {selectedProduct.variantGroups.map(group => (
-                    <div key={group.id} style={{ marginBottom: '1.25rem' }}>
-                      <h4 style={{ marginBottom: '0.75rem', fontWeight: 'bold', fontSize: '1.05rem', color: '#1a1a1a' }}>
-                        Selecciona tu {group.name} <span style={{ color: 'var(--color-red-primary)' }}>*</span>
-                      </h4>
-                      <div className="flex flex-wrap" style={{ gap: '0.75rem' }}>
-                        {group.variants.map(variant => {
-                          const isSelected = selectedVariants[group.id]?.id === variant.id;
-                          const isOutOfStock = variant.stock <= 0;
-                          return (
-                            <button
-                              key={variant.id}
-                              disabled={isOutOfStock}
-                              onClick={() => setSelectedVariants({ ...selectedVariants, [group.id]: { groupId: group.id, groupName: group.name, id: variant.id, name: variant.name, priceAdjustment: variant.priceAdjustment } })}
-                              style={{
-                                padding: '0.5rem 1rem',
-                                border: isSelected ? '2px solid var(--color-red-primary)' : '1px solid var(--color-border)',
-                                borderRadius: 'var(--border-radius-sm)',
-                                backgroundColor: isSelected ? 'rgba(225, 29, 72, 0.05)' : isOutOfStock ? '#f5f5f5' : 'white',
-                                color: isOutOfStock ? '#a0aec0' : 'inherit',
-                                cursor: isOutOfStock ? 'not-allowed' : 'pointer',
-                                fontWeight: isSelected ? 'bold' : 'normal',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                minWidth: '60px'
-                              }}
-                            >
-                              <span>{variant.name}</span>
-                              {variant.priceAdjustment > 0 && (
-                                <span style={{ fontSize: '0.75rem', color: isSelected ? 'var(--color-red-primary)' : 'var(--color-text-light)' }}>
-                                  +${variant.priceAdjustment}
-                                </span>
-                              )}
-                              {isOutOfStock && (
-                                <span style={{ fontSize: '0.7rem', color: '#e53e3e' }}>Sin stock</span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
               {selectedProduct.modifiers.filter(m => m.type === 'FREE').length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ marginBottom: '1rem', color: 'var(--color-red-primary)', fontWeight: 'bold' }}>
-                    {businessType === 'RESTAURANT' ? 'Modificadores Gratuitos' : 'Opciones (Gratis)'}
+                    Modificadores Gratuitos
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'FREE').map(mod => (
@@ -498,7 +436,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
               {selectedProduct.modifiers.filter(m => m.type === 'PAID').length > 0 && (
                 <div>
                   <h4 style={{ marginBottom: '1rem', color: 'var(--color-green)', fontWeight: 'bold' }}>
-                    {businessType === 'RESTAURANT' ? 'Extras Pagos' : 'Adicionales / Variantes'}
+                    Extras Pagos
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'PAID').map(mod => (
@@ -534,11 +472,10 @@ export default function Catalog({ products, categories = [], banners = [], whats
               </div>
               <button 
                 className="btn-primary" 
-                style={{ width: 'auto', opacity: (!selectedProduct.variantGroups || selectedProduct.variantGroups.every(g => selectedVariants[g.id])) ? 1 : 0.5 }} 
-                disabled={selectedProduct.variantGroups && !selectedProduct.variantGroups.every(g => selectedVariants[g.id])}
+                style={{ width: 'auto' }} 
                 onClick={handleAddToCart}
               >
-                Agregar ${( (selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0) + Object.values(selectedVariants).reduce((sum: number, v: any) => sum + (v.priceAdjustment || 0), 0)) * quantity ).toLocaleString()}
+                Agregar ${( (selectedProduct.price + selectedModifiers.reduce((sum, m) => sum + m.price, 0)) * quantity ).toLocaleString()}
               </button>
             </div>
           </div>

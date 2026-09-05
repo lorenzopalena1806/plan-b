@@ -26,7 +26,7 @@ export async function GET(
           restaurantId: restaurant.id,
           isActive: true
         },
-        include: { modifiers: true, variantGroups: { include: { variants: true } } },
+        include: { modifiers: true },
         orderBy: { id: 'desc' }
       }),
       prisma.banner.findMany({

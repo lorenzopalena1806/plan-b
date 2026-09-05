@@ -31,8 +31,7 @@ export async function GET() {
   return NextResponse.json({ 
     ...config, 
     restaurantName: restaurant?.name || '',
-    restaurantSlug: restaurant?.slug || '',
-    businessType: restaurant?.businessType || 'RESTAURANT'
+    restaurantSlug: restaurant?.slug || ''
   });
 }
 

@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Restaurant {
@@ -13,7 +14,6 @@ model Restaurant {
   slug            String    @unique
   subscriptionEnd DateTime?
   createdAt       DateTime  @default(now())
-  businessType    String    @default("RESTAURANT") // RESTAURANT, GROCERY, PHARMACY, ETC.
   
   users           User[]
   configs         Config[]
@@ -106,24 +106,6 @@ model Product {
   restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   station      String?          @default("GENERAL") // e.g. "COCINA", "BARRA"
   recipes      RecipeItem[]
-  variantGroups VariantGroup[]
-}
-
-model VariantGroup {
-  id           Int           @id @default(autoincrement())
-  name         String        // e.g. "Talle", "Color"
-  productId    Int
-  product      Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  variants     VariantItem[]
-}
-
-model VariantItem {
-  id           Int           @id @default(autoincrement())
-  name         String        // e.g. "S", "M", "Rojo"
-  priceAdjustment Float      @default(0)
-  stock        Int           @default(0) // Control de stock individual por variante
-  groupId      Int
-  group        VariantGroup  @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }
 
 model ModifierOption {

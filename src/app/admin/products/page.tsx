@@ -31,7 +31,7 @@ interface Product {
   modifiers: ModifierOption[];
   recipes?: { ingredientId: number, quantityUsed: number, ingredient?: any }[];
   images?: string[];
-  variantGroups?: { id?: number, name: string, variants: { id?: number, name: string, priceAdjustment: number, stock: number }[] }[];
+  images?: string[];
 }
 
 export default function ProductsPage() {
@@ -63,8 +63,6 @@ export default function ProductsPage() {
   const [station, setStation] = useState('GENERAL');
   const [recipeItems, setRecipeItems] = useState<{ingredientId: number, quantityUsed: number}[]>([]);
   const [images, setImages] = useState<string[]>([]);
-  const [variantGroups, setVariantGroups] = useState<{ id?: number, name: string, variants: { id?: number, name: string, priceAdjustment: number, stock: number }[] }[]>([]);
-  const [businessType, setBusinessType] = useState('RESTAURANT');
 
   useEffect(() => {
     fetchInitialData();
@@ -85,10 +83,6 @@ export default function ProductsPage() {
         setCategories(await resCat.json());
         setModifiers(await resMod.json());
         setIngredients(await resIng.json());
-        if (resConf.ok) {
-          const conf = await resConf.json();
-          setBusinessType(conf.businessType || 'RESTAURANT');
-        }
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -139,7 +133,6 @@ export default function ProductsPage() {
     setStation(product.station || 'GENERAL');
     setRecipeItems(product.recipes ? product.recipes.map(r => ({ ingredientId: r.ingredientId, quantityUsed: r.quantityUsed })) : []);
     setImages(product.images || []);
-    setVariantGroups(product.variantGroups || []);
     setIsAdding(true);
     // Scroll to form smoothly
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -160,7 +153,6 @@ export default function ProductsPage() {
     setStation('GENERAL');
     setRecipeItems([]);
     setImages([]);
-    setVariantGroups([]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -180,8 +172,7 @@ export default function ProductsPage() {
         allowBulkQuantities,
         station,
         recipeItems,
-        images,
-        variantGroups
+        images
       };
 
       const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
@@ -260,7 +251,7 @@ export default function ProductsPage() {
             </div>
             <div style={{ gridColumn: '1 / -1' }}>
               <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Descripción / Ingredientes</label>
-              <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder={businessType === 'CLOTHING' ? "Ej: Remera de algodón manga corta, corte regular..." : "Ej: Carne de lomo, lechuga, tomate, mayonesa casera..."} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }} />
+              <input type="text" value={description} onChange={e => setDescription(e.target.value)} placeholder="Ej: Carne de lomo, lechuga, tomate, mayonesa casera..." style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }} />
             </div>
             <div>
               <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Categoría</label>
@@ -272,7 +263,7 @@ export default function ProductsPage() {
               </select>
             </div>
             
-            {businessType !== 'CLOTHING' && (
+
               <div>
                 <label className="text-bold" style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem' }}>Estación de Preparación</label>
                 <select value={station} onChange={e => setStation(e.target.value)} required style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)', height: '38px' }}>
@@ -281,9 +272,8 @@ export default function ProductsPage() {
                   <option value="BARRA">Barra</option>
                 </select>
               </div>
-            )}
+              </div>
 
-            {businessType !== 'CLOTHING' && (
               <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
               <h3 className="text-bold" style={{ marginBottom: '1rem', fontSize: '1rem' }}>Receta y Costos (Control de Stock)</h3>
               <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Agrega los ingredientes que componen este producto para descontar stock automáticamente al vender.</p>
@@ -365,8 +355,6 @@ export default function ProductsPage() {
                   </strong>
                 </div>
               </div>
-            </div>
-            )}
             <div className="flex flex-col" style={{ gap: '0.75rem', paddingTop: '1rem' }}>
               <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
                 <input type="checkbox" checked={isPromo} onChange={e => setIsPromo(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
@@ -376,12 +364,10 @@ export default function ProductsPage() {
                 <input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
                 <span>¿Producto Disponible? (Si se desmarca, se ocultará en la carta pública)</span>
               </label>
-              {businessType !== 'CLOTHING' && (
                 <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
                   <input type="checkbox" checked={allowBulkQuantities} onChange={e => setAllowBulkQuantities(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
                   <span>Permitir agregar cantidades por docena (+1, +6, +12)</span>
                 </label>
-              )}
             </div>
 
             {/* Product Image Fields */}
@@ -430,93 +416,8 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Variant Groups Fields (Tiendas de Ropa) */}
-            <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f5f5f5' }}>
-              <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid #ccc', paddingBottom: '0.25rem' }}>Variantes (Talles / Colores)</h3>
-              <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>Especial para tiendas de ropa. Agrega grupos como "Talle" o "Color". El cliente deberá elegir uno obligatoriamente.</p>
-              
-              {variantGroups.map((group, gIdx) => (
-                <div key={gIdx} style={{ background: 'white', padding: '1rem', borderRadius: 'var(--border-radius-sm)', marginBottom: '1rem', border: '1px solid #ddd' }}>
-                  <div className="flex items-center justify-between" style={{ marginBottom: '1rem' }}>
-                    <input 
-                      type="text"
-                      value={group.name}
-                      onChange={(e) => {
-                        const newGroups = [...variantGroups];
-                        newGroups[gIdx].name = e.target.value;
-                        setVariantGroups(newGroups);
-                      }}
-                      placeholder="Nombre del Grupo (ej. Talle)"
-                      style={{ padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', fontWeight: 'bold', width: '250px' }}
-                    />
-                    <button type="button" onClick={() => {
-                      const newGroups = [...variantGroups];
-                      newGroups.splice(gIdx, 1);
-                      setVariantGroups(newGroups);
-                    }} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>Eliminar Grupo</button>
-                  </div>
-                  
-                  <div className="flex flex-col" style={{ gap: '0.5rem' }}>
-                    {group.variants.map((v, vIdx) => (
-                      <div key={vIdx} className="flex items-center flex-wrap" style={{ gap: '0.5rem' }}>
-                        <input 
-                          type="text" 
-                          value={v.name}
-                          onChange={(e) => {
-                            const newGroups = [...variantGroups];
-                            newGroups[gIdx].variants[vIdx].name = e.target.value;
-                            setVariantGroups(newGroups);
-                          }}
-                          placeholder="Opción (ej. M)"
-                          style={{ flex: 1, minWidth: '100px', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-                        />
-                        <input 
-                          type="number" 
-                          value={v.priceAdjustment}
-                          onChange={(e) => {
-                            const newGroups = [...variantGroups];
-                            newGroups[gIdx].variants[vIdx].priceAdjustment = parseFloat(e.target.value) || 0;
-                            setVariantGroups(newGroups);
-                          }}
-                          placeholder="Ajuste Precio ($)"
-                          style={{ width: '120px', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-                        />
-                        <input 
-                          type="number" 
-                          value={v.stock}
-                          onChange={(e) => {
-                            const newGroups = [...variantGroups];
-                            newGroups[gIdx].variants[vIdx].stock = parseInt(e.target.value) || 0;
-                            setVariantGroups(newGroups);
-                          }}
-                          placeholder="Stock"
-                          style={{ width: '100px', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px' }}
-                        />
-                        <button type="button" onClick={() => {
-                          const newGroups = [...variantGroups];
-                          newGroups[gIdx].variants.splice(vIdx, 1);
-                          setVariantGroups(newGroups);
-                        }} style={{ background: 'none', border: 'none', color: 'red', cursor: 'pointer', fontSize: '1.2rem' }}>×</button>
-                      </div>
-                    ))}
-                    <button type="button" className="btn-outline" onClick={() => {
-                      const newGroups = [...variantGroups];
-                      newGroups[gIdx].variants.push({ name: '', priceAdjustment: 0, stock: 0 });
-                      setVariantGroups(newGroups);
-                    }} style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', alignSelf: 'flex-start' }}>
-                      + Agregar Opción
-                    </button>
-                  </div>
-                </div>
-              ))}
-              
-              <button type="button" className="btn-outline" onClick={() => setVariantGroups([...variantGroups, { name: '', variants: [] }])} style={{ padding: '0.5rem', fontSize: '0.9rem' }}>
-                + Crear Grupo de Variantes
-              </button>
-            </div>
           </div>
 
-          {businessType !== 'CLOTHING' && (
             <div style={{ marginBottom: '1.5rem' }}>
             <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.25rem' }}>Seleccionar Modificadores Aplicables</h3>
             <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>Marca qué opciones pueden quitarse o agregarse a este producto al ser comprado</p>
@@ -539,7 +440,6 @@ export default function ProductsPage() {
               )}
             </div>
           </div>
-          )}
 
           <div className="flex" style={{ gap: '1rem' }}>
             <button type="submit" className="btn-primary" disabled={isSubmitting || isUploading}>
@@ -606,19 +506,15 @@ export default function ProductsPage() {
                 Categoría: {product.category?.name || 'General'}
               </div>
               <div style={{ marginBottom: '1.5rem', fontSize: '0.875rem', marginTop: 'auto' }}>
-                {businessType !== 'CLOTHING' && (
-                  <>
-                    <div className="text-bold" style={{ marginBottom: '0.25rem' }}>Modificadores ({product.modifiers.length}):</div>
-                    <ul style={{ paddingLeft: '1rem', margin: 0, listStyleType: 'circle' }}>
-                      {product.modifiers.map(mod => (
-                        <li key={mod.id} className={mod.type === 'FREE' ? 'text-red' : 'text-green'}>
-                          {mod.name} {mod.description ? `(${mod.description})` : ''} {mod.type === 'PAID' ? `(+$${mod.price})` : '(Gratis)'}
-                        </li>
-                      ))}
-                      {product.modifiers.length === 0 && <span style={{ color: '#aaa', fontSize: '0.75rem' }}>Ninguno</span>}
-                    </ul>
-                  </>
-                )}
+                <div className="text-bold" style={{ marginBottom: '0.25rem' }}>Modificadores ({product.modifiers.length}):</div>
+                <ul style={{ paddingLeft: '1rem', margin: 0, listStyleType: 'circle' }}>
+                  {product.modifiers.map(mod => (
+                    <li key={mod.id} className={mod.type === 'FREE' ? 'text-red' : 'text-green'}>
+                      {mod.name} {mod.description ? `(${mod.description})` : ''} {mod.type === 'PAID' ? `(+$${mod.price})` : '(Gratis)'}
+                    </li>
+                  ))}
+                  {product.modifiers.length === 0 && <span style={{ color: '#aaa', fontSize: '0.75rem' }}>Ninguno</span>}
+                </ul>
               </div>
 
               <div className="flex" style={{ gap: '0.5rem', marginTop: '1rem', flexDirection: 'column' }}>

@@ -28,7 +28,6 @@ export default async function AdminDashboard() {
   const restaurant = await prisma.restaurant.findUnique({
     where: { id: session.user.restaurantId }
   });
-  const businessType = restaurant?.businessType || 'RESTAURANT';
 
   const allOrders = !isStaff ? await prisma.order.findMany({
     where: {
@@ -80,9 +79,7 @@ export default async function AdminDashboard() {
             <>
               <Link href="/admin/products" className="btn-outline">Productos / Catálogo</Link>
               <Link href="/admin/categories" className="btn-outline">Categorías</Link>
-              {businessType !== 'CLOTHING' && (
-                <Link href="/admin/modifiers" className="btn-outline">Modificadores</Link>
-              )}
+              <Link href="/admin/modifiers" className="btn-outline">Modificadores</Link>
               <Link href="/admin/users" className="btn-outline">Usuarios / Personal</Link>
               <Link href="/admin/drivers" className="btn-outline">Repartidores</Link>
               <Link href="/admin/banners" className="btn-outline">Banners</Link>
@@ -90,13 +87,8 @@ export default async function AdminDashboard() {
               <Link href="/admin/coupons" className="btn-outline">Cupones</Link>
               <Link href="/admin/billing" className="btn-outline">Facturación</Link>
               <Link href="/admin/caja/pos" className="btn-outline">Punto de Venta</Link>
-              
-              {businessType !== 'CLOTHING' && (
-                <>
-                  <Link href="/admin/salon" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Salón / Mesas</Link>
-                  <Link href="/admin/inventory" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Inventario y Stock</Link>
-                </>
-              )}
+              <Link href="/admin/salon" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Salón / Mesas</Link>
+              <Link href="/admin/inventory" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Inventario y Stock</Link>
             </>
           )}
         </div>

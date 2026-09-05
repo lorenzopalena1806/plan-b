@@ -16,8 +16,7 @@ export async function GET() {
     include: {
       category: true,
       modifiers: true,
-      recipes: { include: { ingredient: true } },
-      variantGroups: { include: { variants: true } }
+      recipes: { include: { ingredient: true } }
     },
     orderBy: { id: 'desc' },
   });
@@ -33,7 +32,7 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json();
-    const { name, description, price, imageUrl, images, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station, variantGroups } = data;
+    const { name, description, price, imageUrl, images, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station } = data;
 
     const product = await prisma.product.create({
       data: {
@@ -55,18 +54,6 @@ export async function POST(request: Request) {
           create: recipeItems.map((r: any) => ({
             ingredientId: parseInt(r.ingredientId),
             quantityUsed: parseFloat(r.quantityUsed)
-          }))
-        } : undefined,
-        variantGroups: variantGroups && variantGroups.length > 0 ? {
-          create: variantGroups.map((g: any) => ({
-            name: g.name,
-            variants: {
-              create: g.variants.map((v: any) => ({
-                name: v.name,
-                priceAdjustment: parseFloat(v.priceAdjustment) || 0,
-                stock: parseInt(v.stock) || 0
-              }))
-            }
           }))
         } : undefined
       },
