@@ -74,7 +74,13 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
           discounts: { orderBy: { quantity: 'desc' } }
         }
       },
-      modifiers: true
+      modifiers: {
+        include: {
+          recipes: {
+            include: { ingredient: true }
+          }
+        }
+      }
     },
     orderBy: [
       { categoryId: 'asc' },

@@ -7,13 +7,13 @@ import Cart from './Cart';
 
 type ProductWithRelations = Product & {
   category: Category | null;
-  modifiers: ModifierOption[];
+  modifiers: (ModifierOption & { recipes?: any[] })[];
   images?: string[];
 };
 
 export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
   const [selectedProduct, setSelectedProduct] = useState<ProductWithRelations | null>(null);
-  const [selectedModifiers, setSelectedModifiers] = useState<ModifierOption[]>([]);
+  const [selectedModifiers, setSelectedModifiers] = useState<(ModifierOption & {recipes?: any[]})[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [activeCategory, setActiveCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -62,7 +62,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
     setSelectedProduct(null);
   };
 
-  const toggleModifier = (mod: ModifierOption) => {
+  const toggleModifier = (mod: ModifierOption & {recipes?: any[]}) => {
     if (selectedModifiers.some(m => m.id === mod.id)) {
       setSelectedModifiers(selectedModifiers.filter(m => m.id !== mod.id));
     } else {
@@ -419,7 +419,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'FREE' && m.isActive).map(mod => {
-                      const isOutOfStock = !mod.isUnlimited && mod.stock <= 0;
+                      const isOutOfStock = mod.recipes && mod.recipes.length > 0 ? mod.recipes.some(r => r.ingredient && r.ingredient.currentStock < (r.quantityUsed * quantity)) : false;
                       return (
                         <label key={mod.id} className="flex items-center" style={{ gap: '0.75rem', cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.5 : 1 }}>
                           <input 
@@ -447,7 +447,7 @@ export default function Catalog({ products, categories = [], banners = [], whats
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'PAID' && m.isActive).map(mod => {
-                      const isOutOfStock = !mod.isUnlimited && mod.stock <= 0;
+                      const isOutOfStock = mod.recipes && mod.recipes.length > 0 ? mod.recipes.some(r => r.ingredient && r.ingredient.currentStock < (r.quantityUsed * quantity)) : false;
                       return (
                         <label key={mod.id} className="flex justify-between items-center" style={{ gap: '0.75rem', cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.5 : 1 }}>
                           <div className="flex items-center" style={{ gap: '0.75rem' }}>

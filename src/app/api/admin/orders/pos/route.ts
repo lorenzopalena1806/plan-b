@@ -83,10 +83,17 @@ export async function POST(request: Request) {
         
         if (item.modifiers && item.modifiers.length > 0) {
           for (const mod of item.modifiers) {
-            await prisma.modifierOption.updateMany({
-              where: { id: mod.id, isUnlimited: false },
-              data: { stock: { decrement: item.quantity } }
+            const modifierRecipes = await prisma.modifierRecipeItem.findMany({
+              where: { modifierId: mod.id }
             });
+            
+            for (const recipe of modifierRecipes) {
+              const totalUsed = recipe.quantityUsed * item.quantity;
+              await prisma.ingredient.update({
+                where: { id: recipe.ingredientId },
+                data: { currentStock: { decrement: totalUsed } }
+              });
+            }
           }
         }
       }

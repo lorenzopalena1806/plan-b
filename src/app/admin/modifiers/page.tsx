@@ -3,33 +3,46 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
+interface Ingredient {
+  id: number;
+  name: string;
+  stockUnit: string;
+}
+
+interface ModifierRecipeItem {
+  id: number;
+  ingredientId: number;
+  quantityUsed: number;
+  ingredient: Ingredient;
+}
+
 interface ModifierOption {
   id: number;
   name: string;
   description: string | null;
   price: number;
   type: string; // 'FREE' | 'PAID'
-  stock: number;
   isActive: boolean;
-  isUnlimited: boolean;
+  recipes: ModifierRecipeItem[];
 }
 
 export default function ModifiersPage() {
   const [modifiers, setModifiers] = useState<ModifierOption[]>([]);
+  const [availableIngredients, setAvailableIngredients] = useState<Ingredient[]>([]);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState(0);
   const [type, setType] = useState('FREE');
+  const [isActive, setIsActive] = useState(true);
+  const [recipeItems, setRecipeItems] = useState<{ingredientId: number, quantityUsed: number}[]>([]);
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingModifier, setEditingModifier] = useState<ModifierOption | null>(null);
-  
-  const [stock, setStock] = useState(0);
-  const [isActive, setIsActive] = useState(true);
-  const [isUnlimited, setIsUnlimited] = useState(true);
 
   useEffect(() => {
     fetchModifiers();
+    fetchIngredients();
   }, []);
 
   const fetchModifiers = async () => {
@@ -46,6 +59,18 @@ export default function ModifiersPage() {
     }
   };
 
+  const fetchIngredients = async () => {
+    try {
+      const res = await fetch('/api/inventory');
+      if (res.ok) {
+        const data = await res.json();
+        setAvailableIngredients(data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -57,9 +82,8 @@ export default function ModifiersPage() {
         description: description.trim() || null,
         price: type === 'FREE' ? 0 : price,
         type,
-        stock,
         isActive,
-        isUnlimited
+        ingredients: recipeItems
       };
 
       const url = editingModifier ? `/api/modifiers/${editingModifier.id}` : '/api/modifiers';
@@ -90,9 +114,11 @@ export default function ModifiersPage() {
     setDescription(mod.description || '');
     setType(mod.type);
     setPrice(mod.price);
-    setStock(mod.stock);
     setIsActive(mod.isActive);
-    setIsUnlimited(mod.isUnlimited);
+    setRecipeItems(mod.recipes ? mod.recipes.map(r => ({
+      ingredientId: r.ingredientId,
+      quantityUsed: r.quantityUsed
+    })) : []);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -102,9 +128,8 @@ export default function ModifiersPage() {
     setDescription('');
     setType('FREE');
     setPrice(0);
-    setStock(0);
     setIsActive(true);
-    setIsUnlimited(true);
+    setRecipeItems([]);
   };
 
   const handleDelete = async (id: number) => {
@@ -123,6 +148,21 @@ export default function ModifiersPage() {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const addRecipeItem = () => {
+    if (availableIngredients.length === 0) return;
+    setRecipeItems([...recipeItems, { ingredientId: availableIngredients[0].id, quantityUsed: 1 }]);
+  };
+
+  const removeRecipeItem = (index: number) => {
+    setRecipeItems(recipeItems.filter((_, i) => i !== index));
+  };
+
+  const updateRecipeItem = (index: number, field: string, value: number) => {
+    const newItems = [...recipeItems];
+    newItems[index] = { ...newItems[index], [field]: value };
+    setRecipeItems(newItems);
   };
 
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando...</div>;
@@ -190,45 +230,66 @@ export default function ModifiersPage() {
           />
         </div>
 
-        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label className="text-bold" style={{ fontSize: '0.875rem' }}>Stock Ilimitado</label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input 
-                type="checkbox" 
-                checked={isUnlimited} 
-                onChange={e => setIsUnlimited(e.target.checked)} 
-              />
-              <span className="text-muted" style={{ fontSize: '0.85rem' }}>No descontar stock (Ej: Sin cebolla)</span>
-            </label>
-          </div>
-
-          {!isUnlimited && (
+        <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'var(--color-bg-light)', borderRadius: 'var(--border-radius-md)' }}>
+          <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
             <div>
-              <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Stock Disponible</label>
-              <input
-                type="number"
-                placeholder="Cantidad"
-                value={stock}
-                onChange={e => setStock(Number(e.target.value))}
-                min="0"
-                step="any"
-                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
-              />
+              <h3 style={{ fontSize: '1rem', fontWeight: 'bold' }}>Receta del Modificador</h3>
+              <p className="text-muted" style={{ fontSize: '0.85rem' }}>Si este modificador consume ingredientes (Ej: Extra Queso gasta 50gr de Queso), agrégalos aquí para descontar stock.</p>
+            </div>
+            <button type="button" onClick={addRecipeItem} className="btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem' }}>
+              + Agregar Ingrediente
+            </button>
+          </div>
+          
+          {recipeItems.length > 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {recipeItems.map((item, index) => {
+                const selectedIngredient = availableIngredients.find(i => i.id === item.ingredientId);
+                const unit = selectedIngredient?.stockUnit || 'unidades';
+                return (
+                  <div key={index} className="flex items-center" style={{ gap: '0.5rem' }}>
+                    <select
+                      value={item.ingredientId}
+                      onChange={e => updateRecipeItem(index, 'ingredientId', Number(e.target.value))}
+                      style={{ flex: 2, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                    >
+                      {availableIngredients.map(ing => (
+                        <option key={ing.id} value={ing.id}>{ing.name}</option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      value={item.quantityUsed}
+                      onChange={e => updateRecipeItem(index, 'quantityUsed', Number(e.target.value))}
+                      min="0"
+                      step="any"
+                      style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                    />
+                    <span className="text-muted" style={{ width: '60px', fontSize: '0.85rem' }}>{unit}</span>
+                    <button type="button" onClick={() => removeRecipeItem(index)} className="text-red" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                      X
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-muted text-center" style={{ fontSize: '0.85rem', padding: '1rem 0', fontStyle: 'italic' }}>
+              No consume ingredientes (Ej: "Sin mayonesa").
             </div>
           )}
+        </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <label className="text-bold" style={{ fontSize: '0.875rem' }}>Estado</label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-              <input 
-                type="checkbox" 
-                checked={isActive} 
-                onChange={e => setIsActive(e.target.checked)} 
-              />
-              <span className="text-muted" style={{ fontSize: '0.85rem' }}>{isActive ? 'Activo (Visible)' : 'Pausado (Oculto)'}</span>
-            </label>
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+          <label className="text-bold" style={{ fontSize: '0.875rem' }}>Estado</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+            <input 
+              type="checkbox" 
+              checked={isActive} 
+              onChange={e => setIsActive(e.target.checked)} 
+            />
+            <span className="text-muted" style={{ fontSize: '0.85rem' }}>{isActive ? 'Activo (Visible)' : 'Pausado (Oculto)'}</span>
+          </label>
         </div>
 
         <div className="flex" style={{ gap: '1rem' }}>
@@ -259,20 +320,15 @@ export default function ModifiersPage() {
                       Pausado
                     </span>
                   )}
-                  {mod.isActive && !mod.isUnlimited && mod.stock <= 0 && (
-                    <span className="status-badge bg-red-light text-red" style={{ marginLeft: '0.5rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
-                      Agotado
-                    </span>
-                  )}
-                  {mod.isActive && !mod.isUnlimited && mod.stock > 0 && (
-                    <span className="status-badge status-ready" style={{ marginLeft: '0.5rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
-                      Stock: {mod.stock}
-                    </span>
-                  )}
                 </div>
                 {mod.description && (
                   <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>
                     {mod.description}
+                  </div>
+                )}
+                {mod.recipes && mod.recipes.length > 0 && (
+                  <div className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: 'var(--color-primary)' }}>
+                    Receta: {mod.recipes.map(r => `${r.quantityUsed} ${r.ingredient?.stockUnit || ''} ${r.ingredient?.name || ''}`).join(', ')}
                   </div>
                 )}
               </div>

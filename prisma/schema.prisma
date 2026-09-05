@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -14,7 +14,7 @@ model Restaurant {
   slug            String    @unique
   subscriptionEnd DateTime?
   createdAt       DateTime  @default(now())
-  
+
   users           User[]
   configs         Config[]
   categories      Category[]
@@ -26,7 +26,7 @@ model Restaurant {
   receipts        Receipt[]
   drivers         Driver[]
   banners         Banner[]
-  managers        User[]    @relation("ManagedRestaurants")
+  managers        User[]           @relation("ManagedRestaurants")
   customers       Customer[]
   shifts          CashShift[]
   tables          Table[]
@@ -34,23 +34,23 @@ model Restaurant {
 }
 
 model User {
-  id           Int         @id @default(autoincrement())
-  username     String      @unique
-  password     String
-  rawPassword  String?
-  role         String      @default("ADMIN") // SUPERADMIN o ADMIN
-  restaurantId Int?
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  id                 Int          @id @default(autoincrement())
+  username           String       @unique
+  password           String
+  rawPassword        String?
+  role               String       @default("ADMIN") // SUPERADMIN o ADMIN
+  restaurantId       Int?
+  restaurant         Restaurant?  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   managedRestaurants Restaurant[] @relation("ManagedRestaurants")
-  driver       Driver?
+  driver             Driver?
 }
 
 model Config {
   id             Int        @id @default(autoincrement())
   whatsappNumber String
-  openTime       String     // HH:MM format
-  closeTime      String     // HH:MM format
-  isOpenOverride Boolean    @default(true) 
+  openTime       String // HH:MM format
+  closeTime      String // HH:MM format
+  isOpenOverride Boolean    @default(true)
   isSuspended    Boolean    @default(false)
   logoUrl        String?
   subtitle       String?    @default("Delivery & Takeaway")
@@ -71,83 +71,86 @@ model Config {
 }
 
 model Category {
-  id           Int        @id @default(autoincrement())
-  name         String     
+  id           Int                  @id @default(autoincrement())
+  name         String
   restaurantId Int
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   products     Product[]
+  recipes      ModifierRecipeItem[]
   discounts    CategoryDiscount[]
 }
 
 model CategoryDiscount {
-  id           Int        @id @default(autoincrement())
-  quantity     Int
-  price        Float
-  categoryId   Int
-  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  
+  id         Int      @id @default(autoincrement())
+  quantity   Int
+  price      Float
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
   @@unique([categoryId, quantity])
 }
 
 model Product {
-  id           Int              @id @default(autoincrement())
-  name         String
-  description  String?
-  price        Float
-  imageUrl     String?
-  images       String[]         @default([]) // Carousel images
-  categoryId   Int?
-  category     Category?        @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  isPromo      Boolean          @default(false)
-  isActive     Boolean          @default(true)
-  allowBulkQuantities Boolean   @default(false)
-  modifiers    ModifierOption[]
-  restaurantId Int
-  restaurant   Restaurant       @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  station      String?          @default("GENERAL") // e.g. "COCINA", "BARRA"
-  recipes      RecipeItem[]
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  description         String?
+  price               Float
+  imageUrl            String?
+  images              String[]             @default([]) // Carousel images
+  categoryId          Int?
+  category            Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  isPromo             Boolean              @default(false)
+  isActive            Boolean              @default(true)
+  allowBulkQuantities Boolean              @default(false)
+  modifiers           ModifierOption[]
+  restaurantId        Int
+  restaurant          Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  station             String?              @default("GENERAL") // e.g. "COCINA", "BARRA"
+  recipes             RecipeItem[]
+  modifierRecipes     ModifierRecipeItem[]
 }
 
 model ModifierOption {
-  id           Int        @id @default(autoincrement())
+  id           Int                  @id @default(autoincrement())
   name         String
   description  String?
-  price        Float      @default(0)
-  type         String     @default("FREE") // "FREE" o "PAID"
-  stock        Float      @default(0)
-  isActive     Boolean    @default(true)
-  isUnlimited  Boolean    @default(true)
+  price        Float                @default(0)
+  type         String               @default("FREE") // "FREE" o "PAID"
+  stock        Float                @default(0)
+  isActive     Boolean              @default(true)
+  isUnlimited  Boolean              @default(true)
   products     Product[]
+  recipes      ModifierRecipeItem[]
   restaurantId Int
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model Order {
-  id             Int         @id @default(autoincrement())
-  dailyNumber    Int?        // Número secuencial del día para ese local específico
-  customerName   String
-  customerPhone  String?
-  deliveryMethod String      
-  address        String?
-  status         String      @default("AWAITING_CONFIRMATION") 
-  total          Float
-  createdAt      DateTime    @default(now())
-  items          OrderItem[]
-  customerNotes  String?
-  paymentMethod  String?
-  paymentDetails String?
-  couponCode     String?
-  discountApplied Float      @default(0)
-  tipAmount      Float       @default(0)
-  cancelReason   String?
-  restaurantId   Int
-  restaurant     Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  driverId       Int?
-  driver         Driver?     @relation(fields: [driverId], references: [id], onDelete: SetNull)
-  shiftId        Int?
-  shift          CashShift?  @relation(fields: [shiftId], references: [id], onDelete: SetNull)
-  tableId        Int?
-  table          Table?      @relation(fields: [tableId], references: [id], onDelete: SetNull)
+  id              Int         @id @default(autoincrement())
+  dailyNumber     Int? // Número secuencial del día para ese local específico
+  customerName    String
+  customerPhone   String?
+  deliveryMethod  String
+  address         String?
+  status          String      @default("AWAITING_CONFIRMATION")
+  total           Float
+  createdAt       DateTime    @default(now())
+  items           OrderItem[]
+  customerNotes   String?
+  paymentMethod   String?
+  paymentDetails  String?
+  couponCode      String?
+  discountApplied Float       @default(0)
+  tipAmount       Float       @default(0)
+  cancelReason    String?
+  restaurantId    Int
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  driverId        Int?
+  driver          Driver?     @relation(fields: [driverId], references: [id], onDelete: SetNull)
+  shiftId         Int?
+  shift           CashShift?  @relation(fields: [shiftId], references: [id], onDelete: SetNull)
+  tableId         Int?
+  table           Table?      @relation(fields: [tableId], references: [id], onDelete: SetNull)
 }
 
 model OrderItem {
@@ -155,10 +158,10 @@ model OrderItem {
   orderId         Int
   order           Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId       Int
-  productName     String  
+  productName     String
   quantity        Int
-  priceAtPurchase Float   
-  notes           String? 
+  priceAtPurchase Float
+  notes           String?
 }
 
 model SystemConfig {
@@ -168,12 +171,12 @@ model SystemConfig {
 
 model BusinessHour {
   id           Int        @id @default(autoincrement())
-  dayOfWeek    Int        // 0 = Domingo, 1 = Lunes, etc.
+  dayOfWeek    Int // 0 = Domingo, 1 = Lunes, etc.
   isOpen       Boolean    @default(true)
-  shift1Open   String?    // e.g. "12:00"
-  shift1Close  String?    // e.g. "15:00"
-  shift2Open   String?    // e.g. "20:00"
-  shift2Close  String?    // e.g. "00:00"
+  shift1Open   String? // e.g. "12:00"
+  shift1Close  String? // e.g. "15:00"
+  shift2Open   String? // e.g. "20:00"
+  shift2Close  String? // e.g. "00:00"
   restaurantId Int
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
@@ -181,28 +184,28 @@ model BusinessHour {
 }
 
 model Coupon {
-  id           Int        @id @default(autoincrement())
-  code         String     // e.g. "PLANB10"
-  discountType String     // "PERCENTAGE" o "FIXED"
+  id            Int        @id @default(autoincrement())
+  code          String // e.g. "PLANB10"
+  discountType  String // "PERCENTAGE" o "FIXED"
   discountValue Float
-  minPurchase  Float      @default(0)
-  isActive     Boolean    @default(true)
-  restaurantId Int
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  minPurchase   Float      @default(0)
+  isActive      Boolean    @default(true)
+  restaurantId  Int
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   @@unique([restaurantId, code])
 }
 
 model Receipt {
-  id           Int        @id @default(autoincrement())
-  receiptNumber String    @unique // e.g. "REC-0001"
-  amount       Float
-  issuedAt     DateTime   @default(now())
-  periodStart  DateTime
-  periodEnd    DateTime
-  description  String?
-  restaurantId Int
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  id            Int        @id @default(autoincrement())
+  receiptNumber String     @unique // e.g. "REC-0001"
+  amount        Float
+  issuedAt      DateTime   @default(now())
+  periodStart   DateTime
+  periodEnd     DateTime
+  description   String?
+  restaurantId  Int
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 }
 
 model Driver {
@@ -246,7 +249,7 @@ model CashShift {
   closedAt        DateTime?
   initialBalance  Float      @default(0)
   expectedBalance Float      @default(0)
-  actualBalance   Float?     
+  actualBalance   Float?
   difference      Float?
   restaurantId    Int
   restaurant      Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -255,12 +258,12 @@ model CashShift {
 }
 
 model Expense {
-  id           Int        @id @default(autoincrement())
-  amount       Float
-  description  String
-  createdAt    DateTime   @default(now())
-  shiftId      Int
-  shift        CashShift  @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  id          Int       @id @default(autoincrement())
+  amount      Float
+  description String
+  createdAt   DateTime  @default(now())
+  shiftId     Int
+  shift       CashShift @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 }
 
 model Table {
@@ -273,14 +276,15 @@ model Table {
 }
 
 model Ingredient {
-  id           Int        @id @default(autoincrement())
-  name         String
-  stockUnit    String     // e.g. "gr", "kg", "unidades"
-  currentStock Float      @default(0)
-  unitCost     Float      @default(0) // Costo por unidad para calcular ganancia
-  restaurantId Int
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  recipes      RecipeItem[]
+  id              Int                  @id @default(autoincrement())
+  name            String
+  stockUnit       String // e.g. "gr", "kg", "unidades"
+  currentStock    Float                @default(0)
+  unitCost        Float                @default(0) // Costo por unidad para calcular ganancia
+  restaurantId    Int
+  restaurant      Restaurant           @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  recipes         RecipeItem[]
+  modifierRecipes ModifierRecipeItem[]
 }
 
 model RecipeItem {
@@ -289,7 +293,22 @@ model RecipeItem {
   product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
   ingredientId Int
   ingredient   Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
-  quantityUsed Float      // Cantidad de ingrediente que gasta este producto
-  
+  quantityUsed Float // Cantidad de ingrediente que gasta este producto
+
   @@unique([productId, ingredientId])
+}
+
+model ModifierRecipeItem {
+  id           Int            @id @default(autoincrement())
+  modifierId   Int
+  modifier     ModifierOption @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+  ingredientId Int
+  ingredient   Ingredient     @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  quantityUsed Float
+  Category     Category?      @relation(fields: [categoryId], references: [id])
+  categoryId   Int?
+  Product      Product?       @relation(fields: [productId], references: [id])
+  productId    Int?
+
+  @@unique([modifierId, ingredientId])
 }

@@ -15,7 +15,7 @@ export async function PUT(
 
     const { id } = await params;
     const data = await request.json();
-    const { name, price, type, description, stock, isActive, isUnlimited } = data;
+    const { name, price, type, description, isActive, ingredients } = data;
 
     const modifier = await prisma.modifierOption.findUnique({
       where: { id: parseInt(id) }
@@ -29,6 +29,13 @@ export async function PUT(
       return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
     }
 
+    // Delete existing recipes if we are updating ingredients
+    if (ingredients) {
+      await prisma.modifierRecipeItem.deleteMany({
+        where: { modifierId: parseInt(id) }
+      });
+    }
+
     const updated = await prisma.modifierOption.update({
       where: { id: parseInt(id) },
       data: {
@@ -36,9 +43,18 @@ export async function PUT(
         price: price !== undefined ? parseFloat(price) : undefined,
         type: type !== undefined ? type : undefined,
         description: description !== undefined ? (description ? description.trim() : null) : undefined,
-        stock: stock !== undefined ? parseFloat(stock) : undefined,
         isActive: isActive !== undefined ? isActive : undefined,
-        isUnlimited: isUnlimited !== undefined ? isUnlimited : undefined,
+        recipes: ingredients && ingredients.length > 0 ? {
+          create: ingredients.map((ing: any) => ({
+            ingredientId: parseInt(ing.ingredientId),
+            quantityUsed: parseFloat(ing.quantityUsed)
+          }))
+        } : undefined
+      },
+      include: {
+        recipes: {
+          include: { ingredient: true }
+        }
       }
     });
 

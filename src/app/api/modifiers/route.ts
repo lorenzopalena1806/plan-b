@@ -12,6 +12,11 @@ export async function GET() {
 
     const modifiers = await prisma.modifierOption.findMany({
       where: { restaurantId: session.user.restaurantId },
+      include: {
+        recipes: {
+          include: { ingredient: true }
+        }
+      },
       orderBy: { name: 'asc' }
     });
     return NextResponse.json(modifiers);
@@ -28,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     const data = await request.json();
-    const { name, price, type, description, stock, isActive, isUnlimited } = data;
+    const { name, price, type, description, isActive, ingredients } = data;
 
     if (!name || !name.trim()) {
       return NextResponse.json({ error: 'El nombre es obligatorio' }, { status: 400 });
@@ -40,10 +45,19 @@ export async function POST(request: Request) {
         description: description ? description.trim() : null,
         price: price ? parseFloat(price) : 0,
         type: type || 'FREE',
-        stock: stock !== undefined ? parseFloat(stock) : 0,
         isActive: isActive !== undefined ? isActive : true,
-        isUnlimited: isUnlimited !== undefined ? isUnlimited : true,
-        restaurantId: session.user.restaurantId
+        restaurantId: session.user.restaurantId,
+        recipes: ingredients && ingredients.length > 0 ? {
+          create: ingredients.map((ing: any) => ({
+            ingredientId: parseInt(ing.ingredientId),
+            quantityUsed: parseFloat(ing.quantityUsed)
+          }))
+        } : undefined
+      },
+      include: {
+        recipes: {
+          include: { ingredient: true }
+        }
       }
     });
 
