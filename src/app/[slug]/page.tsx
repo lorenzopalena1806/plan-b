@@ -277,7 +277,6 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             cardLayout={config.cardLayout || 'grid'}
             bankAlias={config.bankAlias || ''}
             shippingFee={config.shippingFee || 0}
-            businessType={restaurant.businessType}
           />
         </div>
       </ClientThemeWrapper>

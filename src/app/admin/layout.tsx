@@ -110,7 +110,6 @@ export default async function AdminLayout({
           <Link href="/api/auth/signout" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)', color: 'var(--color-red-primary)' }}>Cerrar Sesión</Link>
         </div>
         <MobileMenu 
-          businessType={businessType} 
           role={session.user.role} 
           subscriptionEnd={subscriptionEnd?.toISOString()} 
           userName={session.user.name} 

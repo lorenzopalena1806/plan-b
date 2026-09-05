@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
-export default function MobileMenu({ businessType, role, subscriptionEnd, userName }: any) {
+export default function MobileMenu({ role, subscriptionEnd, userName }: any) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -22,8 +22,8 @@ export default function MobileMenu({ businessType, role, subscriptionEnd, userNa
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <Link href="/admin" onClick={() => setIsOpen(false)} style={{ padding: '0.75rem', textDecoration: 'none', color: '#333', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #eee' }}>📊 Inicio / Panel</Link>
-              <Link href="/admin/caja" onClick={() => setIsOpen(false)} style={{ padding: '0.75rem', textDecoration: 'none', color: '#333', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #eee' }}>{businessType === 'RESTAURANT' ? '💵 Caja' : '🛒 Caja / Pedidos'}</Link>
-              <Link href="/admin/comandera" onClick={() => setIsOpen(false)} style={{ padding: '0.75rem', textDecoration: 'none', color: '#333', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #eee' }}>{businessType === 'RESTAURANT' ? '👨‍🍳 Comandera' : '📦 Armado de Pedidos'}</Link>
+              <Link href="/admin/caja" onClick={() => setIsOpen(false)} style={{ padding: '0.75rem', textDecoration: 'none', color: '#333', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #eee' }}>💵 Caja</Link>
+              <Link href="/admin/comandera" onClick={() => setIsOpen(false)} style={{ padding: '0.75rem', textDecoration: 'none', color: '#333', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #eee' }}>👨‍🍳 Comandera</Link>
               <Link href="/admin/settings" onClick={() => setIsOpen(false)} style={{ padding: '0.75rem', textDecoration: 'none', color: '#333', fontSize: '1.1rem', borderRadius: '8px', border: '1px solid #eee' }}>⚙️ Configuración</Link>
             </div>
             
