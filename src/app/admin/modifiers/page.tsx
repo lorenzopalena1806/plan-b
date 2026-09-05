@@ -61,7 +61,7 @@ export default function ModifiersPage() {
 
   const fetchIngredients = async () => {
     try {
-      const res = await fetch('/api/inventory');
+      const res = await fetch('/api/admin/ingredients');
       if (res.ok) {
         const data = await res.json();
         setAvailableIngredients(data);
