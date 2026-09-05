@@ -9,6 +9,9 @@ interface ModifierOption {
   description: string | null;
   price: number;
   type: string; // 'FREE' | 'PAID'
+  stock: number;
+  isActive: boolean;
+  isUnlimited: boolean;
 }
 
 export default function ModifiersPage() {
@@ -20,6 +23,10 @@ export default function ModifiersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingModifier, setEditingModifier] = useState<ModifierOption | null>(null);
+  
+  const [stock, setStock] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+  const [isUnlimited, setIsUnlimited] = useState(true);
 
   useEffect(() => {
     fetchModifiers();
@@ -49,7 +56,10 @@ export default function ModifiersPage() {
         name: name.trim(),
         description: description.trim() || null,
         price: type === 'FREE' ? 0 : price,
-        type
+        type,
+        stock,
+        isActive,
+        isUnlimited
       };
 
       const url = editingModifier ? `/api/modifiers/${editingModifier.id}` : '/api/modifiers';
@@ -80,6 +90,9 @@ export default function ModifiersPage() {
     setDescription(mod.description || '');
     setType(mod.type);
     setPrice(mod.price);
+    setStock(mod.stock);
+    setIsActive(mod.isActive);
+    setIsUnlimited(mod.isUnlimited);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -89,6 +102,9 @@ export default function ModifiersPage() {
     setDescription('');
     setType('FREE');
     setPrice(0);
+    setStock(0);
+    setIsActive(true);
+    setIsUnlimited(true);
   };
 
   const handleDelete = async (id: number) => {
@@ -174,6 +190,47 @@ export default function ModifiersPage() {
           />
         </div>
 
+        <div className="grid" style={{ gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label className="text-bold" style={{ fontSize: '0.875rem' }}>Stock Ilimitado</label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={isUnlimited} 
+                onChange={e => setIsUnlimited(e.target.checked)} 
+              />
+              <span className="text-muted" style={{ fontSize: '0.85rem' }}>No descontar stock (Ej: Sin cebolla)</span>
+            </label>
+          </div>
+
+          {!isUnlimited && (
+            <div>
+              <label className="text-bold" style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.875rem' }}>Stock Disponible</label>
+              <input
+                type="number"
+                placeholder="Cantidad"
+                value={stock}
+                onChange={e => setStock(Number(e.target.value))}
+                min="0"
+                step="any"
+                style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+              />
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <label className="text-bold" style={{ fontSize: '0.875rem' }}>Estado</label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+              <input 
+                type="checkbox" 
+                checked={isActive} 
+                onChange={e => setIsActive(e.target.checked)} 
+              />
+              <span className="text-muted" style={{ fontSize: '0.85rem' }}>{isActive ? 'Activo (Visible)' : 'Pausado (Oculto)'}</span>
+            </label>
+          </div>
+        </div>
+
         <div className="flex" style={{ gap: '1rem' }}>
           <button type="submit" className="btn-primary" style={{ flex: 1 }} disabled={isSubmitting}>
             {isSubmitting ? 'Guardando...' : editingModifier ? 'Guardar Cambios' : 'Crear Modificador'}
@@ -197,6 +254,21 @@ export default function ModifiersPage() {
                   <span className={`status-badge ${mod.type === 'FREE' ? 'bg-red-light text-red' : 'status-ready'}`} style={{ marginLeft: '0.75rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
                     {mod.type === 'FREE' ? 'Sin Costo' : `+$${mod.price}`}
                   </span>
+                  {!mod.isActive && (
+                    <span className="status-badge bg-red-light text-red" style={{ marginLeft: '0.5rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
+                      Pausado
+                    </span>
+                  )}
+                  {mod.isActive && !mod.isUnlimited && mod.stock <= 0 && (
+                    <span className="status-badge bg-red-light text-red" style={{ marginLeft: '0.5rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
+                      Agotado
+                    </span>
+                  )}
+                  {mod.isActive && !mod.isUnlimited && mod.stock > 0 && (
+                    <span className="status-badge status-ready" style={{ marginLeft: '0.5rem', fontSize: '0.75rem', padding: '0.125rem 0.375rem' }}>
+                      Stock: {mod.stock}
+                    </span>
+                  )}
                 </div>
                 {mod.description && (
                   <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>

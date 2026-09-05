@@ -81,14 +81,12 @@ export async function POST(request: Request) {
           });
         }
         
-        if (item.variants && item.variants.length > 0) {
-          for (const variant of item.variants) {
-            if (variant.id) {
-              await prisma.variantItem.update({
-                where: { id: parseInt(variant.id) },
-                data: { stock: { decrement: item.quantity } }
-              });
-            }
+        if (item.modifiers && item.modifiers.length > 0) {
+          for (const mod of item.modifiers) {
+            await prisma.modifierOption.updateMany({
+              where: { id: mod.id, isUnlimited: false },
+              data: { stock: { decrement: item.quantity } }
+            });
           }
         }
       }

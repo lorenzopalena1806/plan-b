@@ -412,47 +412,61 @@ export default function Catalog({ products, categories = [], banners = [], whats
             <p className="text-muted" style={{ marginBottom: '1.5rem', fontSize: '0.95rem' }}>{selectedProduct.description}</p>
             
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>
-              {selectedProduct.modifiers.filter(m => m.type === 'FREE').length > 0 && (
+              {selectedProduct.modifiers.filter(m => m.type === 'FREE' && m.isActive).length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ marginBottom: '1rem', color: 'var(--color-red-primary)', fontWeight: 'bold' }}>
                     Modificadores Gratuitos
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
-                    {selectedProduct.modifiers.filter(m => m.type === 'FREE').map(mod => (
-                      <label key={mod.id} className="flex items-center" style={{ gap: '0.75rem', cursor: 'pointer' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={selectedModifiers.some(m => m.id === mod.id)} 
-                          onChange={() => toggleModifier(mod)} 
-                          style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
-                        />
-                        <span>{mod.name} {mod.description ? `(${mod.description})` : ''}</span>
-                      </label>
-                    ))}
+                    {selectedProduct.modifiers.filter(m => m.type === 'FREE' && m.isActive).map(mod => {
+                      const isOutOfStock = !mod.isUnlimited && mod.stock <= 0;
+                      return (
+                        <label key={mod.id} className="flex items-center" style={{ gap: '0.75rem', cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.5 : 1 }}>
+                          <input 
+                            type="checkbox" 
+                            checked={selectedModifiers.some(m => m.id === mod.id)} 
+                            onChange={() => !isOutOfStock && toggleModifier(mod)} 
+                            disabled={isOutOfStock}
+                            style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
+                          />
+                          <span>
+                            {mod.name} {mod.description ? `(${mod.description})` : ''}
+                            {isOutOfStock && <span className="text-red text-bold" style={{ marginLeft: '0.5rem', fontSize: '0.85rem' }}>(Agotado)</span>}
+                          </span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               )}
 
-              {selectedProduct.modifiers.filter(m => m.type === 'PAID').length > 0 && (
+              {selectedProduct.modifiers.filter(m => m.type === 'PAID' && m.isActive).length > 0 && (
                 <div>
                   <h4 style={{ marginBottom: '1rem', color: 'var(--color-green)', fontWeight: 'bold' }}>
                     Extras Pagos
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
-                    {selectedProduct.modifiers.filter(m => m.type === 'PAID').map(mod => (
-                      <label key={mod.id} className="flex justify-between items-center" style={{ gap: '0.75rem', cursor: 'pointer' }}>
-                        <div className="flex items-center" style={{ gap: '0.75rem' }}>
-                          <input 
-                            type="checkbox" 
-                            checked={selectedModifiers.some(m => m.id === mod.id)} 
-                            onChange={() => toggleModifier(mod)} 
-                            style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-green)' }}
-                          />
-                          <span>{mod.name} {mod.description ? `(${mod.description})` : ''}</span>
-                        </div>
-                        <span className="text-green text-bold">+${mod.price}</span>
-                      </label>
-                    ))}
+                    {selectedProduct.modifiers.filter(m => m.type === 'PAID' && m.isActive).map(mod => {
+                      const isOutOfStock = !mod.isUnlimited && mod.stock <= 0;
+                      return (
+                        <label key={mod.id} className="flex justify-between items-center" style={{ gap: '0.75rem', cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.5 : 1 }}>
+                          <div className="flex items-center" style={{ gap: '0.75rem' }}>
+                            <input 
+                              type="checkbox" 
+                              checked={selectedModifiers.some(m => m.id === mod.id)} 
+                              onChange={() => !isOutOfStock && toggleModifier(mod)} 
+                              disabled={isOutOfStock}
+                              style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-green)' }}
+                            />
+                            <span>
+                              {mod.name} {mod.description ? `(${mod.description})` : ''}
+                              {isOutOfStock && <span className="text-red text-bold" style={{ marginLeft: '0.5rem', fontSize: '0.85rem' }}>(Agotado)</span>}
+                            </span>
+                          </div>
+                          <span className="text-green text-bold">+${mod.price}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
               )}

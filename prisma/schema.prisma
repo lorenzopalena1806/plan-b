@@ -114,6 +114,9 @@ model ModifierOption {
   description  String?
   price        Float      @default(0)
   type         String     @default("FREE") // "FREE" o "PAID"
+  stock        Float      @default(0)
+  isActive     Boolean    @default(true)
+  isUnlimited  Boolean    @default(true)
   products     Product[]
   restaurantId Int
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)

@@ -15,7 +15,7 @@ export async function PUT(
 
     const { id } = await params;
     const data = await request.json();
-    const { name, price, type, description } = data;
+    const { name, price, type, description, stock, isActive, isUnlimited } = data;
 
     const modifier = await prisma.modifierOption.findUnique({
       where: { id: parseInt(id) }
@@ -36,6 +36,9 @@ export async function PUT(
         price: price !== undefined ? parseFloat(price) : undefined,
         type: type !== undefined ? type : undefined,
         description: description !== undefined ? (description ? description.trim() : null) : undefined,
+        stock: stock !== undefined ? parseFloat(stock) : undefined,
+        isActive: isActive !== undefined ? isActive : undefined,
+        isUnlimited: isUnlimited !== undefined ? isUnlimited : undefined,
       }
     });
 

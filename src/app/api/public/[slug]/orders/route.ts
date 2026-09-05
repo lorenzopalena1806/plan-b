@@ -94,6 +94,15 @@ export async function POST(
             data: { currentStock: { decrement: totalUsed } }
           });
         }
+        
+        if (item.modifiers && item.modifiers.length > 0) {
+          for (const mod of item.modifiers) {
+            await prisma.modifierOption.updateMany({
+              where: { id: mod.id, isUnlimited: false },
+              data: { stock: { decrement: item.quantity } }
+            });
+          }
+        }
       }
     } catch (e) {
       console.error('Error deducting stock:', e);
