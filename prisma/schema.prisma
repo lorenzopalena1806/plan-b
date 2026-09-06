@@ -100,6 +100,9 @@ model Product {
   categoryId          Int?
   category            Category?            @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   isPromo             Boolean              @default(false)
+  isCombo             Boolean              @default(false)
+  comboItems          ComboItem[]          @relation("ComboParent")
+  partOfCombos        ComboItem[]          @relation("ComboChild")
   isActive            Boolean              @default(true)
   allowBulkQuantities Boolean              @default(false)
   modifiers           ModifierOption[]
@@ -311,4 +314,15 @@ model ModifierRecipeItem {
   productId    Int?
 
   @@unique([modifierId, ingredientId])
+}
+
+model ComboItem {
+  id        Int     @id @default(autoincrement())
+  comboId   Int
+  combo     Product @relation("ComboParent", fields: [comboId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product @relation("ComboChild", fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int     @default(1)
+
+  @@unique([comboId, productId])
 }

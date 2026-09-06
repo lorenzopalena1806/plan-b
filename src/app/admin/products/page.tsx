@@ -25,6 +25,8 @@ interface Product {
   categoryId: number | null;
   category?: Category | null;
   isPromo: boolean;
+  isCombo: boolean;
+  comboItems?: { productId: number, quantity: number, product?: any }[];
   isActive: boolean;
   allowBulkQuantities: boolean;
   station: string;
@@ -58,6 +60,8 @@ export default function ProductsPage() {
   const [categoryId, setCategoryId] = useState('');
   const [selectedModifierIds, setSelectedModifierIds] = useState<number[]>([]);
   const [isPromo, setIsPromo] = useState(false);
+  const [isCombo, setIsCombo] = useState(false);
+  const [comboItems, setComboItems] = useState<{productId: number, quantity: number}[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [allowBulkQuantities, setAllowBulkQuantities] = useState(false);
   const [station, setStation] = useState('GENERAL');
@@ -127,11 +131,13 @@ export default function ProductsPage() {
     setImageUrl(product.imageUrl || '');
     setCategoryId(product.categoryId ? product.categoryId.toString() : '');
     setSelectedModifierIds(product.modifiers.map(m => m.id));
-    setIsPromo(product.isPromo);
+    setIsPromo(product.isPromo || false);
+    setIsCombo(product.isCombo || false);
     setIsActive(product.isActive !== undefined ? product.isActive : true);
     setAllowBulkQuantities(product.allowBulkQuantities || false);
     setStation(product.station || 'GENERAL');
     setRecipeItems(product.recipes ? product.recipes.map(r => ({ ingredientId: r.ingredientId, quantityUsed: r.quantityUsed })) : []);
+    setComboItems(product.comboItems ? product.comboItems.map(c => ({ productId: c.productId, quantity: c.quantity })) : []);
     setImages(product.images || []);
     setIsAdding(true);
     // Scroll to form smoothly
@@ -148,10 +154,12 @@ export default function ProductsPage() {
     setCategoryId('');
     setSelectedModifierIds([]);
     setIsPromo(false);
+    setIsCombo(false);
     setIsActive(true);
     setAllowBulkQuantities(false);
     setStation('GENERAL');
     setRecipeItems([]);
+    setComboItems([]);
     setImages([]);
   };
 
@@ -168,10 +176,12 @@ export default function ProductsPage() {
         categoryId: categoryId ? Number(categoryId) : null,
         modifierIds: selectedModifierIds,
         isPromo,
+        isCombo,
         isActive,
         allowBulkQuantities,
         station,
         recipeItems,
+        comboItems,
         images
       };
 
@@ -274,8 +284,80 @@ export default function ProductsPage() {
               </div>
               </div>
 
-              <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
-              <h3 className="text-bold" style={{ marginBottom: '1rem', fontSize: '1rem' }}>Receta y Costos (Control de Stock)</h3>
+              {/* Es Combo / Oferta */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', gridColumn: '1 / -1' }}>
+                <input 
+                  type="checkbox" 
+                  checked={isCombo} 
+                  onChange={e => {
+                    setIsCombo(e.target.checked);
+                    if (e.target.checked) setRecipeItems([]);
+                    else setComboItems([]);
+                  }} 
+                />
+                <span className="text-bold">Es una Oferta / Combo</span>
+                <span className="text-muted" style={{ fontSize: '0.85rem', marginLeft: '0.5rem' }}>(Armado a partir de otros productos)</span>
+              </div>
+
+              {isCombo && (
+                <div style={{ gridColumn: '1 / -1', marginBottom: '1.5rem', padding: '1rem', background: 'var(--color-bg-light)', borderRadius: 'var(--border-radius-md)', border: '1px solid var(--color-primary)' }}>
+                  <div className="flex justify-between items-center" style={{ marginBottom: '1rem' }}>
+                    <div>
+                      <h3 style={{ fontSize: '1rem', fontWeight: 'bold' }}>Productos Incluidos</h3>
+                      <p className="text-muted" style={{ fontSize: '0.85rem' }}>Selecciona los productos que forman parte de esta oferta.</p>
+                    </div>
+                    <button type="button" onClick={() => setComboItems([...comboItems, { productId: products.length > 0 ? products[0].id : 0, quantity: 1 }])} className="btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.85rem' }}>
+                      + Agregar Producto
+                    </button>
+                  </div>
+                  
+                  {comboItems.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      {comboItems.map((item, index) => (
+                        <div key={index} className="flex items-center" style={{ gap: '0.5rem' }}>
+                          <select
+                            value={item.productId}
+                            onChange={e => {
+                              const newItems = [...comboItems];
+                              newItems[index].productId = Number(e.target.value);
+                              setComboItems(newItems);
+                            }}
+                            style={{ flex: 2, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                          >
+                            <option value={0} disabled>Seleccione un producto</option>
+                            {products.filter(p => !p.isCombo).map(p => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={e => {
+                              const newItems = [...comboItems];
+                              newItems[index].quantity = Number(e.target.value);
+                              setComboItems(newItems);
+                            }}
+                            min="1"
+                            style={{ flex: 1, padding: '0.5rem', border: '1px solid var(--color-border)', borderRadius: 'var(--border-radius-sm)' }}
+                          />
+                          <span className="text-muted" style={{ width: '60px', fontSize: '0.85rem' }}>unidades</span>
+                          <button type="button" onClick={() => setComboItems(comboItems.filter((_, i) => i !== index))} className="text-red" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}>
+                            X
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-muted text-center" style={{ fontSize: '0.85rem', padding: '1rem 0', fontStyle: 'italic' }}>
+                      Agrega productos para armar el combo.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!isCombo && (
+                <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
+                  <h3 className="text-bold" style={{ marginBottom: '1rem', fontSize: '1rem' }}>Receta y Costos (Control de Stock)</h3>
               <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Agrega los ingredientes que componen este producto para descontar stock automáticamente al vender.</p>
               
               {recipeItems.map((rItem, idx) => {
@@ -355,7 +437,9 @@ export default function ProductsPage() {
                   </strong>
                 </div>
               </div>
-            <div className="flex flex-col" style={{ gap: '0.75rem', paddingTop: '1rem' }}>
+            </div>
+            )}
+            <div className="flex flex-col" style={{ gap: '0.75rem', paddingTop: '1rem', gridColumn: '1 / -1' }}>
               <label className="flex items-center text-bold" style={{ cursor: 'pointer', gap: '0.5rem' }}>
                 <input type="checkbox" checked={isPromo} onChange={e => setIsPromo(e.target.checked)} style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }} />
                 <span>¿Es una Promoción / Combo destacado?</span>

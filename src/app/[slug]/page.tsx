@@ -80,6 +80,15 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             include: { ingredient: true }
           }
         }
+      },
+      comboItems: {
+        include: {
+          product: {
+            include: {
+              recipes: { include: { ingredient: true } }
+            }
+          }
+        }
       }
     },
     orderBy: [

@@ -9,6 +9,7 @@ type ProductWithRelations = Product & {
   category: Category | null;
   modifiers: (ModifierOption & { recipes?: any[] })[];
   images?: string[];
+  comboItems?: any[];
 };
 
 export default function Catalog({ products, categories = [], banners = [], whatsappNumber, isOpen, slug, cardLayout = 'grid', bankAlias = '', shippingFee = 0 }: { products: ProductWithRelations[], categories?: any[], banners?: any[], whatsappNumber: string, isOpen: boolean, slug: string, cardLayout?: string, bankAlias?: string, shippingFee?: number }) {
@@ -238,9 +239,16 @@ export default function Catalog({ products, categories = [], banners = [], whats
                         </p>
                       )}
                     </div>
-                    <p className="text-red text-bold" style={{ fontSize: '1.125rem', marginTop: 'auto' }}>
-                      ${product.price.toLocaleString()}
-                    </p>
+                    <div style={{ marginTop: 'auto' }}>
+                      {product.comboItems && product.comboItems.length > 0 && (
+                        <div className="text-muted" style={{ fontSize: '0.85rem', textDecoration: 'line-through' }}>
+                          ${product.comboItems.reduce((sum: number, item: any) => sum + ((item.product?.price || 0) * item.quantity), 0).toLocaleString()}
+                        </div>
+                      )}
+                      <p className="text-red text-bold" style={{ fontSize: '1.125rem' }}>
+                        ${product.price.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                   {product.imageUrl && (
                     <div style={{ flexShrink: 0 }}>
@@ -409,6 +417,11 @@ export default function Catalog({ products, categories = [], banners = [], whats
             )}
             
             <h2 style={{ fontSize: '1.5rem', marginBottom: '0.25rem', fontWeight: 'bold' }}>{selectedProduct.name}</h2>
+            {selectedProduct.comboItems && selectedProduct.comboItems.length > 0 && (
+              <div className="text-muted" style={{ fontSize: '1rem', textDecoration: 'line-through', marginBottom: '0.25rem' }}>
+                Precio regular: ${selectedProduct.comboItems.reduce((sum: number, item: any) => sum + ((item.product?.price || 0) * item.quantity), 0).toLocaleString()}
+              </div>
+            )}
             <p className="text-muted" style={{ marginBottom: '1.5rem', fontSize: '0.95rem' }}>{selectedProduct.description}</p>
             
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem' }}>

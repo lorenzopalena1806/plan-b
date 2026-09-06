@@ -94,6 +94,21 @@ export async function POST(
             data: { currentStock: { decrement: totalUsed } }
           });
         }
+
+        const comboItems = await prisma.comboItem.findMany({
+          where: { comboId: item.productId },
+          include: { product: { include: { recipes: true } } }
+        });
+
+        for (const comboItem of comboItems) {
+          for (const recipe of comboItem.product.recipes) {
+            const totalUsed = recipe.quantityUsed * comboItem.quantity * item.quantity;
+            await prisma.ingredient.update({
+              where: { id: recipe.ingredientId },
+              data: { currentStock: { decrement: totalUsed } }
+            });
+          }
+        }
         
         if (item.modifiers && item.modifiers.length > 0) {
           for (const mod of item.modifiers) {

@@ -16,7 +16,8 @@ export async function GET() {
     include: {
       category: true,
       modifiers: true,
-      recipes: { include: { ingredient: true } }
+      recipes: { include: { ingredient: true } },
+      comboItems: { include: { product: true } }
     },
     orderBy: { id: 'desc' },
   });
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
 
   try {
     const data = await request.json();
-    const { name, description, price, imageUrl, images, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station } = data;
+    const { name, description, price, imageUrl, images, categoryId, isPromo, isCombo, isActive, allowBulkQuantities, modifierIds, recipeItems, comboItems, station } = data;
 
     const product = await prisma.product.create({
       data: {
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
         images: images || [],
         categoryId: categoryId ? parseInt(categoryId) : null,
         isPromo: Boolean(isPromo),
+        isCombo: Boolean(isCombo),
         isActive: isActive !== undefined ? Boolean(isActive) : true,
         allowBulkQuantities: Boolean(allowBulkQuantities),
         restaurantId: session.user.restaurantId,
@@ -50,10 +52,16 @@ export async function POST(request: Request) {
           connect: modifierIds.map((id: number) => ({ id }))
         } : undefined,
         station: station || "GENERAL",
-        recipes: recipeItems && recipeItems.length > 0 ? {
+        recipes: (recipeItems && recipeItems.length > 0 && !isCombo) ? {
           create: recipeItems.map((r: any) => ({
             ingredientId: parseInt(r.ingredientId),
             quantityUsed: parseFloat(r.quantityUsed)
+          }))
+        } : undefined,
+        comboItems: (comboItems && comboItems.length > 0 && isCombo) ? {
+          create: comboItems.map((c: any) => ({
+            productId: parseInt(c.productId),
+            quantity: parseInt(c.quantity)
           }))
         } : undefined
       },

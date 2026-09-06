@@ -15,7 +15,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await request.json();
-    const { name, description, price, imageUrl, images, categoryId, isPromo, isActive, allowBulkQuantities, modifierIds, recipeItems, station } = data;
+    const { name, description, price, imageUrl, images, categoryId, isPromo, isCombo, isActive, allowBulkQuantities, modifierIds, recipeItems, comboItems, station } = data;
 
     const existingProduct = await prisma.product.findUnique({
       where: { id: parseInt(id) }
@@ -34,6 +34,7 @@ export async function PUT(
         images: images !== undefined ? images : undefined,
         categoryId: categoryId !== undefined ? (categoryId ? (isNaN(parseInt(categoryId)) ? null : parseInt(categoryId)) : null) : undefined,
         isPromo: isPromo !== undefined ? Boolean(isPromo) : undefined,
+        isCombo: isCombo !== undefined ? Boolean(isCombo) : undefined,
         isActive: isActive !== undefined ? Boolean(isActive) : undefined,
         allowBulkQuantities: allowBulkQuantities !== undefined ? Boolean(allowBulkQuantities) : undefined,
         modifiers: modifierIds !== undefined ? {
@@ -44,18 +45,35 @@ export async function PUT(
       },
     });
 
-    if (recipeItems !== undefined) {
-      // Clear existing recipes for this product
+    if (recipeItems !== undefined || isCombo !== undefined) {
+      // Clear existing recipes
       await prisma.recipeItem.deleteMany({
         where: { productId: parseInt(id) }
       });
-      // Insert new ones
-      if (recipeItems.length > 0) {
+      // Insert new ones if it's not a combo
+      if (recipeItems && recipeItems.length > 0 && !isCombo) {
         await prisma.recipeItem.createMany({
           data: recipeItems.map((r: any) => ({
             productId: parseInt(id),
             ingredientId: parseInt(r.ingredientId),
             quantityUsed: parseFloat(r.quantityUsed)
+          }))
+        });
+      }
+    }
+    
+    if (comboItems !== undefined || isCombo !== undefined) {
+      // Clear existing combo items
+      await prisma.comboItem.deleteMany({
+        where: { comboId: parseInt(id) }
+      });
+      // Insert new ones if it is a combo
+      if (comboItems && comboItems.length > 0 && isCombo) {
+        await prisma.comboItem.createMany({
+          data: comboItems.map((c: any) => ({
+            comboId: parseInt(id),
+            productId: parseInt(c.productId),
+            quantity: parseInt(c.quantity)
           }))
         });
       }
