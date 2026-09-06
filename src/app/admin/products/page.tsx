@@ -500,8 +500,6 @@ export default function ProductsPage() {
               </div>
             </div>
 
-          </div>
-
             <div style={{ marginBottom: '1.5rem' }}>
             <h3 className="text-bold" style={{ fontSize: '1rem', marginBottom: '0.5rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '0.25rem' }}>Seleccionar Modificadores Aplicables</h3>
             <p className="text-muted" style={{ fontSize: '0.75rem', marginBottom: '1rem' }}>Marca qué opciones pueden quitarse o agregarse a este producto al ser comprado</p>
