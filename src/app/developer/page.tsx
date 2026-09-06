@@ -281,7 +281,7 @@ export default function DeveloperDashboard() {
   if (loading) return <div style={{ padding: '2rem' }}>Cargando...</div>;
 
   return (
-    <div>
+    <div className="container" style={{ padding: '2rem 1rem' }}>
       <header style={{ marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h2 style={{ fontSize: '2rem' }}>Gestión de Locales (Restaurantes)</h2>
         <button 

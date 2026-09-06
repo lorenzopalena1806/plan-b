@@ -205,6 +205,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
   return (
     <ThemeProvider defaultDark={defaultDark}>
       <ClientThemeWrapper config={{ themeColor, buttonColor, bgColor, cardColor, textColor, fontFamily }}>
+        <div className="container">
         {fontLink && (
           <>
             <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -293,6 +294,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             bankAlias={config.bankAlias || ''}
             shippingFee={config.shippingFee || 0}
           />
+        </div>
         </div>
       </ClientThemeWrapper>
     </ThemeProvider>

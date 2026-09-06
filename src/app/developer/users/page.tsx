@@ -125,7 +125,7 @@ export default function DeveloperUsersPage() {
   if (loading) return <div style={{ padding: '2rem' }}>Cargando...</div>;
 
   return (
-    <div>
+    <div className="container" style={{ padding: '2rem 1rem' }}>
       <header style={{ marginBottom: '2rem', borderBottom: '1px solid var(--color-border)', paddingBottom: '1rem' }}>
         <h2 style={{ fontSize: '2rem' }}>Gestión de Usuarios</h2>
       </header>
