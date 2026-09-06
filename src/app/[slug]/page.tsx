@@ -99,6 +99,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
 
   const categories = await prisma.category.findMany({
     where: { restaurantId: restaurant.id },
+    orderBy: [{ order: 'asc' }, { name: 'asc' }],
     include: { discounts: { orderBy: { quantity: 'desc' } } }
   });
 

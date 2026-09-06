@@ -137,6 +137,36 @@ export default function CategoriesPage() {
     setEditDiscounts(next);
   };
 
+  const handleMove = async (index: number, direction: number) => {
+    const newCategories = [...categories];
+    const swapIndex = index + direction;
+    if (swapIndex < 0 || swapIndex >= newCategories.length) return;
+
+    // Swap locally for instant feedback
+    const temp = newCategories[index];
+    newCategories[index] = newCategories[swapIndex];
+    newCategories[swapIndex] = temp;
+    setCategories(newCategories);
+
+    // Call API to reorder
+    try {
+      const res = await fetch('/api/categories/reorder', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderedIds: newCategories.map(c => c.id)
+        })
+      });
+      if (!res.ok) {
+        throw new Error('Error al guardar el nuevo orden');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al reordenar');
+      fetchCategories(); // revert
+    }
+  };
+
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando...</div>;
 
   return (
@@ -166,7 +196,7 @@ export default function CategoriesPage() {
       <div className="card">
         <h2 style={{ marginBottom: '1.5rem', fontSize: '1.25rem' }}>Categorías Existentes ({categories.length})</h2>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {categories.map(cat => (
+          {categories.map((cat, index) => (
             <div key={cat.id} className="flex justify-between items-center" style={{ padding: '0.75rem', borderBottom: '1px solid var(--color-border)', backgroundColor: '#f9fafb', borderRadius: '4px' }}>
               <div>
                 <span className="text-bold" style={{ fontSize: '1rem', display: 'block' }}>{cat.name}</span>
@@ -177,6 +207,24 @@ export default function CategoriesPage() {
                 )}
               </div>
               <div className="flex" style={{ gap: '0.5rem' }}>
+                <button
+                  onClick={() => handleMove(index, -1)}
+                  disabled={index === 0}
+                  className="btn-outline"
+                  style={{ fontSize: '0.85rem', padding: '0.25rem 0.5rem', opacity: index === 0 ? 0.3 : 1 }}
+                  title="Subir"
+                >
+                  ↑
+                </button>
+                <button
+                  onClick={() => handleMove(index, 1)}
+                  disabled={index === categories.length - 1}
+                  className="btn-outline"
+                  style={{ fontSize: '0.85rem', padding: '0.25rem 0.5rem', opacity: index === categories.length - 1 ? 0.3 : 1 }}
+                  title="Bajar"
+                >
+                  ↓
+                </button>
                 <button
                   onClick={() => openEditModal(cat)}
                   className="btn-outline"

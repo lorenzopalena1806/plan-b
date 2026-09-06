@@ -302,10 +302,10 @@ function POSContent() {
   if (isLoading) return <div className="container" style={{ padding: '2rem 0' }}>Cargando POS...</div>;
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', height: '100vh', overflow: 'hidden' }}>
+    <div className="pos-container" style={{ display: 'grid', gridTemplateColumns: '1fr 350px', height: '100vh', overflow: 'hidden' }}>
       
       {/* Zona Izquierda: Categorías y Productos */}
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f4f4f5' }}>
+      <div className="pos-left-zone" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#f4f4f5' }}>
         
         {/* Header simple */}
         <div style={{ padding: '1rem', background: '#fff', borderBottom: '1px solid #e4e4e7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -390,8 +390,8 @@ function POSContent() {
         </div>
       </div>
 
-      {/* Zona Derecha: Ticket (Carrito) */}
-      <div style={{ display: 'flex', flexDirection: 'column', background: '#fff', borderLeft: '1px solid #e4e4e7', height: '100%' }}>
+      {/* Zona Derecha: Carrito */}
+      <div className="pos-right-zone" style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#fff', borderLeft: '1px solid #e4e4e7' }}>
         <div style={{ padding: '1rem', borderBottom: '1px solid #e4e4e7', background: '#fafafa' }}>
           <h2 className="text-bold" style={{ fontSize: '1.25rem', marginBottom: '0.5rem' }}>Ticket de Venta</h2>
           

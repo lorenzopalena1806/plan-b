@@ -19,7 +19,7 @@ export async function GET(
       prisma.config.findFirst({ where: { restaurantId: restaurant.id } }),
       prisma.category.findMany({ 
         where: { restaurantId: restaurant.id },
-        orderBy: { name: 'asc' }
+        orderBy: [{ order: 'asc' }, { name: 'asc' }]
       }),
       prisma.product.findMany({
         where: { 

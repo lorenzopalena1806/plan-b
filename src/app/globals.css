@@ -317,7 +317,7 @@ button {
   .hide-on-desktop.flex { display: flex !important; }
   
   /* Make all grids 1 column */
-  .grid-mobile-1 {
+  .grid, .grid-mobile-1 {
     grid-template-columns: 1fr !important;
   }
   
@@ -402,5 +402,24 @@ button {
     overflow-x: auto;
     white-space: nowrap;
     width: 100%;
+  }
+
+  /* POS Mobile */
+  .pos-container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh;
+    overflow: auto !important;
+  }
+  .pos-left-zone, .pos-right-zone {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .pos-left-zone > div:last-child {
+    overflow-y: visible !important; /* Make product grid flow naturally */
+  }
+  .pos-right-zone > div:nth-child(2) {
+    overflow-y: visible !important; /* Make cart items flow naturally */
   }
 }
