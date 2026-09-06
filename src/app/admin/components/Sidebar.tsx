@@ -9,7 +9,7 @@ export default function Sidebar({ role }: { role: string }) {
   const isStaff = role === 'STAFF';
 
   const linkStyle = (path: string) => {
-    const isActive = pathname === path || (path !== '/admin' && pathname.startsWith(path));
+    const isActive = pathname === path || (path !== '/admin' && path !== '/admin/caja' && pathname.startsWith(path));
     return {
       display: 'flex',
       alignItems: 'center',
