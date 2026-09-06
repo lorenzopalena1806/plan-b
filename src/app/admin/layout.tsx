@@ -57,7 +57,7 @@ export default async function AdminLayout({
   const supportContact = systemConfig?.supportContact || '';
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <nav style={{ backgroundColor: 'white', padding: '0.75rem 2rem', borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ fontWeight: 'bold', fontSize: '1.25rem', display: 'flex', alignItems: 'center' }}>
           <Link href="/admin" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
