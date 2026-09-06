@@ -75,22 +75,7 @@ export default async function AdminDashboard() {
           <p className="text-muted">{isStaff ? 'Accesos rápidos para la operación diaria' : 'Métricas generales y administración'}</p>
         </div>
         <div className="flex" style={{ gap: '1rem', flexWrap: 'wrap' }}>
-          {!isStaff && (
-            <>
-              <Link href="/admin/products" className="btn-outline">Productos / Catálogo</Link>
-              <Link href="/admin/categories" className="btn-outline">Categorías</Link>
-              <Link href="/admin/modifiers" className="btn-outline">Modificadores</Link>
-              <Link href="/admin/users" className="btn-outline">Usuarios / Personal</Link>
-              <Link href="/admin/drivers" className="btn-outline">Repartidores</Link>
-              <Link href="/admin/banners" className="btn-outline">Banners</Link>
-              <Link href="/admin/sales" className="btn-outline">Historial de Ventas</Link>
-              <Link href="/admin/coupons" className="btn-outline">Cupones</Link>
-              <Link href="/admin/billing" className="btn-outline">Facturación</Link>
-              <Link href="/admin/caja/pos" className="btn-outline">Punto de Venta</Link>
-              <Link href="/admin/salon" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Salón / Mesas</Link>
-              <Link href="/admin/inventory" className="btn-outline" style={{ borderColor: 'var(--color-red-primary)' }}>Inventario y Stock</Link>
-            </>
-          )}
+          {/* Buttons removed. They are now in the sidebar */}
         </div>
       </header>
 
