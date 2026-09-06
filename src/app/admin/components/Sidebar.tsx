@@ -62,7 +62,6 @@ export default function Sidebar({ role }: { role: string }) {
           <Link href="/admin/salon" style={linkStyle('/admin/salon')}>🪑 Salón / Mesas</Link>
           <Link href="/admin/caja/pos" style={linkStyle('/admin/caja/pos')}>🛍️ Punto de Venta</Link>
           <Link href="/admin/sales" style={linkStyle('/admin/sales')}>📈 Ventas</Link>
-          <Link href="/admin/billing" style={linkStyle('/admin/billing')}>🧾 Facturación</Link>
 
           <div style={groupStyle}>Catálogo</div>
           <Link href="/admin/products" style={linkStyle('/admin/products')}>🍔 Productos</Link>

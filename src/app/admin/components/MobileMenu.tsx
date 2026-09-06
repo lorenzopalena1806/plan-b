@@ -52,7 +52,6 @@ export default function MobileMenu({ role, subscriptionEnd, userName }: any) {
                   <Link href="/admin/salon" onClick={() => setIsOpen(false)} style={linkStyle}>🪑 Salón / Mesas</Link>
                   <Link href="/admin/caja/pos" onClick={() => setIsOpen(false)} style={linkStyle}>🛍️ Punto de Venta</Link>
                   <Link href="/admin/sales" onClick={() => setIsOpen(false)} style={linkStyle}>📈 Ventas</Link>
-                  <Link href="/admin/billing" onClick={() => setIsOpen(false)} style={linkStyle}>🧾 Facturación</Link>
 
                   <div style={groupStyle}>Catálogo</div>
                   <Link href="/admin/products" onClick={() => setIsOpen(false)} style={linkStyle}>🍔 Productos</Link>
