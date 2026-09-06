@@ -63,11 +63,16 @@ export default function Catalog({ products, categories = [], banners = [], whats
     setSelectedProduct(null);
   };
 
-  const toggleModifier = (mod: ModifierOption & {recipes?: any[]}) => {
-    if (selectedModifiers.some(m => m.id === mod.id)) {
-      setSelectedModifiers(selectedModifiers.filter(m => m.id !== mod.id));
-    } else {
-      setSelectedModifiers([...selectedModifiers, mod]);
+  const addModifier = (mod: ModifierOption & {recipes?: any[]}) => {
+    setSelectedModifiers([...selectedModifiers, mod]);
+  };
+
+  const removeModifier = (mod: ModifierOption & {recipes?: any[]}) => {
+    const index = selectedModifiers.findIndex(m => m.id === mod.id);
+    if (index !== -1) {
+      const newModifiers = [...selectedModifiers];
+      newModifiers.splice(index, 1);
+      setSelectedModifiers(newModifiers);
     }
   };
 
@@ -432,21 +437,32 @@ export default function Catalog({ products, categories = [], banners = [], whats
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'FREE' && m.isActive).map(mod => {
-                      const isOutOfStock = mod.recipes && mod.recipes.length > 0 ? mod.recipes.some(r => r.ingredient && r.ingredient.currentStock < (r.quantityUsed * quantity)) : false;
+                      const qty = selectedModifiers.filter(m => m.id === mod.id).length;
+                      const isOutOfStock = mod.recipes && mod.recipes.length > 0 ? mod.recipes.some(r => r.ingredient && r.ingredient.currentStock < (r.quantityUsed * (qty + 1) * quantity)) : false;
                       return (
-                        <label key={mod.id} className="flex items-center" style={{ gap: '0.75rem', cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.5 : 1 }}>
-                          <input 
-                            type="checkbox" 
-                            checked={selectedModifiers.some(m => m.id === mod.id)} 
-                            onChange={() => !isOutOfStock && toggleModifier(mod)} 
-                            disabled={isOutOfStock}
-                            style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-red-primary)' }}
-                          />
-                          <span>
-                            {mod.name} {mod.description ? `(${mod.description})` : ''}
-                            {isOutOfStock && <span className="text-red text-bold" style={{ marginLeft: '0.5rem', fontSize: '0.85rem' }}>(Agotado)</span>}
-                          </span>
-                        </label>
+                        <div key={mod.id} className="flex justify-between items-center" style={{ padding: '0.25rem 0', opacity: (isOutOfStock && qty === 0) ? 0.5 : 1 }}>
+                          <div>
+                            <span style={{ fontSize: '0.875rem' }}>
+                              {mod.name} {mod.description ? `(${mod.description})` : ''}
+                            </span>
+                            {isOutOfStock && qty === 0 && <span className="text-red text-bold" style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>(Agotado)</span>}
+                          </div>
+                          <div className="flex items-center" style={{ gap: '0.75rem', background: 'var(--color-bg-light)', borderRadius: 'var(--border-radius-sm)', padding: '0.25rem' }}>
+                            <button 
+                              type="button" 
+                              onClick={() => removeModifier(mod)} 
+                              disabled={qty === 0}
+                              style={{ width: '28px', height: '28px', border: 'none', background: 'white', borderRadius: '4px', cursor: qty === 0 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                            >-</button>
+                            <span style={{ minWidth: '1.5rem', textAlign: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>{qty}</span>
+                            <button 
+                              type="button" 
+                              onClick={() => addModifier(mod)} 
+                              disabled={isOutOfStock}
+                              style={{ width: '28px', height: '28px', border: 'none', background: 'white', borderRadius: '4px', cursor: isOutOfStock ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                            >+</button>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
@@ -460,24 +476,33 @@ export default function Catalog({ products, categories = [], banners = [], whats
                   </h4>
                   <div className="grid" style={{ gap: '0.5rem' }}>
                     {selectedProduct.modifiers.filter(m => m.type === 'PAID' && m.isActive).map(mod => {
-                      const isOutOfStock = mod.recipes && mod.recipes.length > 0 ? mod.recipes.some(r => r.ingredient && r.ingredient.currentStock < (r.quantityUsed * quantity)) : false;
+                      const qty = selectedModifiers.filter(m => m.id === mod.id).length;
+                      const isOutOfStock = mod.recipes && mod.recipes.length > 0 ? mod.recipes.some(r => r.ingredient && r.ingredient.currentStock < (r.quantityUsed * (qty + 1) * quantity)) : false;
                       return (
-                        <label key={mod.id} className="flex justify-between items-center" style={{ gap: '0.75rem', cursor: isOutOfStock ? 'not-allowed' : 'pointer', opacity: isOutOfStock ? 0.5 : 1 }}>
-                          <div className="flex items-center" style={{ gap: '0.75rem' }}>
-                            <input 
-                              type="checkbox" 
-                              checked={selectedModifiers.some(m => m.id === mod.id)} 
-                              onChange={() => !isOutOfStock && toggleModifier(mod)} 
-                              disabled={isOutOfStock}
-                              style={{ width: '1.25rem', height: '1.25rem', accentColor: 'var(--color-green)' }}
-                            />
-                            <span>
+                        <div key={mod.id} className="flex justify-between items-center" style={{ padding: '0.25rem 0', opacity: (isOutOfStock && qty === 0) ? 0.5 : 1 }}>
+                          <div>
+                            <span style={{ fontSize: '0.875rem' }}>
                               {mod.name} {mod.description ? `(${mod.description})` : ''}
-                              {isOutOfStock && <span className="text-red text-bold" style={{ marginLeft: '0.5rem', fontSize: '0.85rem' }}>(Agotado)</span>}
                             </span>
+                            {isOutOfStock && qty === 0 && <span className="text-red text-bold" style={{ marginLeft: '0.5rem', fontSize: '0.75rem' }}>(Agotado)</span>}
+                            <span className="text-green text-bold" style={{ display: 'block', fontSize: '0.85rem', marginTop: '2px' }}>+${mod.price}</span>
                           </div>
-                          <span className="text-green text-bold">+${mod.price}</span>
-                        </label>
+                          <div className="flex items-center" style={{ gap: '0.75rem', background: 'var(--color-bg-light)', borderRadius: 'var(--border-radius-sm)', padding: '0.25rem' }}>
+                            <button 
+                              type="button" 
+                              onClick={() => removeModifier(mod)} 
+                              disabled={qty === 0}
+                              style={{ width: '28px', height: '28px', border: 'none', background: 'white', borderRadius: '4px', cursor: qty === 0 ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                            >-</button>
+                            <span style={{ minWidth: '1.5rem', textAlign: 'center', fontWeight: 'bold', fontSize: '0.9rem' }}>{qty}</span>
+                            <button 
+                              type="button" 
+                              onClick={() => addModifier(mod)} 
+                              disabled={isOutOfStock}
+                              style={{ width: '28px', height: '28px', border: 'none', background: 'white', borderRadius: '4px', cursor: isOutOfStock ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}
+                            >+</button>
+                          </div>
+                        </div>
                       );
                     })}
                   </div>
