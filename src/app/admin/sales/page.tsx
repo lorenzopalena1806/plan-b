@@ -18,6 +18,7 @@ interface Order {
   deliveryMethod: string;
   address: string | null;
   total: number;
+  cost: number;
   createdAt: string;
   customerNotes: string | null;
   paymentMethod?: string | null;
@@ -37,7 +38,9 @@ interface SalesData {
   orders: Order[];
   stats: {
     totalEarnings: number;
+    totalCost: number;
     todayEarnings: number;
+    todayCost: number;
     totalOrdersCount: number;
     todayOrdersCount: number;
     totalTips: number;
@@ -174,10 +177,11 @@ export default function SalesPage() {
     );
   };
 
-  // Calculate filtered stats
   // Calculate filtered stats (ONLY FOR COMPLETED)
   const completedFiltered = filteredOrders.filter(o => o.status === 'COMPLETED');
   const filteredTotal = completedFiltered.reduce((sum, o) => sum + o.total, 0);
+  const filteredCost = completedFiltered.reduce((sum, o) => sum + (o.cost || 0), 0);
+  const filteredNet = filteredTotal - filteredCost;
   const filteredCash = completedFiltered.filter(o => o.paymentMethod === 'CASH').reduce((sum, o) => sum + o.total, 0);
   const filteredTransfer = completedFiltered.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((sum, o) => sum + o.total, 0);
   const filteredAOV = completedFiltered.length > 0 ? (filteredTotal / completedFiltered.length) : 0;
@@ -195,7 +199,6 @@ export default function SalesPage() {
 
       {/* Modern Stats Row */}
       <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-        {/* Card 1: Filter Earnings */}
         <div className="card" style={{ 
           background: 'linear-gradient(135deg, var(--color-red-primary) 0%, var(--color-red-dark, #cc303d) 100%)', 
           color: 'white', 
@@ -205,14 +208,14 @@ export default function SalesPage() {
           display: 'flex', 
           flexDirection: 'column', 
           justifyContent: 'center', 
-          minHeight: '130px',
+          minHeight: '140px',
           position: 'relative',
           overflow: 'hidden'
         }}>
           <div style={{ position: 'absolute', right: '-20px', top: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />
-          <span style={{ fontSize: '0.875rem', opacity: 0.9, fontWeight: '600' }}>Ganancias ({filter === 'TODAY' ? 'Hoy' : 'Histórico'})</span>
-          <h3 style={{ fontSize: '2.25rem', fontWeight: '800', margin: '0.5rem 0', color: 'white' }}>${filteredTotal.toLocaleString()}</h3>
-          <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>Pedidos: {filteredOrders.length}</span>
+          <span style={{ fontSize: '0.875rem', opacity: 0.9, fontWeight: '600' }}>Ingreso Neto ({filter === 'TODAY' ? 'Hoy' : 'Histórico'})</span>
+          <h3 style={{ fontSize: '2.25rem', fontWeight: '800', margin: '0.25rem 0', color: '#a7f3d0' }}>${filteredNet.toLocaleString()}</h3>
+          <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>Bruto: ${filteredTotal.toLocaleString()} | Pedidos: {filteredOrders.length}</span>
         </div>
 
         {/* Card 2: Absolute Sales Breakdown */}
@@ -466,8 +469,16 @@ export default function SalesPage() {
                         )}
                         {!order.customerNotes && !order.cancelReason && '-'}
                       </td>
-                      <td style={{ padding: '1rem 0.5rem', textAlign: 'right', fontWeight: 'bold', fontSize: '1rem' }} className="text-red">
-                        ${order.total.toLocaleString()}
+                      <td style={{ padding: '1rem 0.5rem', textAlign: 'right' }}>
+                        <div style={{ fontWeight: 'bold', fontSize: '1rem', color: 'var(--color-text)' }}>
+                          ${order.total.toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-light)', marginTop: '0.25rem' }}>
+                          Costo: ${Math.round(order.cost || 0).toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--color-green)' }}>
+                          Neto: ${Math.round(order.total - (order.cost || 0)).toLocaleString()}
+                        </div>
                       </td>
                       <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
                         <button 

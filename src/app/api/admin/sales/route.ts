@@ -33,7 +33,9 @@ export async function GET() {
     today.setHours(0, 0, 0, 0);
 
     let totalEarnings = 0;
+    let totalCost = 0;
     let todayEarnings = 0;
+    let todayCost = 0;
     let totalOrdersCount = orders.length;
     let todayOrdersCount = 0;
     let totalTips = 0;
@@ -45,12 +47,14 @@ export async function GET() {
     orders.forEach(order => {
       if (order.status === 'COMPLETED') {
         totalEarnings += order.total;
+        totalCost += (order.cost || 0);
 
         const orderDate = new Date(order.createdAt);
         const isToday = orderDate >= today;
 
         if (isToday) {
           todayEarnings += order.total;
+          todayCost += (order.cost || 0);
           todayOrdersCount++;
           todayTips += order.tipAmount || 0;
         }
@@ -77,7 +81,9 @@ export async function GET() {
       orders,
       stats: {
         totalEarnings,
+        totalCost,
         todayEarnings,
+        todayCost,
         totalOrdersCount,
         todayOrdersCount,
         totalTips,

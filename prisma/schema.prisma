@@ -137,6 +137,7 @@ model Order {
   address         String?
   status          String      @default("AWAITING_CONFIRMATION")
   total           Float
+  cost            Float       @default(0) // Costo total de los ingredientes al momento de la venta
   createdAt       DateTime    @default(now())
   items           OrderItem[]
   customerNotes   String?

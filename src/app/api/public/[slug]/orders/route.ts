@@ -79,16 +79,19 @@ export async function POST(
       },
     });
 
+    let totalCost = 0;
     try {
       for (const item of items) {
         if (!item.productId) continue;
         
         const productRecipes = await prisma.recipeItem.findMany({
-          where: { productId: item.productId }
+          where: { productId: item.productId },
+          include: { ingredient: true }
         });
         
         for (const recipe of productRecipes) {
           const totalUsed = recipe.quantityUsed * item.quantity;
+          totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
           await prisma.ingredient.update({
             where: { id: recipe.ingredientId },
             data: { currentStock: { decrement: totalUsed } }
@@ -97,27 +100,32 @@ export async function POST(
 
         const comboItems = await prisma.comboItem.findMany({
           where: { comboId: item.productId },
-          include: { product: { include: { recipes: true } } }
+          include: { product: { include: { recipes: { include: { ingredient: true } } } } }
         });
 
         for (const comboItem of comboItems) {
-          for (const recipe of comboItem.product.recipes) {
-            const totalUsed = recipe.quantityUsed * comboItem.quantity * item.quantity;
-            await prisma.ingredient.update({
-              where: { id: recipe.ingredientId },
-              data: { currentStock: { decrement: totalUsed } }
-            });
+          if (comboItem.product && comboItem.product.recipes) {
+            for (const recipe of comboItem.product.recipes) {
+              const totalUsed = recipe.quantityUsed * comboItem.quantity * item.quantity;
+              totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
+              await prisma.ingredient.update({
+                where: { id: recipe.ingredientId },
+                data: { currentStock: { decrement: totalUsed } }
+              });
+            }
           }
         }
         
         if (item.modifiers && item.modifiers.length > 0) {
           for (const mod of item.modifiers) {
             const modifierRecipes = await prisma.modifierRecipeItem.findMany({
-              where: { modifierId: mod.id }
+              where: { modifierId: mod.id },
+              include: { ingredient: true }
             });
             
             for (const recipe of modifierRecipes) {
               const totalUsed = recipe.quantityUsed * item.quantity;
+              totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
               await prisma.ingredient.update({
                 where: { id: recipe.ingredientId },
                 data: { currentStock: { decrement: totalUsed } }
@@ -126,8 +134,13 @@ export async function POST(
           }
         }
       }
+
+      await prisma.order.update({
+        where: { id: newOrder.id },
+        data: { cost: totalCost }
+      });
     } catch (e) {
-      console.error('Error deducting stock:', e);
+      console.error('Error deducting stock or updating cost:', e);
     }
 
     if (customerPhone && customerPhone.trim().length >= 8) {
