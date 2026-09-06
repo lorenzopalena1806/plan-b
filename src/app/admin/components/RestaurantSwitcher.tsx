@@ -36,7 +36,7 @@ function SwitcherInner({
   };
 
   if (!restaurants || restaurants.length <= 1) {
-    return <span style={{ fontWeight: 'normal', fontSize: '1.25rem', borderLeft: '1px solid #ccc', paddingLeft: '12px', color: '#555' }}>
+    return <span className="admin-title-mobile" style={{ fontWeight: 'normal', fontSize: '1.25rem', borderLeft: '1px solid #ccc', paddingLeft: '12px', color: '#555' }}>
       {restaurants[0]?.name || 'Mi Local'}
     </span>;
   }
@@ -46,15 +46,15 @@ function SwitcherInner({
       <select 
         value={currentId || ''} 
         onChange={handleChange}
+        className="admin-title-mobile"
         style={{
-          padding: '0.4rem 0.5rem',
-          fontSize: '1.1rem',
-          border: '1px solid var(--color-border)',
-          borderRadius: '4px',
-          backgroundColor: '#f8f9fa',
-          fontWeight: '500',
-          color: '#333',
-          cursor: 'pointer'
+          fontSize: '1.1rem', 
+          fontWeight: '500', 
+          border: 'none', 
+          outline: 'none', 
+          backgroundColor: 'transparent',
+          cursor: 'pointer',
+          color: 'var(--color-red-primary)'
         }}
       >
         {restaurants.map(r => (

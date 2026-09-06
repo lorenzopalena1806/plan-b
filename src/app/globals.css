@@ -381,4 +381,26 @@ button {
   .card {
     padding: 1rem;
   }
+
+  /* Admin Nav Mobile */
+  .admin-top-nav {
+    padding: 0.5rem 1rem !important;
+  }
+  .admin-logo {
+    height: 36px !important;
+  }
+  .admin-title-mobile {
+    font-size: 1.2rem !important;
+  }
+  .container {
+    padding: 0 0.5rem !important;
+  }
+
+  /* Make standard tables horizontally scrollable on mobile */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    width: 100%;
+  }
 }
