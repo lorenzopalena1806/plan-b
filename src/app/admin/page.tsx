@@ -25,47 +25,41 @@ export default async function AdminDashboard() {
 
   const isStaff = session.user.role === 'STAFF';
 
-  const restaurant = await prisma.restaurant.findUnique({
-    where: { id: session.user.restaurantId }
-  });
-
-  const allOrders = !isStaff ? await prisma.order.findMany({
-    where: {
-      status: 'COMPLETED',
-      restaurantId: session.user.restaurantId
-    }
-  }) : [];
-
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const todaysOrders = allOrders.filter(order => new Date(order.createdAt) >= today);
-
-  const historicalSales = allOrders.reduce((sum, order) => sum + order.total, 0);
-  const todaysSales = todaysOrders.reduce((sum, order) => sum + order.total, 0);
-
-  const todaysSalesCash = todaysOrders.filter(o => o.paymentMethod === 'CASH').reduce((sum, o) => sum + o.total, 0);
-  const todaysSalesTransfer = todaysOrders.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((sum, o) => sum + o.total, 0);
-
-  const historicalSalesCash = allOrders.filter(o => o.paymentMethod === 'CASH').reduce((sum, o) => sum + o.total, 0);
-  const historicalSalesTransfer = allOrders.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((sum, o) => sum + o.total, 0);
-
-  const drivers = !isStaff ? await prisma.driver.findMany({
-    where: {
-      restaurantId: session.user.restaurantId,
-      isActive: true
-    },
-    include: {
-      orders: {
-        where: {
-          status: 'COMPLETED',
-          createdAt: {
-            gte: today
-          }
+  // Run all queries in parallel, fetch only needed fields
+  const [todaysOrders, historicalStats, drivers] = await Promise.all([
+    !isStaff ? prisma.order.findMany({
+      where: {
+        status: 'COMPLETED',
+        restaurantId: session.user.restaurantId,
+        createdAt: { gte: today }
+      },
+      select: { total: true, paymentMethod: true }
+    }) : Promise.resolve([]),
+    !isStaff ? prisma.order.aggregate({
+      where: {
+        status: 'COMPLETED',
+        restaurantId: session.user.restaurantId
+      },
+      _sum: { total: true },
+      _count: { id: true }
+    }) : Promise.resolve(null),
+    !isStaff ? prisma.driver.findMany({
+      where: { restaurantId: session.user.restaurantId, isActive: true },
+      select: {
+        id: true, name: true, phone: true,
+        orders: {
+          where: { status: 'COMPLETED', createdAt: { gte: today } },
+          select: { id: true }
         }
       }
-    }
-  }) : [];
+    }) : Promise.resolve([]),
+  ]);
+
+  const historicalSales = historicalStats?._sum?.total ?? 0;
+  const historicalOrderCount = historicalStats?._count?.id ?? 0;
 
   return (
     <div className="container" style={{ padding: '2rem 0' }}>
@@ -128,13 +122,15 @@ export default async function AdminDashboard() {
           <Link href="/admin/sales" style={{ textDecoration: 'none', color: 'inherit' }}>
             <div className="card text-center hover-card" style={{ padding: '2rem 1rem', cursor: 'pointer' }}>
               <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas de Hoy</h2>
-              <p className="text-bold text-red" style={{ fontSize: '2.5rem' }}>${todaysSales.toLocaleString()}</p>
+              <p className="text-bold text-red" style={{ fontSize: '2.5rem' }}>
+                ${todaysOrders.reduce((s, o) => s + o.total, 0).toLocaleString()}
+              </p>
               <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
                 <div style={{ background: '#f0fdf4', padding: '0.5rem 1rem', borderRadius: '4px', color: '#166534' }}>
-                  <strong>💵 Efectivo:</strong> ${todaysSalesCash.toLocaleString()}
+                  <strong>💵 Efectivo:</strong> ${todaysOrders.filter(o => o.paymentMethod === 'CASH').reduce((s, o) => s + o.total, 0).toLocaleString()}
                 </div>
                 <div style={{ background: '#eff6ff', padding: '0.5rem 1rem', borderRadius: '4px', color: '#1e40af' }}>
-                  <strong>📱 Transferencia:</strong> ${todaysSalesTransfer.toLocaleString()}
+                  <strong>📱 Transferencia:</strong> ${todaysOrders.filter(o => o.paymentMethod === 'TRANSFER' || o.paymentMethod === 'Transferencia').reduce((s, o) => s + o.total, 0).toLocaleString()}
                 </div>
               </div>
               <p className="text-muted" style={{ marginTop: '1rem' }}>{todaysOrders.length} pedidos completados</p>
@@ -145,15 +141,7 @@ export default async function AdminDashboard() {
             <div className="card text-center hover-card" style={{ padding: '2rem 1rem', cursor: 'pointer' }}>
               <h2 className="text-muted" style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Ventas Históricas</h2>
               <p className="text-bold" style={{ fontSize: '2.5rem' }}>${historicalSales.toLocaleString()}</p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginTop: '1rem' }}>
-                <div style={{ background: '#f0fdf4', padding: '0.5rem 1rem', borderRadius: '4px', color: '#166534' }}>
-                  <strong>💵 Efectivo:</strong> ${historicalSalesCash.toLocaleString()}
-                </div>
-                <div style={{ background: '#eff6ff', padding: '0.5rem 1rem', borderRadius: '4px', color: '#1e40af' }}>
-                  <strong>📱 Transferencia:</strong> ${historicalSalesTransfer.toLocaleString()}
-                </div>
-              </div>
-              <p className="text-muted" style={{ marginTop: '1rem' }}>{allOrders.length} pedidos en total</p>
+              <p className="text-muted" style={{ marginTop: '1rem' }}>{historicalOrderCount} pedidos en total</p>
             </div>
           </Link>
         </div>

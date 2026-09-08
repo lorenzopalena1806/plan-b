@@ -31,29 +31,32 @@ export default async function AdminLayout({
   let restaurantSlug = '';
   let subscriptionEnd: Date | null = null;
   let userManagedRestaurants: { id: number, name: string, slug: string }[] = [];
-  
-  if (session.user.id) {
-    const dbUser = await prisma.user.findUnique({
-      where: { id: parseInt(session.user.id) },
-      include: { managedRestaurants: { select: { id: true, name: true, slug: true } } }
-    });
-    if (dbUser && dbUser.managedRestaurants) {
-      userManagedRestaurants = dbUser.managedRestaurants;
-    }
-  }
 
-  if (session.user.restaurantId) {
-    const restaurant = await prisma.restaurant.findUnique({
-      where: { id: session.user.restaurantId }
-    });
-    if (restaurant) {
-      restaurantName = restaurant.name;
-      restaurantSlug = restaurant.slug;
-      subscriptionEnd = restaurant.subscriptionEnd;
-    }
-  }
+  // Run all DB queries in parallel instead of sequentially
+  const [dbUser, restaurant, systemConfig] = await Promise.all([
+    session.user.id
+      ? prisma.user.findUnique({
+          where: { id: parseInt(session.user.id) },
+          select: { managedRestaurants: { select: { id: true, name: true, slug: true } } }
+        })
+      : null,
+    session.user.restaurantId
+      ? prisma.restaurant.findUnique({
+          where: { id: session.user.restaurantId },
+          select: { name: true, slug: true, subscriptionEnd: true }
+        })
+      : null,
+    prisma.systemConfig.findFirst({ select: { supportContact: true } })
+  ]);
 
-  const systemConfig = await prisma.systemConfig.findFirst();
+  if (dbUser?.managedRestaurants) {
+    userManagedRestaurants = dbUser.managedRestaurants;
+  }
+  if (restaurant) {
+    restaurantName = restaurant.name;
+    restaurantSlug = restaurant.slug;
+    subscriptionEnd = restaurant.subscriptionEnd;
+  }
   const supportContact = systemConfig?.supportContact || '';
 
   return (

@@ -9,11 +9,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     const res = await signIn('credentials', {
       redirect: false,
@@ -23,8 +25,9 @@ export default function LoginPage() {
 
     if (res?.error) {
       setError('Credenciales inválidas');
+      setIsLoading(false);
     } else {
-      router.push('/admin');
+      router.replace('/admin');
     }
   };
 
@@ -84,7 +87,14 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
-          <button type="submit" className="btn-primary" style={{ marginTop: '1rem' }}>Ingresar</button>
+          <button 
+            type="submit" 
+            className="btn-primary" 
+            style={{ marginTop: '1rem' }}
+            disabled={isLoading}
+          >
+            {isLoading ? '⏳ Ingresando...' : 'Ingresar'}
+          </button>
         </form>
       </div>
     </div>
