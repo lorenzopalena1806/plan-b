@@ -142,6 +142,7 @@ export default function CajaPage() {
             <button className="btn-outline" onClick={() => setShowCloseModal(true)} style={{ fontSize: '0.9rem' }}>Cerrar Caja</button>
           </>}
           {!shift && <button className="btn-primary" onClick={() => setShowOpenModal(true)}>Abrir Caja</button>}
+          <Link href="/admin/caja/historial" className="btn-outline" style={{ fontSize: '0.9rem' }}>Ver Historial</Link>
         </div>
       </header>
 
