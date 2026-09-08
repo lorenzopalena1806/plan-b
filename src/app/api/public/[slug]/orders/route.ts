@@ -72,8 +72,8 @@ export async function POST(
             quantity: item.quantity,
             priceAtPurchase: item.basePrice,
             notes: (item.modifiers && item.modifiers.length > 0) 
-              ? JSON.stringify({ modifiers: item.modifiers || [] }) 
-              : null
+              ? JSON.stringify(item.modifiers.map((m: any) => ({ name: m.name, price: m.price })))
+              : (item.notes || null)
           })),
         },
       },

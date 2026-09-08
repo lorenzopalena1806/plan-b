@@ -243,12 +243,13 @@ export default function ComanderaPage() {
     }
 
     filteredItems.forEach(item => {
-      let modifiers = [];
+      let modifiers: any[] = [];
       let rawNote = '';
       if (item.notes) {
         try {
           const parsed = JSON.parse(item.notes);
           if (Array.isArray(parsed)) modifiers = parsed;
+          else if (parsed?.modifiers && Array.isArray(parsed.modifiers)) modifiers = parsed.modifiers;
           else rawNote = item.notes;
         } catch (e) {
           rawNote = item.notes;
@@ -286,12 +287,13 @@ export default function ComanderaPage() {
   const handlePrintTicket = (order: OrderWithItems) => {
     let itemsHtml = '';
     order.items.forEach(item => {
-      let modifiers = [];
+      let modifiers: any[] = [];
       let rawNote = '';
       if (item.notes) {
         try {
           const parsed = JSON.parse(item.notes);
           if (Array.isArray(parsed)) modifiers = parsed;
+          else if (parsed?.modifiers && Array.isArray(parsed.modifiers)) modifiers = parsed.modifiers;
           else rawNote = item.notes;
         } catch (e) {
           rawNote = item.notes;

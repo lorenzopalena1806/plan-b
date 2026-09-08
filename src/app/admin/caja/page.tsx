@@ -132,12 +132,13 @@ export default function CajaPage() {
   const handlePrintTicket = (order: OrderWithItems) => {
     let itemsHtml = '';
     order.items.forEach(item => {
-      let modifiers = [];
+      let modifiers: any[] = [];
       let rawNote = '';
       if (item.notes) {
         try {
           const parsed = JSON.parse(item.notes);
           if (Array.isArray(parsed)) modifiers = parsed;
+          else if (parsed?.modifiers && Array.isArray(parsed.modifiers)) modifiers = parsed.modifiers;
           else rawNote = item.notes;
         } catch (e) {
           rawNote = item.notes;
@@ -326,12 +327,14 @@ export default function CajaPage() {
             
             <div style={{ marginBottom: '1.5rem', background: 'var(--color-bg)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', border: '1px solid var(--color-border)', maxHeight: '350px', overflowY: 'auto' }}>
               {order.items.map(item => {
-                let modifiers = [];
+                let modifiers: any[] = [];
                 let rawNote = '';
                 if (item.notes) {
                   try {
                     const parsed = JSON.parse(item.notes);
+                    // Soporta formato viejo {"modifiers":[...]} y nuevo [...]
                     if (Array.isArray(parsed)) modifiers = parsed;
+                    else if (parsed?.modifiers && Array.isArray(parsed.modifiers)) modifiers = parsed.modifiers;
                     else rawNote = item.notes;
                   } catch (e) {
                     rawNote = item.notes;
