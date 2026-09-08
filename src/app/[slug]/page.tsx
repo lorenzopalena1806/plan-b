@@ -5,7 +5,8 @@ import { notFound } from 'next/navigation';
 import { ThemeProvider, ClientThemeWrapper } from '@/components/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
 
-export const dynamic = 'force-dynamic';
+// Cachea la página 30 segundos en el CDN de Vercel. Los clientes no esperan la DB.
+export const revalidate = 30;
 
 function checkIsOpen(businessHours: any[], todayDay: number, currentTimeStr: string) {
   const todayHours = businessHours.find(h => h.dayOfWeek === todayDay);
@@ -59,54 +60,32 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     notFound();
   }
 
-  const config = await prisma.config.findFirst({
-    where: { restaurantId: restaurant.id }
-  });
-  
-  const products = await prisma.product.findMany({
-    where: { 
-      restaurantId: restaurant.id,
-      isActive: true
-    },
-    include: {
-      category: {
-        include: {
-          discounts: { orderBy: { quantity: 'desc' } }
-        }
-      },
-      modifiers: {
-        include: {
-          recipes: {
-            include: { ingredient: true }
+  // Todas las queries en paralelo → elimina el apilamiento de round-trips a Brasil
+  const [config, products, categories, banners] = await Promise.all([
+    prisma.config.findFirst({ where: { restaurantId: restaurant.id } }),
+    prisma.product.findMany({
+      where: { restaurantId: restaurant.id, isActive: true },
+      include: {
+        category: { include: { discounts: { orderBy: { quantity: 'desc' } } } },
+        modifiers: true, // sin recipes de ingredientes, no se usan en el carrito
+        comboItems: {
+          include: {
+            product: { select: { id: true, name: true, price: true, imageUrl: true } }
           }
         }
       },
-      comboItems: {
-        include: {
-          product: {
-            include: {
-              recipes: { include: { ingredient: true } }
-            }
-          }
-        }
-      }
-    },
-    orderBy: [
-      { categoryId: 'asc' },
-      { name: 'asc' }
-    ]
-  });
-
-  const categories = await prisma.category.findMany({
-    where: { restaurantId: restaurant.id },
-    orderBy: [{ order: 'asc' }, { name: 'asc' }],
-    include: { discounts: { orderBy: { quantity: 'desc' } } }
-  });
-
-  const banners = await prisma.banner.findMany({
-    where: { restaurantId: restaurant.id, isActive: true },
-    orderBy: { orderIndex: 'asc' }
-  });
+      orderBy: [{ categoryId: 'asc' }, { name: 'asc' }]
+    }),
+    prisma.category.findMany({
+      where: { restaurantId: restaurant.id },
+      orderBy: [{ order: 'asc' }, { name: 'asc' }],
+      include: { discounts: { orderBy: { quantity: 'desc' } } }
+    }),
+    prisma.banner.findMany({
+      where: { restaurantId: restaurant.id, isActive: true },
+      orderBy: { orderIndex: 'asc' }
+    })
+  ]);
 
   if (!config) {
     return <div className="container" style={{ paddingTop: '2rem' }}><h1>Error de configuración del local</h1></div>;

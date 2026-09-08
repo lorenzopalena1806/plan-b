@@ -194,32 +194,8 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
         paymentDetails = `Alias: ${bankAlias}`;
       }
 
-      // 1. Guardar orden en DB
-      const response = await fetch(`/api/public/${slug}/orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName,
-          customerPhone,
-          deliveryMethod,
-          address: deliveryMethod === 'DELIVERY' ? address : null,
-          items,
-          total: finalTotal,
-          customerNotes: customerNotes.trim() || null,
-          paymentMethod,
-          paymentDetails,
-          couponCode: appliedCoupon ? appliedCoupon.code : null,
-          discountApplied: discountApplied + volumeDiscount,
-          tipAmount
-        })
-      });
-
-      if (!response.ok) throw new Error("Error al procesar el pedido.");
-      
-      const order = await response.json();
-
       // 2. Construir mensaje de WhatsApp
-      let msg = `*NUEVO PEDIDO #${order.id}*\n`;
+      let msg = `*NUEVO PEDIDO*\n`;
       msg += `*Cliente:* ${customerName}\n`;
       msg += `*Entrega:* ${deliveryMethod === 'TAKEAWAY' ? 'Retiro en local' : 'Delivery'}\n`;
       if (deliveryMethod === 'DELIVERY') {
@@ -268,10 +244,33 @@ export default function Cart({ whatsappNumber, isOpen, slug, bankAlias = '', shi
       
       msg += `\n*TOTAL A PAGAR: $${finalTotal.toLocaleString()}*`;
 
-      // 3. Limpiar carrito y redirigir
-      clearCart(slug);
       const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(msg)}`;
+
+      // 3. Limpiar carrito y redirigir a WhatsApp INMEDIATAMENTE
+      //    La orden se guarda en DB en background (no bloquea al cliente)
+      clearCart(slug);
       window.location.href = url;
+
+      // Guardar en DB en background — keepalive garantiza que se envía aunque la página cambie
+      fetch(`/api/public/${slug}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          customerName,
+          customerPhone,
+          deliveryMethod,
+          address: deliveryMethod === 'DELIVERY' ? address : null,
+          items,
+          total: finalTotal,
+          customerNotes: customerNotes.trim() || null,
+          paymentMethod,
+          paymentDetails,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
+          discountApplied: discountApplied + volumeDiscount,
+          tipAmount
+        })
+      }).catch(err => console.error('Background order save failed:', err));
       
     } catch (error) {
       alert("Hubo un problema procesando tu pedido.");
