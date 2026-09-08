@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface OrderItem {
   id: number;
@@ -31,6 +31,11 @@ export default function DriverPortal() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyOrders, setHistoryOrders] = useState<any[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // GPS Tracking
+  const [trackingEnabled, setTrackingEnabled] = useState(false);
+  const [trackingStatus, setTrackingStatus] = useState<'idle' | 'active' | 'error' | 'denied'>('idle');
+  const trackingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchOrders = async () => {
     try {
@@ -78,6 +83,69 @@ export default function DriverPortal() {
     }
   };
 
+  const sendLocation = async (lat: number, lng: number) => {
+    try {
+      await fetch('/api/driver/location', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ latitude: lat, longitude: lng })
+      });
+      setTrackingStatus('active');
+    } catch {
+      setTrackingStatus('error');
+    }
+  };
+
+  const startTracking = () => {
+    if (!navigator.geolocation) {
+      alert('Tu dispositivo no soporta GPS.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        sendLocation(pos.coords.latitude, pos.coords.longitude);
+        setTrackingEnabled(true);
+        setTrackingStatus('active');
+        // Send every 15 seconds
+        trackingIntervalRef.current = setInterval(() => {
+          navigator.geolocation.getCurrentPosition(
+            (p) => sendLocation(p.coords.latitude, p.coords.longitude),
+            () => setTrackingStatus('error')
+          );
+        }, 15000);
+      },
+      (err) => {
+        if (err.code === 1) {
+          setTrackingStatus('denied');
+          alert('Debes permitir el acceso a tu ubicacion en el navegador.');
+        } else {
+          setTrackingStatus('error');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const stopTracking = async () => {
+    if (trackingIntervalRef.current) {
+      clearInterval(trackingIntervalRef.current);
+      trackingIntervalRef.current = null;
+    }
+    setTrackingEnabled(false);
+    setTrackingStatus('idle');
+    // Clear location from server
+    await fetch('/api/driver/location', { method: 'DELETE' }).catch(() => {});
+  };
+
+  // Stop tracking when leaving the page
+  useEffect(() => {
+    return () => {
+      if (trackingIntervalRef.current) {
+        clearInterval(trackingIntervalRef.current);
+      }
+    };
+  }, []);
+
   const openHistory = async () => {
     setIsHistoryOpen(true);
     setIsLoadingHistory(true);
@@ -112,6 +180,27 @@ export default function DriverPortal() {
           >
             Ver Historial
           </button>
+        </div>
+
+        {/* GPS Tracking Button */}
+        <div style={{ marginTop: '0.75rem', display: 'flex', justifyContent: 'center' }}>
+          {!trackingEnabled ? (
+            <button
+              onClick={startTracking}
+              style={{ padding: '0.6rem 1.25rem', background: '#f0fdf4', color: '#16a34a', border: '2px solid #86efac', borderRadius: '20px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#d1d5db', display: 'inline-block' }}></span>
+              Activar tracking de ubicacion
+            </button>
+          ) : (
+            <button
+              onClick={stopTracking}
+              style={{ padding: '0.6rem 1.25rem', background: trackingStatus === 'active' ? '#f0fdf4' : '#fef3c7', color: trackingStatus === 'active' ? '#16a34a' : '#92400e', border: '2px solid ' + (trackingStatus === 'active' ? '#86efac' : '#fcd34d'), borderRadius: '20px', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            >
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: trackingStatus === 'active' ? '#16a34a' : '#d97706', display: 'inline-block', animation: trackingStatus === 'active' ? 'pulse 2s infinite' : 'none' }}></span>
+              {trackingStatus === 'active' ? 'Compartiendo ubicacion — Detener' : 'Actualizando GPS...'}
+            </button>
+          )}
         </div>
       </header>
 

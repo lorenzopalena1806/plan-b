@@ -117,7 +117,8 @@ export default function DriversPage() {
     <div className="container" style={{ padding: '2rem 0' }}>
       <header className="flex justify-between items-center" style={{ marginBottom: '2rem' }}>
         <h1>Repartidores (Delivery)</h1>
-        <div className="flex" style={{ gap: '1rem' }}>
+        <div className="flex" style={{ gap: '1rem', flexWrap: 'wrap' }}>
+          <Link href="/admin/drivers/map" className="btn-outline" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>🗺️ Ver Mapa</Link>
           <button className="btn-primary" onClick={openNew}>+ Nuevo Repartidor</button>
           <Link href="/admin" className="btn-outline">Volver al Panel</Link>
         </div>

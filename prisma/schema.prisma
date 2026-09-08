@@ -214,15 +214,18 @@ model Receipt {
 }
 
 model Driver {
-  id           Int        @id @default(autoincrement())
-  name         String
-  phone        String
-  isActive     Boolean    @default(true)
-  restaurantId Int
-  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
-  userId       Int?       @unique
-  user         User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders       Order[]
+  id                Int        @id @default(autoincrement())
+  name              String
+  phone             String
+  isActive          Boolean    @default(true)
+  restaurantId      Int
+  restaurant        Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId            Int?       @unique
+  user              User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders            Order[]
+  latitude          Float?
+  longitude         Float?
+  locationUpdatedAt DateTime?
 }
 
 model Banner {
