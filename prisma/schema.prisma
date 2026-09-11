@@ -112,6 +112,7 @@ model Product {
   station             String?              @default("GENERAL") // e.g. "COCINA", "BARRA"
   recipes             RecipeItem[]
   modifierRecipes     ModifierRecipeItem[]
+  deductStock         Boolean              @default(true) // Si es falso, calcula costo pero no descuenta insumos
 }
 
 model ModifierOption {

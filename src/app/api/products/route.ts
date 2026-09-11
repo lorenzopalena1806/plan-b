@@ -47,6 +47,7 @@ export async function POST(request: Request) {
         isCombo: Boolean(isCombo),
         isActive: isActive !== undefined ? Boolean(isActive) : true,
         allowBulkQuantities: Boolean(allowBulkQuantities),
+        deductStock: data.deductStock !== undefined ? Boolean(data.deductStock) : true,
         restaurantId: session.user.restaurantId,
         modifiers: modifierIds && modifierIds.length > 0 ? {
           connect: modifierIds.map((id: number) => ({ id }))

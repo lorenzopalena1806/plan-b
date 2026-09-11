@@ -33,7 +33,7 @@ interface Product {
   modifiers: ModifierOption[];
   recipes?: { ingredientId: number, quantityUsed: number, ingredient?: any }[];
   images?: string[];
-  images?: string[];
+  deductStock?: boolean;
 }
 
 export default function ProductsPage() {
@@ -64,6 +64,7 @@ export default function ProductsPage() {
   const [comboItems, setComboItems] = useState<{productId: number, quantity: number}[]>([]);
   const [isActive, setIsActive] = useState(true);
   const [allowBulkQuantities, setAllowBulkQuantities] = useState(false);
+  const [deductStock, setDeductStock] = useState(true);
   const [station, setStation] = useState('GENERAL');
   const [recipeItems, setRecipeItems] = useState<{ingredientId: number, quantityUsed: number}[]>([]);
   const [images, setImages] = useState<string[]>([]);
@@ -135,6 +136,7 @@ export default function ProductsPage() {
     setIsCombo(product.isCombo || false);
     setIsActive(product.isActive !== undefined ? product.isActive : true);
     setAllowBulkQuantities(product.allowBulkQuantities || false);
+    setDeductStock(product.deductStock !== undefined ? product.deductStock : true);
     setStation(product.station || 'GENERAL');
     setRecipeItems(product.recipes ? product.recipes.map(r => ({ ingredientId: r.ingredientId, quantityUsed: r.quantityUsed })) : []);
     setComboItems(product.comboItems ? product.comboItems.map(c => ({ productId: c.productId, quantity: c.quantity })) : []);
@@ -157,6 +159,7 @@ export default function ProductsPage() {
     setIsCombo(false);
     setIsActive(true);
     setAllowBulkQuantities(false);
+    setDeductStock(true);
     setStation('GENERAL');
     setRecipeItems([]);
     setComboItems([]);
@@ -179,6 +182,7 @@ export default function ProductsPage() {
         isCombo,
         isActive,
         allowBulkQuantities,
+        deductStock,
         station,
         recipeItems,
         comboItems,
@@ -358,7 +362,18 @@ export default function ProductsPage() {
               {!isCombo && (
                 <div style={{ gridColumn: '1 / -1', border: '1px solid var(--color-border)', padding: '1rem', borderRadius: 'var(--border-radius-sm)', background: '#f8f9fa' }}>
                   <h3 className="text-bold" style={{ marginBottom: '1rem', fontSize: '1rem' }}>Receta y Costos (Control de Stock)</h3>
-              <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>Agrega los ingredientes que componen este producto para descontar stock automáticamente al vender.</p>
+              
+                  <div className="flex items-center" style={{ marginBottom: '1rem' }}>
+                    <input 
+                      type="checkbox" 
+                      id="deductStock" 
+                      checked={deductStock} 
+                      onChange={e => setDeductStock(e.target.checked)} 
+                      style={{ marginRight: '0.5rem', width: 'auto' }}
+                    />
+                    <label htmlFor="deductStock" className="text-bold" style={{ cursor: 'pointer' }}>Descontar Insumos del Stock al vender</label>
+                  </div>
+                  <p className="text-muted" style={{ fontSize: '0.8rem', marginBottom: '1rem' }}>{deductStock ? 'Agrega los ingredientes que componen este producto para descontar stock automáticamente al vender.' : 'El stock no se descontará, pero los ingredientes agregados servirán para calcular el costo de elaboración del producto.'}</p>
               
               {recipeItems.map((rItem, idx) => {
                 const ing = ingredients.find(i => i.id === rItem.ingredientId);

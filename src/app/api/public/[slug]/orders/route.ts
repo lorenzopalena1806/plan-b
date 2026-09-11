@@ -84,6 +84,9 @@ export async function POST(
       for (const item of items) {
         if (!item.productId) continue;
         
+        const product = await prisma.product.findUnique({ where: { id: item.productId } });
+        const shouldDeduct = product?.deductStock ?? true;
+
         const productRecipes = await prisma.recipeItem.findMany({
           where: { productId: item.productId },
           include: { ingredient: true }
@@ -92,10 +95,12 @@ export async function POST(
         for (const recipe of productRecipes) {
           const totalUsed = recipe.quantityUsed * item.quantity;
           totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-          await prisma.ingredient.update({
-            where: { id: recipe.ingredientId },
-            data: { currentStock: { decrement: totalUsed } }
-          });
+          if (shouldDeduct) {
+            await prisma.ingredient.update({
+              where: { id: recipe.ingredientId },
+              data: { currentStock: { decrement: totalUsed } }
+            });
+          }
         }
 
         const comboItems = await prisma.comboItem.findMany({
@@ -108,10 +113,12 @@ export async function POST(
             for (const recipe of comboItem.product.recipes) {
               const totalUsed = recipe.quantityUsed * comboItem.quantity * item.quantity;
               totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-              await prisma.ingredient.update({
-                where: { id: recipe.ingredientId },
-                data: { currentStock: { decrement: totalUsed } }
-              });
+              if (shouldDeduct) {
+                await prisma.ingredient.update({
+                  where: { id: recipe.ingredientId },
+                  data: { currentStock: { decrement: totalUsed } }
+                });
+              }
             }
           }
         }
@@ -126,10 +133,12 @@ export async function POST(
             for (const recipe of modifierRecipes) {
               const totalUsed = recipe.quantityUsed * item.quantity;
               totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-              await prisma.ingredient.update({
-                where: { id: recipe.ingredientId },
-                data: { currentStock: { decrement: totalUsed } }
-              });
+              if (shouldDeduct) {
+                await prisma.ingredient.update({
+                  where: { id: recipe.ingredientId },
+                  data: { currentStock: { decrement: totalUsed } }
+                });
+              }
             }
           }
         }

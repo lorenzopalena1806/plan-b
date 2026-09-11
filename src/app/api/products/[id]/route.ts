@@ -37,6 +37,7 @@ export async function PUT(
         isCombo: isCombo !== undefined ? Boolean(isCombo) : undefined,
         isActive: isActive !== undefined ? Boolean(isActive) : undefined,
         allowBulkQuantities: allowBulkQuantities !== undefined ? Boolean(allowBulkQuantities) : undefined,
+        deductStock: data.deductStock !== undefined ? Boolean(data.deductStock) : undefined,
         modifiers: modifierIds !== undefined ? {
           set: [],
           connect: modifierIds?.map((mId: number) => ({ id: mId })) || []
