@@ -107,7 +107,7 @@ export default function CajaHistorialPage() {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: '700', fontSize: '1.2rem', color: '#7c3aed' }}></div>
+                  <div style={{ fontWeight: '700', fontSize: '1.2rem', color: '#7c3aed' }}>${total.toLocaleString('es-AR')}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-text-light)' }}>total vendido</div>
                   <div style={{ fontSize: '0.8rem', marginTop: '0.25rem', color: isEx ? 'var(--color-red-primary)' : 'var(--color-text-light)' }}>{isEx ? 'Cerrar' : 'Ver detalle'}</div>
                 </div>

@@ -7,6 +7,16 @@ import { printTicket } from '@/lib/printUtils';
 
 type OrderWithItems = Order & { items: OrderItem[] };
 
+const escapeHtml = (unsafe: string) => {
+  if (!unsafe) return '';
+  return String(unsafe)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
+
 function parseModifiers(notes: string | null) {
   if (!notes) return { modifiers: [] as any[], rawNote: '' };
   try {
@@ -104,9 +114,9 @@ export default function CajaPage() {
     let itemsHtml = '';
     order.items.forEach(item => {
       const { modifiers, rawNote } = parseModifiers(item.notes);
-      itemsHtml += '<tr><td class="w-qty">' + item.quantity + 'x</td><td>' + item.productName + (modifiers.length > 0 ? '<br><small class="comanda-notes">' + modifiers.map((m: any) => m.name).join(', ') + '</small>' : '') + (rawNote ? '<br><small class="comanda-notes">' + rawNote + '</small>' : '') + '</td></tr>';
+      itemsHtml += '<tr><td class="w-qty">' + item.quantity + 'x</td><td>' + escapeHtml(item.productName) + (modifiers.length > 0 ? '<br><small class="comanda-notes">' + escapeHtml(modifiers.map((m: any) => m.name).join(', ')) + '</small>' : '') + (rawNote ? '<br><small class="comanda-notes">' + escapeHtml(rawNote) + '</small>' : '') + '</td></tr>';
     });
-    printTicket('<div class="text-center mb-4"><h1 class="text-xl mb-1">TICKET DE PEDIDO</h1><div class="text-lg font-bold">Orden #' + (order.dailyNumber || order.id) + '</div><div>' + new Date(order.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'short' }) + '</div></div><div class="border-b mb-2"><div><strong>Cliente:</strong> ' + order.customerName + '</div>' + (order.address ? '<div><strong>Direccion:</strong> ' + order.address + '</div>' : '') + '<div><strong>Metodo:</strong> ' + (order.deliveryMethod === 'DELIVERY' ? 'Envio' : 'Retiro') + '</div>' + (order.customerNotes ? '<div class="mt-4"><strong>Nota:</strong> ' + order.customerNotes + '</div>' : '') + '</div><table class="w-full mb-2">' + itemsHtml + '</table><div class="border-t text-right"><strong>TOTAL: $' + order.total.toLocaleString() + '</strong></div><small>Gracias por su compra!</small>');
+    printTicket('<div class="text-center mb-4"><h1 class="text-xl mb-1">TICKET DE PEDIDO</h1><div class="text-lg font-bold">Orden #' + (order.dailyNumber || order.id) + '</div><div>' + new Date(order.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'short' }) + '</div></div><div class="border-b mb-2"><div><strong>Cliente:</strong> ' + escapeHtml(order.customerName) + '</div>' + (order.address ? '<div><strong>Direccion:</strong> ' + escapeHtml(order.address) + '</div>' : '') + '<div><strong>Metodo:</strong> ' + (order.deliveryMethod === 'DELIVERY' ? 'Envio' : 'Retiro') + '</div>' + (order.customerNotes ? '<div class="mt-4"><strong>Nota:</strong> ' + escapeHtml(order.customerNotes) + '</div>' : '') + '</div><table class="w-full mb-2">' + itemsHtml + '</table><div class="border-t text-right"><strong>TOTAL: $' + order.total.toLocaleString() + '</strong></div><small>Gracias por su compra!</small>');
   };
 
   if (isLoading) return <div className="container" style={{ padding: '2rem' }}>Cargando caja...</div>;

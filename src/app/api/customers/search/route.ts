@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { cookies } from 'next/headers';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET(request: Request) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user.restaurantId) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const phone = searchParams.get('phone');
     
@@ -11,9 +17,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Phone is required' }, { status: 400 });
     }
 
-    const cookieStore = cookies();
-    const restIdCookie = cookieStore.get('restaurantId');
-    const restaurantId = restIdCookie ? parseInt(restIdCookie.value) : 1;
+    const restaurantId = session.user.restaurantId;
 
     const customer = await prisma.customer.findUnique({
       where: {

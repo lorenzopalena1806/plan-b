@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { deductStockAndCalculateCost } from '@/lib/stockService';
 
 export async function POST(request: Request) {
   try {
@@ -12,6 +13,13 @@ export async function POST(request: Request) {
 
     const data = await request.json();
     
+    if (!data.items || !Array.isArray(data.items) || data.items.length === 0) {
+      return NextResponse.json({ error: 'El pedido debe tener al menos un producto' }, { status: 400 });
+    }
+
+    if (data.total === undefined || isNaN(parseFloat(data.total)) || parseFloat(data.total) < 0) {
+      return NextResponse.json({ error: 'El total del pedido es inválido' }, { status: 400 });
+    }
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -64,80 +72,13 @@ export async function POST(request: Request) {
       }
     });
 
-    // Deduct stock for recipes
-    let totalCost = 0;
-    try {
-      for (const item of data.items) {
-        if (!item.productId) continue;
-        
-        const product = await prisma.product.findUnique({ where: { id: item.productId } });
-        const shouldDeduct = product?.deductStock ?? true;
+    // Deduct stock for recipes (O(1) bulk processing to avoid N+1 queries)
+    const totalCost = await deductStockAndCalculateCost(data.items);
 
-        const productRecipes = await prisma.recipeItem.findMany({
-          where: { productId: item.productId },
-          include: { ingredient: true }
-        });
-        
-        for (const recipe of productRecipes) {
-          const totalUsed = recipe.quantityUsed * item.quantity;
-          totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-          if (shouldDeduct) {
-            await prisma.ingredient.update({
-              where: { id: recipe.ingredientId },
-              data: { currentStock: { decrement: totalUsed } }
-            });
-          }
-        }
-
-        const comboItems = await prisma.comboItem.findMany({
-          where: { comboId: item.productId },
-          include: { product: { include: { recipes: { include: { ingredient: true } } } } }
-        });
-
-        for (const comboItem of comboItems) {
-          if (comboItem.product && comboItem.product.recipes) {
-            for (const recipe of comboItem.product.recipes) {
-              const totalUsed = recipe.quantityUsed * comboItem.quantity * item.quantity;
-              totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-              if (shouldDeduct) {
-                await prisma.ingredient.update({
-                  where: { id: recipe.ingredientId },
-                  data: { currentStock: { decrement: totalUsed } }
-                });
-              }
-            }
-          }
-        }
-        
-        if (item.modifiers && item.modifiers.length > 0) {
-          for (const mod of item.modifiers) {
-            const modifierRecipes = await prisma.modifierRecipeItem.findMany({
-              where: { modifierId: mod.id },
-              include: { ingredient: true }
-            });
-            
-            for (const recipe of modifierRecipes) {
-              const totalUsed = recipe.quantityUsed * item.quantity;
-              totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-              if (shouldDeduct) {
-                await prisma.ingredient.update({
-                  where: { id: recipe.ingredientId },
-                  data: { currentStock: { decrement: totalUsed } }
-                });
-              }
-            }
-          }
-        }
-      }
-
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { cost: totalCost }
-      });
-    } catch (e) {
-      console.error('Error deducting stock or updating cost:', e);
-      // We don't fail the order if stock deduction fails, but we log it.
-    }
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { cost: totalCost }
+    });
 
     // Save customer to CRM if phone is provided
     if (data.customerPhone && data.customerPhone.trim().length >= 8) {

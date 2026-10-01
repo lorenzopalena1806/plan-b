@@ -166,6 +166,7 @@ export default function ComanderaPage() {
 
     return () => {
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('click', unlock);
       window.removeEventListener('keydown', unlock);
       window.removeEventListener('touchstart', unlock);
@@ -255,11 +256,15 @@ export default function ComanderaPage() {
           rawNote = item.notes;
         }
       }
+      const safeName = item.productName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const safeMods = modifiers.length > 0 ? modifiers.map((m:any) => String(m.name).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")).join(', ') : '';
+      const safeNote = rawNote ? String(rawNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+
       itemsHtml += `
         <div class="comanda-item">
-          <span class="comanda-qty">${item.quantity}x</span> ${item.productName}
-          ${modifiers.length > 0 ? `<span class="comanda-notes">${modifiers.map((m:any) => m.name).join(', ')}</span>` : ''}
-          ${rawNote ? `<span class="comanda-notes">${rawNote}</span>` : ''}
+          <span class="comanda-qty">${item.quantity}x</span> ${safeName}
+          ${safeMods ? `<span class="comanda-notes">${safeMods}</span>` : ''}
+          ${safeNote ? `<span class="comanda-notes">${safeNote}</span>` : ''}
         </div>
       `;
     });
@@ -299,13 +304,17 @@ export default function ComanderaPage() {
           rawNote = item.notes;
         }
       }
+      const safeName = item.productName.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const safeMods = modifiers.length > 0 ? modifiers.map((m:any) => String(m.name).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")).join(', ') : '';
+      const safeNote = rawNote ? String(rawNote).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") : '';
+
       itemsHtml += `
         <tr>
           <td class="w-qty">${item.quantity}x</td>
           <td>
-            ${item.productName}
-            ${modifiers.length > 0 ? `<br><small class="comanda-notes">${modifiers.map((m:any) => m.name).join(', ')}</small>` : ''}
-            ${rawNote ? `<br><small class="comanda-notes">${rawNote}</small>` : ''}
+            ${safeName}
+            ${safeMods ? `<br><small class="comanda-notes">${safeMods}</small>` : ''}
+            ${safeNote ? `<br><small class="comanda-notes">${safeNote}</small>` : ''}
           </td>
         </tr>
       `;
@@ -319,10 +328,10 @@ export default function ComanderaPage() {
       </div>
       
       <div class="border-b mb-2">
-        <div><strong>Cliente:</strong> ${order.customerName}</div>
-        ${order.address ? `<div><strong>Dirección:</strong> ${order.address}</div>` : ''}
+        <div><strong>Cliente:</strong> ${String(order.customerName).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        ${order.address ? `<div><strong>Dirección:</strong> ${String(order.address).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>` : ''}
         <div><strong>Método:</strong> ${order.deliveryMethod === 'DELIVERY' ? 'Envío' : 'Retiro por local'}</div>
-        ${order.customerNotes ? `<div class="mt-4"><strong>Nota:</strong> ${order.customerNotes}</div>` : ''}
+        ${order.customerNotes ? `<div class="mt-4"><strong>Nota:</strong> ${String(order.customerNotes).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>` : ''}
       </div>
 
       <table class="mb-4">

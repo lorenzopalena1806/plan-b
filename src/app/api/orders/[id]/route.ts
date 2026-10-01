@@ -16,6 +16,11 @@ export async function PUT(
     const { id } = await params;
     const { status, cancelReason, driverId } = await request.json();
 
+    const validStatuses = ['AWAITING_CONFIRMATION', 'PENDING', 'IN_PROGRESS', 'READY', 'ON_THE_WAY', 'COMPLETED', 'REJECTED'];
+    if (status !== undefined && !validStatuses.includes(status)) {
+      return NextResponse.json({ error: 'Estado inválido' }, { status: 400 });
+    }
+
     const order = await prisma.order.findUnique({
       where: { id: parseInt(id) }
     });

@@ -23,15 +23,25 @@ export async function GET() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const driversWithCounts = await Promise.all(drivers.map(async (driver) => {
-      const tripsToday = await prisma.order.count({
-        where: {
-          driverId: driver.id,
-          status: 'COMPLETED',
-          createdAt: { gte: today }
-        }
-      });
-      return { ...driver, tripsToday };
+    const driverIds = drivers.map(d => d.id);
+    
+    const tripCounts = await prisma.order.groupBy({
+      by: ['driverId'],
+      where: {
+        driverId: { in: driverIds },
+        status: 'COMPLETED',
+        createdAt: { gte: today }
+      },
+      _count: {
+        id: true
+      }
+    });
+
+    const countMap = new Map(tripCounts.map(c => [c.driverId, c._count.id]));
+
+    const driversWithCounts = drivers.map(driver => ({
+      ...driver,
+      tripsToday: countMap.get(driver.id) || 0
     }));
 
     return NextResponse.json(driversWithCounts);
@@ -64,7 +74,7 @@ export async function POST(request: Request) {
         data: {
           username,
           password: hashedPassword,
-          rawPassword: password, // Store raw password so admin can view it (per previous structure)
+          // Store raw password so admin can view it (per previous structure)
           role: 'DRIVER',
           restaurantId: session.user.restaurantId
         }
@@ -88,3 +98,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Error creating driver' }, { status: 500 });
   }
 }
+

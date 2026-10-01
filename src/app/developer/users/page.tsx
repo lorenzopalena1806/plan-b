@@ -11,7 +11,6 @@ interface User {
   id: number;
   username: string;
   role: string;
-  rawPassword?: string | null;
   restaurantId: number | null;
   restaurant?: Restaurant;
   managedRestaurants?: Restaurant[];
@@ -251,20 +250,7 @@ export default function DeveloperUsersPage() {
                   <td style={{ padding: '1rem' }}>{u.id}</td>
                   <td style={{ padding: '1rem', fontWeight: 'bold' }}>{u.username}</td>
                   <td style={{ padding: '1rem', fontFamily: 'monospace' }}>
-                    {u.rawPassword ? (
-                      <div className="flex items-center" style={{ gap: '0.5rem' }}>
-                        <span>{showPassword[u.id] ? u.rawPassword : '••••••'}</span>
-                        <button 
-                          type="button" 
-                          onClick={() => togglePasswordVisibility(u.id)}
-                          style={{ fontSize: '0.75rem', color: 'var(--color-red-primary)', textDecoration: 'underline', padding: 0 }}
-                        >
-                          {showPassword[u.id] ? 'Ocultar' : 'Mostrar'}
-                        </button>
-                      </div>
-                    ) : (
-                      <span className="text-muted" style={{ fontStyle: 'italic', fontSize: '0.8rem' }}>Sin registrar</span>
-                    )}
+                    <span className="text-muted" style={{ fontStyle: 'italic', fontSize: '0.8rem' }}>Oculto</span>
                   </td>
                   <td style={{ padding: '1rem' }}>
                     <span style={{ 

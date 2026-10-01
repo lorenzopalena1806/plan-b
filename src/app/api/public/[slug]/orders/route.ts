@@ -1,11 +1,38 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { deductStockAndCalculateCost } from '@/lib/stockService';
+import { headers } from 'next/headers';
+
+// Simple in-memory rate limiting (per lambda instance)
+const rateLimitMap = new Map<string, { count: number, resetTime: number }>();
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const headersList = headers();
+    const ip = headersList.get('x-forwarded-for') || 'unknown';
+    
+    // Rate limit: max 5 orders per 10 minutes per IP
+    const now = Date.now();
+    const windowMs = 10 * 60 * 1000;
+    const maxRequests = 5;
+
+    const userRateData = rateLimitMap.get(ip);
+    if (userRateData) {
+      if (now > userRateData.resetTime) {
+        rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+      } else {
+        if (userRateData.count >= maxRequests) {
+          return NextResponse.json({ error: 'Demasiados pedidos. Intenta nuevamente en unos minutos.' }, { status: 429 });
+        }
+        userRateData.count++;
+      }
+    } else {
+      rateLimitMap.set(ip, { count: 1, resetTime: now + windowMs });
+    }
+
     const { slug } = await params;
     const restaurant = await prisma.restaurant.findUnique({
       where: { slug }
@@ -31,6 +58,17 @@ export async function POST(
       tipAmount
     } = data;
 
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return NextResponse.json({ error: 'El pedido debe tener al menos un producto' }, { status: 400 });
+    }
+
+    if (total === undefined || isNaN(parseFloat(total)) || parseFloat(total) < 0) {
+      return NextResponse.json({ error: 'El total del pedido es inválido' }, { status: 400 });
+    }
+
+    if (!customerName || customerName.trim() === '') {
+      return NextResponse.json({ error: 'El nombre del cliente es obligatorio' }, { status: 400 });
+    }
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -79,78 +117,13 @@ export async function POST(
       },
     });
 
-    let totalCost = 0;
-    try {
-      for (const item of items) {
-        if (!item.productId) continue;
-        
-        const product = await prisma.product.findUnique({ where: { id: item.productId } });
-        const shouldDeduct = product?.deductStock ?? true;
+    // Deduct stock for recipes (O(1) bulk processing to avoid N+1 queries)
+    const totalCost = await deductStockAndCalculateCost(items);
 
-        const productRecipes = await prisma.recipeItem.findMany({
-          where: { productId: item.productId },
-          include: { ingredient: true }
-        });
-        
-        for (const recipe of productRecipes) {
-          const totalUsed = recipe.quantityUsed * item.quantity;
-          totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-          if (shouldDeduct) {
-            await prisma.ingredient.update({
-              where: { id: recipe.ingredientId },
-              data: { currentStock: { decrement: totalUsed } }
-            });
-          }
-        }
-
-        const comboItems = await prisma.comboItem.findMany({
-          where: { comboId: item.productId },
-          include: { product: { include: { recipes: { include: { ingredient: true } } } } }
-        });
-
-        for (const comboItem of comboItems) {
-          if (comboItem.product && comboItem.product.recipes) {
-            for (const recipe of comboItem.product.recipes) {
-              const totalUsed = recipe.quantityUsed * comboItem.quantity * item.quantity;
-              totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-              if (shouldDeduct) {
-                await prisma.ingredient.update({
-                  where: { id: recipe.ingredientId },
-                  data: { currentStock: { decrement: totalUsed } }
-                });
-              }
-            }
-          }
-        }
-        
-        if (item.modifiers && item.modifiers.length > 0) {
-          for (const mod of item.modifiers) {
-            const modifierRecipes = await prisma.modifierRecipeItem.findMany({
-              where: { modifierId: mod.id },
-              include: { ingredient: true }
-            });
-            
-            for (const recipe of modifierRecipes) {
-              const totalUsed = recipe.quantityUsed * item.quantity;
-              totalCost += (recipe.ingredient.unitCost || 0) * totalUsed;
-              if (shouldDeduct) {
-                await prisma.ingredient.update({
-                  where: { id: recipe.ingredientId },
-                  data: { currentStock: { decrement: totalUsed } }
-                });
-              }
-            }
-          }
-        }
-      }
-
-      await prisma.order.update({
-        where: { id: newOrder.id },
-        data: { cost: totalCost }
-      });
-    } catch (e) {
-      console.error('Error deducting stock or updating cost:', e);
-    }
+    await prisma.order.update({
+      where: { id: newOrder.id },
+      data: { cost: totalCost }
+    });
 
     if (customerPhone && customerPhone.trim().length >= 8) {
       await prisma.customer.upsert({

@@ -43,7 +43,6 @@ export async function POST(request: Request) {
       data: {
         username,
         password: hashedPassword,
-        rawPassword: password,
         role: role || 'ADMIN',
         restaurantId: restaurantId ? parseInt(restaurantId) : null,
         managedRestaurants: restaurantId ? {
@@ -60,3 +59,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to create user' }, { status: 500 });
   }
 }
+

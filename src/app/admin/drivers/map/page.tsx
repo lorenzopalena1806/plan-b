@@ -66,7 +66,13 @@ export default function DriversMapPage() {
 
     fetchLocations();
     const interval = setInterval(fetchLocations, 15000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
+      }
+    };
   }, []);
 
   // Update markers when drivers change

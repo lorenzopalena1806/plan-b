@@ -29,10 +29,10 @@ export async function PUT(
         }
       });
 
-      // Update orders to COMPLETED
-      for (const order of activeOrders) {
-        await prisma.order.update({
-          where: { id: order.id },
+      const orderIds = activeOrders.map(o => o.id);
+      if (orderIds.length > 0) {
+        await prisma.order.updateMany({
+          where: { id: { in: orderIds } },
           data: {
             status: 'COMPLETED',
             paymentMethod: paymentMethod || 'CASH',

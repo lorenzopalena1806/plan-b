@@ -14,7 +14,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Acceso denegado' }, { status: 403 });
     }
 
-    // Fetch all COMPLETED and REJECTED orders to construct stats and audit
+    // Fetch last 1000 COMPLETED and REJECTED orders to construct stats and audit
+    // Avoids server timeout on huge datasets
     const orders = await prisma.order.findMany({
       where: {
         status: { in: ['COMPLETED', 'REJECTED'] },
@@ -25,7 +26,8 @@ export async function GET() {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: 1000
     });
 
     // We can aggregate stats on the server for speed

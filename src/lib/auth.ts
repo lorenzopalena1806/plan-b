@@ -89,5 +89,5 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || 'supersecretkeyplanb',
+  secret: process.env.NEXTAUTH_SECRET,
 };

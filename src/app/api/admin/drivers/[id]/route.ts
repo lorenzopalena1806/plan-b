@@ -34,8 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
         const updateData: any = { username };
         if (password) {
           updateData.password = await bcrypt.hash(password, 10);
-          updateData.rawPassword = password;
-        }
+          }
         await prisma.user.update({
           where: { id: existing.userId! },
           data: updateData
@@ -54,7 +53,6 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
           data: {
             username,
             password: hashedPassword,
-            rawPassword: password,
             role: 'DRIVER',
             restaurantId: session.user.restaurantId
           }

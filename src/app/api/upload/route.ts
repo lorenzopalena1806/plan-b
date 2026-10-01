@@ -18,6 +18,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'No se subió ningún archivo' }, { status: 400 });
     }
 
+    const validMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/svg+xml'];
+    if (!validMimeTypes.includes(file.type)) {
+      return NextResponse.json({ error: 'Tipo de archivo no permitido. Solo se permiten imágenes.' }, { status: 400 });
+    }
+
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      return NextResponse.json({ error: 'El archivo es muy pesado. Máximo 5MB.' }, { status: 400 });
+    }
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 

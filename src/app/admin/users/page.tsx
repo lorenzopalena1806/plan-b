@@ -7,7 +7,6 @@ interface User {
   id: number;
   username: string;
   role: string;
-  rawPassword?: string | null;
   restaurant?: { name: string } | null;
 }
 
@@ -193,18 +192,6 @@ export default function AdminUsersPage() {
                     <span className="text-muted" style={{ display: 'inline-block', marginTop: '0.25rem', fontSize: '0.8rem', padding: '0.1rem 0.4rem', background: '#e0e0e0', borderRadius: '4px' }}>
                       📍 {u.restaurant.name}
                     </span>
-                  )}
-                  {u.role === 'STAFF' && u.rawPassword && (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', marginTop: '0.25rem', fontFamily: 'monospace' }}>
-                      Clave: {showPassword[u.id] ? u.rawPassword : '••••••'}{' '}
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordVisibility(u.id)}
-                        style={{ fontSize: '0.75rem', color: 'var(--color-red-primary)', textDecoration: 'underline', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }}
-                      >
-                        {showPassword[u.id] ? 'Ocultar' : 'Mostrar'}
-                      </button>
-                    </div>
                   )}
                 </div>
                 

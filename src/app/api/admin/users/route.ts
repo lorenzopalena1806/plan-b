@@ -21,7 +21,6 @@ export async function GET() {
         id: true,
         username: true,
         role: true,
-        rawPassword: true,
         restaurant: { select: { name: true } }
       },
       orderBy: { id: 'desc' }
@@ -72,7 +71,6 @@ export async function POST(request: Request) {
       data: {
         username: trimmedUsername,
         password: hashedPassword,
-        rawPassword: password,
         role: role === 'ADMIN' ? 'ADMIN' : 'STAFF',
         restaurantId: session.user.restaurantId
       }
@@ -84,3 +82,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Error al crear usuario' }, { status: 500 });
   }
 }
+

@@ -33,26 +33,26 @@ export async function GET(request: Request) {
   const orders = await prisma.order.findMany({
     where: whereClause,
     include: {
-      items: true,
+      items: {
+        include: {
+          product: {
+            select: { station: true }
+          }
+        }
+      },
     },
     orderBy: { createdAt: 'desc' },
   });
 
-  // Attach station to items
-  const productIds = new Set<number>();
-  orders.forEach(o => o.items.forEach(i => productIds.add(i.productId)));
-  const products = await prisma.product.findMany({
-    where: { id: { in: Array.from(productIds) } },
-    select: { id: true, station: true }
-  });
-  const productMap = new Map(products.map(p => [p.id, p.station]));
-
   const enrichedOrders = orders.map(o => ({
     ...o,
-    items: o.items.map(i => ({
-      ...i,
-      station: productMap.get(i.productId) || 'GENERAL'
-    }))
+    items: o.items.map(i => {
+      const { product, ...itemData } = i as any;
+      return {
+        ...itemData,
+        station: product?.station || 'GENERAL'
+      };
+    })
   }));
 
   return NextResponse.json(enrichedOrders);

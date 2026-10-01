@@ -54,7 +54,7 @@ export async function POST(request: Request) {
       <hr/>
       <h3>Detalle de Egresos</h3>
       <ul>
-        ${shift.expenses.length === 0 ? '<li>Sin egresos</li>' : shift.expenses.map(e => `<li>$${e.amount} - ${e.description}</li>`).join('')}
+        ${shift.expenses.length === 0 ? '<li>Sin egresos</li>' : shift.expenses.map(e => `<li>$${e.amount} - ${e.description.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</li>`).join('')}
       </ul>
       <hr/>
       <p>PoloSandia v2.0</p>
