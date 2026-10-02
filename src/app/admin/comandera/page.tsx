@@ -120,7 +120,7 @@ export default function ComanderaPage() {
 
   const fetchOrders = async () => {
     try {
-      const res = await fetch(`/api/orders?t=${Date.now()}`);
+      const res = await fetch(`/api/orders?status=PENDING,IN_PROGRESS,READY&t=${Date.now()}`);
       if (res.ok) {
         const data = await res.json();
         setOrders(data);

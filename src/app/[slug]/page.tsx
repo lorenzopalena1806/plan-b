@@ -107,14 +107,13 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     where: { restaurantId: restaurant.id }
   });
 
-  // Auto-generate defaults if they don't exist
+  // Use in-memory defaults if they don't exist
   if (businessHours.length < 7) {
     const days = [0, 1, 2, 3, 4, 5, 6];
     const existingDays = new Set(businessHours.map(h => h.dayOfWeek));
-    const defaults = [];
     for (const d of days) {
       if (!existingDays.has(d)) {
-        defaults.push({
+        businessHours.push({
           dayOfWeek: d,
           isOpen: true,
           shift1Open: '12:00',
@@ -124,14 +123,6 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
           restaurantId: restaurant.id
         });
       }
-    }
-    if (defaults.length > 0) {
-      await prisma.businessHour.createMany({
-        data: defaults
-      });
-      businessHours = await prisma.businessHour.findMany({
-        where: { restaurantId: restaurant.id }
-      });
     }
   }
 
