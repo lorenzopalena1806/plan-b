@@ -185,21 +185,40 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
           </>
         )}
 
-        <header style={{ padding: '1.5rem 0', textAlign: 'center', borderBottom: '1px solid var(--color-border)', marginBottom: '2rem' }}>
+        <header style={{ padding: '1.25rem 0 1rem', textAlign: 'center', borderBottom: '1px solid var(--color-border)', marginBottom: '1.5rem' }}>
+          {/* Open/Closed status pill */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+              padding: '0.3rem 0.85rem',
+              borderRadius: '20px',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              background: isOpen ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.1)',
+              color: isOpen ? '#15803d' : '#dc2626',
+              border: `1px solid ${isOpen ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.2)'}`,
+            }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: isOpen ? '#22c55e' : '#ef4444', flexShrink: 0 }} />
+              {isOpen ? 'Abierto ahora' : `Cerrado · ${todayHoursText}`}
+            </span>
+          </div>
+
           {config.logoUrl ? (
-            <img src={config.logoUrl} alt={restaurant.name} style={{ maxHeight: '120px', objectFit: 'contain', margin: '0 auto', marginBottom: '0.5rem', display: 'block' }} />
+            <img src={config.logoUrl} alt={restaurant.name} style={{ maxHeight: '100px', objectFit: 'contain', margin: '0 auto 0.4rem', display: 'block' }} />
           ) : (
-            <h1 className="text-red" style={{ fontSize: '2rem', letterSpacing: '-1px', textTransform: 'uppercase' }}>{restaurant.name}</h1>
+            <h1 className="text-red" style={{ fontSize: '1.75rem', letterSpacing: '-1px', textTransform: 'uppercase', marginBottom: '0.2rem' }}>{restaurant.name}</h1>
           )}
-          <p className="text-muted">{config.subtitle || 'Delivery & Takeaway'}</p>
+          {config.subtitle && <p className="text-muted" style={{ fontSize: '0.875rem' }}>{config.subtitle}</p>}
 
           {/* Social Buttons + Theme Toggle */}
           <div className="social-buttons-container">
             {config.instagramUrl && (
-              <a 
-                href={config.instagramUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={config.instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="social-btn instagram"
                 title="Instagram"
               >
@@ -212,10 +231,10 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             )}
             
             {(config.whatsappUrl || config.whatsappNumber) && (
-              <a 
-                href={config.whatsappUrl || `https://wa.me/${config.whatsappNumber.replace(/[^0-9]/g, '')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={config.whatsappUrl || `https://wa.me/${config.whatsappNumber.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="social-btn whatsapp"
                 title="WhatsApp"
               >
@@ -226,10 +245,10 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             )}
 
             {config.mapsUrl && (
-              <a 
-                href={config.mapsUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={config.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="social-btn maps"
                 title="Cómo llegar"
               >
@@ -241,17 +260,9 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
             )}
             
             <ShareButton />
-
             <ThemeToggle />
           </div>
         </header>
-
-        {!isOpen && (
-          <div style={{ backgroundColor: '#fff3cd', color: '#856404', padding: '1rem', borderRadius: 'var(--border-radius-md)', textAlign: 'center', marginBottom: '2rem', fontWeight: 'bold', boxShadow: 'var(--shadow-sm)' }}>
-            <p style={{ marginBottom: '0.25rem' }}>Lo sentimos, en este momento el local se encuentra cerrado.</p>
-            <p style={{ fontSize: '0.875rem', fontWeight: 'normal', opacity: 0.9 }}>{todayHoursText}</p>
-          </div>
-        )}
 
         <div className="container" style={{ paddingBottom: '3rem' }}>
           <Catalog 
