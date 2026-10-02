@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// Cache at the CDN edge for 60s — reduces DB hits dramatically for busy restaurants
+export const revalidate = 60;
+
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ slug: string }> }
@@ -35,7 +38,7 @@ export async function GET(
       })
     ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       restaurant: {
         id: restaurant.id,
         name: restaurant.name,
@@ -45,6 +48,8 @@ export async function GET(
       products,
       banners
     });
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
+    return response;
   } catch (error) {
     return NextResponse.json({ error: 'Error loading catalog' }, { status: 500 });
   }

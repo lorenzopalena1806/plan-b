@@ -5,8 +5,18 @@ import { notFound } from 'next/navigation';
 import { ThemeProvider, ClientThemeWrapper } from '@/components/ThemeContext';
 import ThemeToggle from '@/components/ThemeToggle';
 
-// Cachea la página 30 segundos en el CDN de Vercel. Los clientes no esperan la DB.
-export const revalidate = 30;
+// ISR: regenerar en background cada 60s. El primer visitante recibe la versión cacheada.
+export const revalidate = 60;
+
+// Pre-renderiza todos los slugs conocidos en build time → carga instantánea en producción
+export async function generateStaticParams() {
+  try {
+    const restaurants = await prisma.restaurant.findMany({ select: { slug: true } });
+    return restaurants.map(r => ({ slug: r.slug }));
+  } catch {
+    return [];
+  }
+}
 
 function checkIsOpen(businessHours: any[], todayDay: number, currentTimeStr: string) {
   const todayHours = businessHours.find(h => h.dayOfWeek === todayDay);
@@ -60,14 +70,13 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     notFound();
   }
 
-  // Todas las queries en paralelo → elimina el apilamiento de round-trips a Brasil
-  const [config, products, categories, banners] = await Promise.all([
+  const [config, products, categories, banners, _businessHours] = await Promise.all([
     prisma.config.findFirst({ where: { restaurantId: restaurant.id } }),
     prisma.product.findMany({
       where: { restaurantId: restaurant.id, isActive: true },
       include: {
         category: { include: { discounts: { orderBy: { quantity: 'desc' } } } },
-        modifiers: true, // sin recipes de ingredientes, no se usan en el carrito
+        modifiers: { where: { isActive: true } },
         comboItems: {
           include: {
             product: { select: { id: true, name: true, price: true, imageUrl: true } }
@@ -84,8 +93,12 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     prisma.banner.findMany({
       where: { restaurantId: restaurant.id, isActive: true },
       orderBy: { orderIndex: 'asc' }
+    }),
+    prisma.businessHour.findMany({
+      where: { restaurantId: restaurant.id }
     })
   ]);
+  let businessHours = [..._businessHours];
 
   if (!config) {
     return <div className="container" style={{ paddingTop: '2rem' }}><h1>Error de configuración del local</h1></div>;
@@ -102,12 +115,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ slu
     );
   }
 
-  // Fetch business hours from the database
-  let businessHours = await prisma.businessHour.findMany({
-    where: { restaurantId: restaurant.id }
-  });
-
-  // Use in-memory defaults if they don't exist
+  // Use in-memory defaults if businessHours are incomplete
   if (businessHours.length < 7) {
     const days = [0, 1, 2, 3, 4, 5, 6];
     const existingDays = new Set(businessHours.map(h => h.dayOfWeek));
